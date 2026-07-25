@@ -159,15 +159,17 @@ static void Test_OnePeriodExtraction(void)
 {
     float input[350];
     float output[128];
+    float record_mean;
     const float fs = 100000.0f;
     const float f0 = 1000.0f;
     for (uint32_t i = 0u; i < 350u; i++) {
         input[i] = 0.4f +
             1.2f * sinf((float)(2.0 * TEST_PI) * f0 * (float)i / fs + 0.7f);
     }
+    record_mean = Measure_Mean(input, 350u);
     CHECK(Measure_ExtractPeriod(input, 350u, fs, f0, output, 128u) == 128u,
           "one-period extraction count");
-    CHECK(Test_Abs(output[0] - 0.4f) < 0.03f,
+    CHECK(Test_Abs(output[0] - record_mean) < 0.01f,
           "period starts at upward mean crossing");
     CHECK(output[1] > output[0], "period starts on rising edge");
     CHECK(Test_Abs(output[0] - output[127]) < 0.08f,

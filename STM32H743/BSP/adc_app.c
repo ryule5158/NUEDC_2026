@@ -33,7 +33,7 @@
 /* 当前CubeMX使用ADC1；HAL回调中用它判断是不是本驱动的ADC */
 #define ADC_APP_HAL_INSTANCE            ADC1
 
-/* 当前PC4/PB1为ADC1单端输入；若以后改成差分输入，把这里改为ADC_DIFFERENTIAL_ENDED */
+/* 当前PC4/PC5为ADC1单端输入；若以后改成差分输入，把这里改为ADC_DIFFERENTIAL_ENDED */
 #define ADC_APP_SINGLE_DIFF             ADC_SINGLE_ENDED
 
 /* 当前ADC分辨率为16位，单端换算时65535对应Vref */
@@ -53,7 +53,7 @@
 /* Cortex-M7 DCache缓存行大小，DMA缓冲区按32字节对齐处理 */
 #define ADC_APP_CACHE_LINE_SIZE         32U
 
-/* 默认分析通道：0=规则Rank1(PC4/ADC1_INP4)，1=规则Rank2(PB1/ADC1_INP5) */
+/* 默认分析通道：0=规则Rank1(PC4/ADC1_INP4)，1=规则Rank2(PC5/ADC1_INP8) */
 #define ADC_APP_DEFAULT_CHANNEL         0U
 
 #if defined(__ARMCC_VERSION)

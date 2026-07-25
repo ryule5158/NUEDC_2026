@@ -19,7 +19,7 @@ extern "C" {
 
 /* 常量 -------------------------------------------------------------- */
 #define ADC_APP_SAMPLE_LENGTH            4096U        /* 每个ADC通道的采样点数 */
-#define ADC_APP_CHANNEL_COUNT            1U           /* 当前CubeMX配置的ADC规则通道数：Rank1=PC4/ADC1_INP4 */
+#define ADC_APP_CHANNEL_COUNT            2U           /* Rank1=PC4/ADC1_INP4，Rank2=PC5/ADC1_INP8 */
 #define ADC_APP_PRINT_RAW_OFF            0U           /* print_raw 参数：不打印原始采样点 */
 #define ADC_APP_PRINT_RAW_ON             1U           /* print_raw 参数：打印原始采样点 */
 
