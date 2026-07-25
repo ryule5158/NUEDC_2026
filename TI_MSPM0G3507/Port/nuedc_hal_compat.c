@@ -220,6 +220,12 @@ static GPIO_PinState NUEDC_GpioReadMapped(const NUEDC_TiPin_t *mapped_pin)
 }
 
 /* 为ADS8363软件SPI提供短建立时间。 */
+/*
+ * The ADS8363 pin group is absent when the board uses the MSPM0G3507 ADCs.
+ * Keep the legacy SPI entry point linkable, but only build its bit-banged bus
+ * when SysConfig actually defines the external ADC pins.
+ */
+#if defined(GPIO_ADS8363_PORT)
 static void NUEDC_SpiDelay(void)
 {
     __NOP();
@@ -263,6 +269,14 @@ static uint32_t NUEDC_Ads8363TransferBits(uint32_t tx_data, uint8_t bit_count)
     DL_GPIO_clearPins(GPIO_ADS8363_PORT, GPIO_ADS8363_SW_SPI_MOSI_PIN);
     return rx_data;
 }
+#else
+static uint32_t NUEDC_Ads8363TransferBits(uint32_t tx_data, uint8_t bit_count)
+{
+    UNUSED(tx_data);
+    UNUSED(bit_count);
+    return 0U;
+}
+#endif
 
 /* 判断UART轮询是否已经超时。 */
 static bool NUEDC_UartTimeoutExpired(uint32_t start_tick, uint32_t timeout_ms)

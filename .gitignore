@@ -18,3 +18,7 @@ Desktop.ini
 *.tmp
 *.swp
 *~
+
+# Keil debugger and one-off rebuild logs
+TI_MSPM0G3507/Keil/EventRecorderStub.scvd
+TI_MSPM0G3507/Keil/*_rebuild.log

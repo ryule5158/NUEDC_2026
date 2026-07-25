@@ -13,6 +13,7 @@ const GPIO   = scripting.addModule("/ti/driverlib/GPIO", {}, false);
 const UART   = scripting.addModule("/ti/driverlib/UART", {}, false);
 const SPI    = scripting.addModule("/ti/driverlib/SPI", {}, false);
 const ADC12  = scripting.addModule("/ti/driverlib/ADC12", {}, false);
+const TIMER  = scripting.addModule("/ti/driverlib/TIMER", {}, false);
 
 /*
  * Keep the validated clock tree: internal 32 MHz SYSOSC, no HFXT or PLL.
@@ -43,6 +44,8 @@ UART0_DEBUG.peripheral.rxPin.$assign = "PA11";
 /*
  * FPGA register link: SPI0, PA12 SCLK, PA14 PICO/MOSI, PA13 POCI/MISO.
  * PA15 is a software-controlled active-low chip select configured below.
+ * CS0 is routed to an otherwise unused pin only so the SPI peripheral remains
+ * in its hardware-validated Motorola 4-wire frame mode.
  */
 const FPGA_LINK_SPI = SPI.addInstance();
 FPGA_LINK_SPI.$name                      = "FPGA_SPI";
@@ -50,12 +53,12 @@ FPGA_LINK_SPI.mode                       = "CONTROLLER";
 FPGA_LINK_SPI.spiClkSrc                  = "BUSCLK";
 FPGA_LINK_SPI.spiClkDiv                  = "1";
 FPGA_LINK_SPI.targetBitRate              = 1000000;
-FPGA_LINK_SPI.frameFormat                = "MOTO3";
+FPGA_LINK_SPI.frameFormat                = "MOTO4";
 FPGA_LINK_SPI.polarity                   = "0";
 FPGA_LINK_SPI.phase                      = "0";
 FPGA_LINK_SPI.dataSize                   = 8;
 FPGA_LINK_SPI.bitOrder                   = "MSB";
-FPGA_LINK_SPI.chipSelect                 = [];
+FPGA_LINK_SPI.chipSelect                 = ["0"];
 FPGA_LINK_SPI.direction                  = "PICO_POCI";
 FPGA_LINK_SPI.rxFifoThreshold            = "DL_SPI_RX_FIFO_LEVEL_ONE_FRAME";
 FPGA_LINK_SPI.txFifoThreshold            = "DL_SPI_TX_FIFO_LEVEL_ONE_FRAME";
@@ -63,31 +66,102 @@ FPGA_LINK_SPI.peripheral.$assign         = "SPI0";
 FPGA_LINK_SPI.peripheral.sclkPin.$assign = "PA12";
 FPGA_LINK_SPI.peripheral.mosiPin.$assign = "PA14";
 FPGA_LINK_SPI.peripheral.misoPin.$assign = "PA13";
+FPGA_LINK_SPI.peripheral.cs0Pin.$assign  = "PA2";
 
 /*
- * On-chip ADC input: ADC0 channel 4 on PB25, software-triggered single
- * sample, 12-bit unsigned, VDDA reference, 8 SYSOSC cycles sample time.
+ * LCR voltage channel: ADC0 channel 4 on PB25.
+ * One conversion is started by every sample-timer event and copied by DMA.
  */
-const BOARD_ADC = ADC12.addInstance();
-BOARD_ADC.$name                      = "ADC12_0";
-BOARD_ADC.sampClkSrc                 = "DL_ADC12_CLOCK_SYSOSC";
-BOARD_ADC.sampClkDiv                 = "DL_ADC12_CLOCK_DIVIDE_1";
-BOARD_ADC.samplingOperationMode      = "single";
-BOARD_ADC.repeatMode                 = false;
-BOARD_ADC.sampleMode                 = "DL_ADC12_SAMPLING_SOURCE_AUTO";
-BOARD_ADC.trigSrc                    = "DL_ADC12_TRIG_SRC_SOFTWARE";
-BOARD_ADC.resolution                 = "DL_ADC12_SAMP_CONV_RES_12_BIT";
-BOARD_ADC.dataFormat                 = "DL_ADC12_SAMP_CONV_DATA_FORMAT_UNSIGNED";
-BOARD_ADC.adcMem0chansel             = "DL_ADC12_INPUT_CHAN_4";
-BOARD_ADC.adcMem0vref                = "VDDA";
-BOARD_ADC.adcMem0stime               = "DL_ADC12_SAMPLE_TIMER_SOURCE_SCOMP0";
-BOARD_ADC.adcMem0avgen               = false;
-BOARD_ADC.enableFIFO                 = false;
-BOARD_ADC.configureDMA               = false;
-BOARD_ADC.powerDownMode              = "DL_ADC12_POWER_DOWN_MODE_MANUAL";
-BOARD_ADC.sampleTime0                = "250 ns";
-BOARD_ADC.peripheral.$assign         = "ADC0";
-BOARD_ADC.peripheral.adcPin4.$assign = "PB25";
+const ADC_VOLTAGE = ADC12.addInstance();
+ADC_VOLTAGE.$name                      = "ADC_VOLTAGE";
+ADC_VOLTAGE.sampClkSrc                 = "DL_ADC12_CLOCK_SYSOSC";
+ADC_VOLTAGE.sampClkDiv                 = "DL_ADC12_CLOCK_DIVIDE_1";
+ADC_VOLTAGE.samplingOperationMode      = "single";
+ADC_VOLTAGE.repeatMode                 = false;
+ADC_VOLTAGE.sampleMode                 = "DL_ADC12_SAMPLING_SOURCE_AUTO";
+ADC_VOLTAGE.trigSrc                    = "DL_ADC12_TRIG_SRC_EVENT";
+ADC_VOLTAGE.resolution                 = "DL_ADC12_SAMP_CONV_RES_12_BIT";
+ADC_VOLTAGE.dataFormat                 = "DL_ADC12_SAMP_CONV_DATA_FORMAT_UNSIGNED";
+ADC_VOLTAGE.adcMem0chansel             = "DL_ADC12_INPUT_CHAN_4";
+ADC_VOLTAGE.adcMem0vref                = "VDDA";
+ADC_VOLTAGE.adcMem0stime               = "DL_ADC12_SAMPLE_TIMER_SOURCE_SCOMP0";
+ADC_VOLTAGE.adcMem0avgen               = false;
+ADC_VOLTAGE.enableFIFO                 = false;
+ADC_VOLTAGE.configureDMA               = true;
+ADC_VOLTAGE.sampCnt                    = 1;
+ADC_VOLTAGE.enabledDMATriggers         = ["DL_ADC12_DMA_MEM0_RESULT_LOADED"];
+ADC_VOLTAGE.powerDownMode              = "DL_ADC12_POWER_DOWN_MODE_MANUAL";
+ADC_VOLTAGE.sampleTime0                = "62.5 ns";
+ADC_VOLTAGE.subChanID                  = 12;
+ADC_VOLTAGE.peripheral.$assign         = "ADC0";
+ADC_VOLTAGE.peripheral.adcPin4.$assign = "PB25";
+ADC_VOLTAGE.DMA_CHANNEL.$name          = "DMA_ADC_VOLTAGE";
+ADC_VOLTAGE.DMA_CHANNEL.peripheral.$assign = "DMA_CH0";
+ADC_VOLTAGE.DMA_CHANNEL.addressMode    = "f2b";
+ADC_VOLTAGE.DMA_CHANNEL.transferMode   = "FULL_CH_REPEAT_SINGLE";
+ADC_VOLTAGE.DMA_CHANNEL.srcLength      = "HALF_WORD";
+ADC_VOLTAGE.DMA_CHANNEL.dstLength      = "HALF_WORD";
+ADC_VOLTAGE.DMA_CHANNEL.srcIncDec      = "UNCHANGED";
+ADC_VOLTAGE.DMA_CHANNEL.dstIncDec      = "INCREMENT";
+ADC_VOLTAGE.DMA_CHANNEL.configureTransferSize = true;
+ADC_VOLTAGE.DMA_CHANNEL.transferSize   = 512;
+ADC_VOLTAGE.DMA_CHANNEL.enableInterrupt = true;
+ADC_VOLTAGE.DMA_CHANNEL.enableEarlyInterrupt = true;
+ADC_VOLTAGE.DMA_CHANNEL.earlyIntThresh = "HALF";
+
+/*
+ * LCR current channel: ADC1 channel 4 on PB17.
+ * It shares the same event trigger as the voltage channel.
+ */
+const ADC_CURRENT = ADC12.addInstance();
+ADC_CURRENT.$name                      = "ADC_CURRENT";
+ADC_CURRENT.sampClkSrc                 = "DL_ADC12_CLOCK_SYSOSC";
+ADC_CURRENT.sampClkDiv                 = "DL_ADC12_CLOCK_DIVIDE_1";
+ADC_CURRENT.samplingOperationMode      = "single";
+ADC_CURRENT.repeatMode                 = false;
+ADC_CURRENT.sampleMode                 = "DL_ADC12_SAMPLING_SOURCE_AUTO";
+ADC_CURRENT.trigSrc                    = "DL_ADC12_TRIG_SRC_EVENT";
+ADC_CURRENT.resolution                 = "DL_ADC12_SAMP_CONV_RES_12_BIT";
+ADC_CURRENT.dataFormat                 = "DL_ADC12_SAMP_CONV_DATA_FORMAT_UNSIGNED";
+ADC_CURRENT.adcMem0chansel             = "DL_ADC12_INPUT_CHAN_4";
+ADC_CURRENT.adcMem0vref                = "VDDA";
+ADC_CURRENT.adcMem0stime               = "DL_ADC12_SAMPLE_TIMER_SOURCE_SCOMP0";
+ADC_CURRENT.adcMem0avgen               = false;
+ADC_CURRENT.enableFIFO                 = false;
+ADC_CURRENT.configureDMA               = true;
+ADC_CURRENT.sampCnt                    = 1;
+ADC_CURRENT.enabledDMATriggers         = ["DL_ADC12_DMA_MEM0_RESULT_LOADED"];
+ADC_CURRENT.powerDownMode              = "DL_ADC12_POWER_DOWN_MODE_MANUAL";
+ADC_CURRENT.sampleTime0                = "62.5 ns";
+ADC_CURRENT.subChanID                  = 12;
+ADC_CURRENT.peripheral.$assign         = "ADC1";
+ADC_CURRENT.peripheral.adcPin4.$assign = "PB17";
+ADC_CURRENT.DMA_CHANNEL.$name          = "DMA_ADC_CURRENT";
+ADC_CURRENT.DMA_CHANNEL.peripheral.$assign = "DMA_CH1";
+ADC_CURRENT.DMA_CHANNEL.addressMode    = "f2b";
+ADC_CURRENT.DMA_CHANNEL.transferMode   = "FULL_CH_REPEAT_SINGLE";
+ADC_CURRENT.DMA_CHANNEL.srcLength      = "HALF_WORD";
+ADC_CURRENT.DMA_CHANNEL.dstLength      = "HALF_WORD";
+ADC_CURRENT.DMA_CHANNEL.srcIncDec      = "UNCHANGED";
+ADC_CURRENT.DMA_CHANNEL.dstIncDec      = "INCREMENT";
+ADC_CURRENT.DMA_CHANNEL.configureTransferSize = true;
+ADC_CURRENT.DMA_CHANNEL.transferSize   = 512;
+ADC_CURRENT.DMA_CHANNEL.enableInterrupt = true;
+ADC_CURRENT.DMA_CHANNEL.enableEarlyInterrupt = true;
+ADC_CURRENT.DMA_CHANNEL.earlyIntThresh = "HALF";
+
+/*
+ * Common 1 MHz sampling clock. The timer publishes a zero event to both ADCs.
+ */
+const ADC_SAMPLE_TIMER = TIMER.addInstance();
+ADC_SAMPLE_TIMER.$name                    = "ADC_SAMPLE_TIMER";
+ADC_SAMPLE_TIMER.timerPeriod              = "1 us";
+ADC_SAMPLE_TIMER.timerMode                = "PERIODIC";
+ADC_SAMPLE_TIMER.timerClkSrc              = "BUSCLK";
+ADC_SAMPLE_TIMER.timerClkPrescale         = 1;
+ADC_SAMPLE_TIMER.event1PublisherChannel   = 12;
+ADC_SAMPLE_TIMER.event1ControllerInterruptEn = ["ZERO_EVENT"];
+ADC_SAMPLE_TIMER.peripheral.$assign       = "TIMG12";
 
 /*
  * FPGA software chip select. It must be driven high before output enable.
@@ -197,33 +271,3 @@ AD9910_GPIO.associatedPins[12].$name        = "AD9910_CS_N";
 AD9910_GPIO.associatedPins[12].direction    = "OUTPUT";
 AD9910_GPIO.associatedPins[12].initialValue = "SET";
 AD9910_GPIO.associatedPins[12].pin.$assign  = "PB9";
-
-/*
- * ADS8363 control pins and its 20-bit software SPI bus.
- */
-const ADS8363_GPIO = GPIO.addInstance();
-ADS8363_GPIO.$name                          = "GPIO_ADS8363";
-ADS8363_GPIO.port                           = "PORTB";
-ADS8363_GPIO.associatedPins.create(6);
-ADS8363_GPIO.associatedPins[0].$name        = "ADS8363_CS_N";
-ADS8363_GPIO.associatedPins[0].direction    = "OUTPUT";
-ADS8363_GPIO.associatedPins[0].initialValue = "SET";
-ADS8363_GPIO.associatedPins[0].assignedPin  = "12";
-ADS8363_GPIO.associatedPins[1].$name        = "RD_CONVST";
-ADS8363_GPIO.associatedPins[1].direction    = "OUTPUT";
-ADS8363_GPIO.associatedPins[1].initialValue = "CLEARED";
-ADS8363_GPIO.associatedPins[1].assignedPin  = "23";
-ADS8363_GPIO.associatedPins[2].$name        = "BUSY";
-ADS8363_GPIO.associatedPins[2].direction    = "INPUT";
-ADS8363_GPIO.associatedPins[2].assignedPin  = "24";
-ADS8363_GPIO.associatedPins[3].$name        = "SW_SPI_SCLK";
-ADS8363_GPIO.associatedPins[3].direction    = "OUTPUT";
-ADS8363_GPIO.associatedPins[3].initialValue = "CLEARED";
-ADS8363_GPIO.associatedPins[3].assignedPin  = "17";
-ADS8363_GPIO.associatedPins[4].$name        = "SW_SPI_MOSI";
-ADS8363_GPIO.associatedPins[4].direction    = "OUTPUT";
-ADS8363_GPIO.associatedPins[4].initialValue = "CLEARED";
-ADS8363_GPIO.associatedPins[4].assignedPin  = "18";
-ADS8363_GPIO.associatedPins[5].$name        = "SW_SPI_MISO";
-ADS8363_GPIO.associatedPins[5].direction    = "INPUT";
-ADS8363_GPIO.associatedPins[5].assignedPin  = "19";

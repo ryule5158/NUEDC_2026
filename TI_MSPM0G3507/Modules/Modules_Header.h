@@ -7,7 +7,6 @@
 #include "ad5687_app.h"
 #include "dac8831_app.h"
 #include "ads8363_app.h"
-#include "screen_test.h"
 #include "fpga_promax_link.h"
 
 #endif /* __MODULES_HEADER_H__ */

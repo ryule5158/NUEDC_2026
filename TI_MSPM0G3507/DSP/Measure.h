@@ -87,6 +87,73 @@ uint32_t Measure_FindPeak(const float *mag, uint32_t n, float fs,
  */
 float Measure_THD(const float *amp, uint32_t count, float *thd_db);
 
+/** THD 频谱分析最多返回的谐波数（含基波）。 */
+#define MEASURE_THD_MAX_HARMONICS 16u
+
+/** THD 自动测量状态。即使返回带宽错误，结果中仍保留已测得的低次谐波。 */
+typedef enum {
+    MEASURE_THD_OK = 0,
+    MEASURE_THD_ERROR_PARAM,
+    MEASURE_THD_ERROR_LENGTH,
+    MEASURE_THD_ERROR_NO_FUNDAMENTAL,
+    MEASURE_THD_ERROR_LOW_AMPLITUDE,
+    MEASURE_THD_ERROR_RESOLUTION,
+    MEASURE_THD_ERROR_BANDWIDTH
+} Measure_THDStatus_t;
+
+/**
+ * @brief THD 自动测量配置。
+ * @note  默认值面向 2020/2021 电赛失真度题：统计到 5 次谐波，Hann 窗主瓣取 ±2 bin。
+ */
+typedef struct {
+    float fund_min_hz;               /* 基波搜索下限；0 表示从 bin1 开始。 */
+    float fund_max_hz;               /* 基波搜索上限；0 表示到奈奎斯特频率。 */
+    float min_fundamental_amplitude; /* 最小基波谱幅度；0 表示不启用门限。 */
+    uint8_t max_harmonic;            /* 最高统计次数，范围 2~16，默认 5。 */
+    uint8_t required_harmonic;       /* 必须可观测到的最高次数，范围 2~max，默认 5。 */
+    uint8_t search_half_width_bins;  /* 各谐波预测位置附近的峰值搜索半宽，默认 1。 */
+    uint8_t integration_half_width_bins; /* 每个谱峰的功率积分半宽，Hann 默认 2。 */
+    uint8_t subtract_noise;          /* 1=按非谐波 bin 估计并扣除噪声底，默认 1。 */
+} Measure_THDConfig_t;
+
+/** THD 自动测量结果。harmonic_*[0] 为基波，[1] 为 2 次谐波，以此类推。 */
+typedef struct {
+    Measure_THDStatus_t status;
+    uint8_t valid;                   /* 仅当 status == MEASURE_THD_OK 时为 1。 */
+    uint8_t harmonics_found;         /* 实际返回的分量数，包含基波。 */
+    uint8_t highest_harmonic;        /* 实际测得的最高谐波次数。 */
+    uint8_t requested_harmonic;      /* 配置要求统计的最高谐波次数。 */
+    float fund_freq;                 /* 亚 bin 插值得到的基波频率 (Hz)。 */
+    float fund_amplitude;            /* 基波积分幅度，与输入幅度谱同量纲。 */
+    float thd;                       /* THD 比值。 */
+    float thd_percent;               /* THD 百分数，例如 5.0 表示 5%。 */
+    float thd_db;                    /* 20*log10(THD)。 */
+    float fund_snr_db;               /* 基波簇相对等带宽噪声的估计值。 */
+    float noise_rms_per_bin;         /* 非谐波频点估计出的每 bin 噪声 RMS。 */
+    float harmonic_freq[MEASURE_THD_MAX_HARMONICS];
+    float harmonic_amp[MEASURE_THD_MAX_HARMONICS];
+    float harmonic_ratio[MEASURE_THD_MAX_HARMONICS]; /* Uh/U1，基波固定为 1。 */
+} Measure_THDResult_t;
+
+/** @brief 填充 THD 自动测量默认配置。 */
+void Measure_THDConfigDefault(Measure_THDConfig_t *config);
+
+/**
+ * @brief 从单边线性幅度谱自动搜索基波并测量 THD 与各次谐波。
+ * @param mag     单边幅度谱，长度必须至少为 n/2+1。
+ * @param n       FFT 点数，必须为偶数且不小于 8。
+ * @param fs      采样率 (Hz)。
+ * @param config  配置；传 NULL 使用默认配置。
+ * @param result  测量结果。
+ * @return 与 result->status 相同的状态码。
+ * @note 谐波位置按“插值后的基波 bin × 次数”预测，不会累积整数 bin 取整误差。
+ */
+Measure_THDStatus_t Measure_THDFromSpectrum(const float *mag,
+                                            uint32_t n,
+                                            float fs,
+                                            const Measure_THDConfig_t *config,
+                                            Measure_THDResult_t *result);
+
 /* 频谱质量指标结果 */
 typedef struct {
     float thd;      /* 总谐波失真（比值） */
@@ -123,6 +190,23 @@ void Measure_Quality(const float *mag, uint32_t n, float fs,
  * @note   只统计"上升过零"，并对过零点做线性插值得到亚采样精度；噪声大时请先滤波。
  */
 float Measure_FreqZeroCross(const float *data, uint32_t len, float fs);
+
+/**
+ * @brief 从采样帧中提取并等间隔重采样一个完整周期，供示波或手机端显示。
+ * @param data     输入采样。
+ * @param len      输入点数。
+ * @param fs       采样率 (Hz)。
+ * @param freq     已测基波频率；传 0 时内部使用过零法估计。
+ * @param output   输出数组。
+ * @param out_len  期望的单周期显示点数，至少为 2。
+ * @return 成功时返回 out_len，找不到带完整周期的上升过零点时返回 0。
+ */
+uint32_t Measure_ExtractPeriod(const float *data,
+                               uint32_t len,
+                               float fs,
+                               float freq,
+                               float *output,
+                               uint32_t out_len);
 
 /**
  * @brief  占空比测量 —— 适用于方波/脉冲，门限取(顶+底)/2。

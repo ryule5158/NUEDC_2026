@@ -190,7 +190,7 @@
             <hadIRAM2>1</hadIRAM2>
             <hadIROM2>1</hadIROM2>
             <StupSel>0</StupSel>
-            <useUlib>0</useUlib>
+            <useUlib>1</useUlib>
             <EndSel>0</EndSel>
             <uLtcg>0</uLtcg>
             <nSecure>0</nSecure>
@@ -389,11 +389,6 @@
               <FileType>1</FileType>
               <FilePath>../Src/main.c</FilePath>
             </File>
-            <File>
-              <FileName>nuedc_port.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/nuedc_port.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -413,16 +408,6 @@
               <FileName>ti_msp_dl_config.h</FileName>
               <FileType>5</FileType>
               <FilePath>../SysConfig/Generated/ti_msp_dl_config.h</FilePath>
-            </File>
-            <File>
-              <FileName>MSP_LITO_G3507_RuntimeConfig.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Board/MSP_LITO_G3507_RuntimeConfig.c</FilePath>
-            </File>
-            <File>
-              <FileName>MSP_LITO_G3507_RuntimeConfig.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>../Board/MSP_LITO_G3507_RuntimeConfig.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -803,16 +788,6 @@
               <FileName>fpga_promax_link_map.h</FileName>
               <FileType>5</FileType>
               <FilePath>../Modules/fpga_promax_link_map.h</FilePath>
-            </File>
-            <File>
-              <FileName>screen_test.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Modules/screen_test.c</FilePath>
-            </File>
-            <File>
-              <FileName>screen_test.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>../Modules/screen_test.h</FilePath>
             </File>
           </Files>
         </Group>

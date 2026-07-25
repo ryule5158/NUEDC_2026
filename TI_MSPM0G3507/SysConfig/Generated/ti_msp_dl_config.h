@@ -78,6 +78,15 @@ extern "C" {
 
 
 
+/* Defines for ADC_SAMPLE_TIMER */
+#define ADC_SAMPLE_TIMER_INST                                           (TIMG12)
+#define ADC_SAMPLE_TIMER_INST_IRQHandler                       TIMG12_IRQHandler
+#define ADC_SAMPLE_TIMER_INST_INT_IRQN                         (TIMG12_INT_IRQn)
+#define ADC_SAMPLE_TIMER_INST_LOAD_VALUE                                   (31U)
+#define ADC_SAMPLE_TIMER_INST_PUB_0_CH                                      (12)
+
+
+
 /* Defines for UART_0 */
 #define UART_0_INST                                                        UART0
 #define UART_0_INST_FREQUENCY                                           32000000
@@ -115,21 +124,47 @@ extern "C" {
 #define GPIO_FPGA_SPI_SCLK_PIN                                   DL_GPIO_PIN_12
 #define GPIO_FPGA_SPI_IOMUX_SCLK                                (IOMUX_PINCM34)
 #define GPIO_FPGA_SPI_IOMUX_SCLK_FUNC                IOMUX_PINCM34_PF_SPI0_SCLK
+#define GPIO_FPGA_SPI_CS0_PORT                                            GPIOA
+#define GPIO_FPGA_SPI_CS0_PIN                                     DL_GPIO_PIN_2
+#define GPIO_FPGA_SPI_IOMUX_CS0                                  (IOMUX_PINCM7)
+#define GPIO_FPGA_SPI_IOMUX_CS0_FUNC                   IOMUX_PINCM7_PF_SPI0_CS0
 
 
 
-/* Defines for ADC12_0 */
-#define ADC12_0_INST                                                        ADC0
-#define ADC12_0_INST_IRQHandler                                  ADC0_IRQHandler
-#define ADC12_0_INST_INT_IRQN                                    (ADC0_INT_IRQn)
-#define ADC12_0_ADCMEM_0                                      DL_ADC12_MEM_IDX_0
-#define ADC12_0_ADCMEM_0_REF                     DL_ADC12_REFERENCE_VOLTAGE_VDDA
-#define ADC12_0_ADCMEM_0_REF_VOLTAGE_V                                       3.3
-#define GPIO_ADC12_0_C4_PORT                                               GPIOB
-#define GPIO_ADC12_0_C4_PIN                                       DL_GPIO_PIN_25
-#define GPIO_ADC12_0_IOMUX_C4                                    (IOMUX_PINCM56)
-#define GPIO_ADC12_0_IOMUX_C4_FUNC                (IOMUX_PINCM56_PF_UNCONNECTED)
+/* Defines for ADC_VOLTAGE */
+#define ADC_VOLTAGE_INST                                                    ADC0
+#define ADC_VOLTAGE_INST_IRQHandler                              ADC0_IRQHandler
+#define ADC_VOLTAGE_INST_INT_IRQN                                (ADC0_INT_IRQn)
+#define ADC_VOLTAGE_ADCMEM_0                                  DL_ADC12_MEM_IDX_0
+#define ADC_VOLTAGE_ADCMEM_0_REF                 DL_ADC12_REFERENCE_VOLTAGE_VDDA
+#define ADC_VOLTAGE_ADCMEM_0_REF_VOLTAGE_V                                     3.3
+#define ADC_VOLTAGE_INST_SUB_CH                                             (12)
+#define GPIO_ADC_VOLTAGE_C4_PORT                                           GPIOB
+#define GPIO_ADC_VOLTAGE_C4_PIN                                   DL_GPIO_PIN_25
+#define GPIO_ADC_VOLTAGE_IOMUX_C4                                (IOMUX_PINCM56)
+#define GPIO_ADC_VOLTAGE_IOMUX_C4_FUNC            (IOMUX_PINCM56_PF_UNCONNECTED)
 
+/* Defines for ADC_CURRENT */
+#define ADC_CURRENT_INST                                                    ADC1
+#define ADC_CURRENT_INST_IRQHandler                              ADC1_IRQHandler
+#define ADC_CURRENT_INST_INT_IRQN                                (ADC1_INT_IRQn)
+#define ADC_CURRENT_ADCMEM_0                                  DL_ADC12_MEM_IDX_0
+#define ADC_CURRENT_ADCMEM_0_REF                 DL_ADC12_REFERENCE_VOLTAGE_VDDA
+#define ADC_CURRENT_ADCMEM_0_REF_VOLTAGE_V                                     3.3
+#define ADC_CURRENT_INST_SUB_CH                                             (12)
+#define GPIO_ADC_CURRENT_C4_PORT                                           GPIOB
+#define GPIO_ADC_CURRENT_C4_PIN                                   DL_GPIO_PIN_17
+#define GPIO_ADC_CURRENT_IOMUX_C4                                (IOMUX_PINCM43)
+#define GPIO_ADC_CURRENT_IOMUX_C4_FUNC            (IOMUX_PINCM43_PF_UNCONNECTED)
+
+
+
+/* Defines for DMA_ADC_VOLTAGE */
+#define DMA_ADC_VOLTAGE_CHAN_ID                                              (0)
+#define ADC_VOLTAGE_INST_DMA_TRIGGER                  (DMA_ADC0_EVT_GEN_BD_TRIG)
+/* Defines for DMA_ADC_CURRENT */
+#define DMA_ADC_CURRENT_CHAN_ID                                              (1)
+#define ADC_CURRENT_INST_DMA_TRIGGER                  (DMA_ADC1_EVT_GEN_BD_TRIG)
 
 
 /* Port definition for Pin Group GPIO_FPGA_CONTROL */
@@ -215,27 +250,6 @@ extern "C" {
 #define GPIO_AD9910_AD9910_CS_N_PORT                                     (GPIOB)
 #define GPIO_AD9910_AD9910_CS_N_PIN                              (DL_GPIO_PIN_9)
 #define GPIO_AD9910_AD9910_CS_N_IOMUX                            (IOMUX_PINCM26)
-/* Port definition for Pin Group GPIO_ADS8363 */
-#define GPIO_ADS8363_PORT                                                (GPIOB)
-
-/* Defines for ADS8363_CS_N: GPIOB.12 with pinCMx 29 on package pin 64 */
-#define GPIO_ADS8363_ADS8363_CS_N_PIN                           (DL_GPIO_PIN_12)
-#define GPIO_ADS8363_ADS8363_CS_N_IOMUX                          (IOMUX_PINCM29)
-/* Defines for RD_CONVST: GPIOB.23 with pinCMx 51 on package pin 22 */
-#define GPIO_ADS8363_RD_CONVST_PIN                              (DL_GPIO_PIN_23)
-#define GPIO_ADS8363_RD_CONVST_IOMUX                             (IOMUX_PINCM51)
-/* Defines for BUSY: GPIOB.24 with pinCMx 52 on package pin 23 */
-#define GPIO_ADS8363_BUSY_PIN                                   (DL_GPIO_PIN_24)
-#define GPIO_ADS8363_BUSY_IOMUX                                  (IOMUX_PINCM52)
-/* Defines for SW_SPI_SCLK: GPIOB.17 with pinCMx 43 on package pin 14 */
-#define GPIO_ADS8363_SW_SPI_SCLK_PIN                            (DL_GPIO_PIN_17)
-#define GPIO_ADS8363_SW_SPI_SCLK_IOMUX                           (IOMUX_PINCM43)
-/* Defines for SW_SPI_MOSI: GPIOB.18 with pinCMx 44 on package pin 15 */
-#define GPIO_ADS8363_SW_SPI_MOSI_PIN                            (DL_GPIO_PIN_18)
-#define GPIO_ADS8363_SW_SPI_MOSI_IOMUX                           (IOMUX_PINCM44)
-/* Defines for SW_SPI_MISO: GPIOB.19 with pinCMx 45 on package pin 16 */
-#define GPIO_ADS8363_SW_SPI_MISO_PIN                            (DL_GPIO_PIN_19)
-#define GPIO_ADS8363_SW_SPI_MISO_IOMUX                           (IOMUX_PINCM45)
 
 
 /* clang-format on */
@@ -244,9 +258,12 @@ void SYSCFG_DL_init(void);
 void SYSCFG_DL_initPower(void);
 void SYSCFG_DL_GPIO_init(void);
 void SYSCFG_DL_SYSCTL_init(void);
+void SYSCFG_DL_ADC_SAMPLE_TIMER_init(void);
 void SYSCFG_DL_UART_0_init(void);
 void SYSCFG_DL_FPGA_SPI_init(void);
-void SYSCFG_DL_ADC12_0_init(void);
+void SYSCFG_DL_ADC_VOLTAGE_init(void);
+void SYSCFG_DL_ADC_CURRENT_init(void);
+void SYSCFG_DL_DMA_init(void);
 
 
 bool SYSCFG_DL_saveConfiguration(void);

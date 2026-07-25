@@ -5,7 +5,7 @@
 #include "Filter.h"     /* FIR/IIR, median, moving-average, and decimation filters. */
 #include "IQ.h"         /* Known-frequency IQ amplitude/phase extraction. */
 #include "SoftPll.h"    /* Generic phase/frequency software PLL controller. */
-#include "Measure.h"    /* RMS/Vpp/frequency/THD/SNR/SINAD/ENOB and waveform metrics. */
+#include "Measure.h"    /* RMS/Vpp/frequency/THD5/H1~H16/SNR/SINAD/ENOB and waveform metrics. */
 #include "Demod.h"      /* AM/FM demodulation and simple carrier-tracking PLL. */
 #include "Correlate.h"  /* Cross-correlation and autocorrelation tools. */
 #include "Fit.h"        /* Least-squares line/polynomial fitting. */
