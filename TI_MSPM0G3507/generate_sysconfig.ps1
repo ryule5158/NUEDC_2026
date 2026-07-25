@@ -7,11 +7,23 @@ $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 
+function Resolve-TiPath ([string]$EnvVar, [string]$VersionDir, [string]$MarkerFile) {
+    if (-not [string]::IsNullOrWhiteSpace($EnvVar)) {
+        $testPath = Join-Path $EnvVar $MarkerFile
+        if (Test-Path -LiteralPath $testPath) { return $EnvVar }
+        Write-Warning "$EnvVar is set but '$MarkerFile' not found, trying drives..."
+    }
+    foreach ($drv in @('E', 'D', 'C')) {
+        $testPath = "${drv}:\ti\$VersionDir\$MarkerFile"
+        if (Test-Path -LiteralPath $testPath) { return "${drv}:\ti\$VersionDir" }
+    }
+    throw "Cannot find ti/$VersionDir under C:/ti, D:/ti, E:/ti. Set `$env:$EnvVar."
+}
 if ([string]::IsNullOrWhiteSpace($SysConfigToolRoot)) {
-    $SysConfigToolRoot = "D:\ti\sysconfig_1.26.2"
+    $SysConfigToolRoot = Resolve-TiPath $env:NUEDC_TI_SYSCONFIG_ROOT "sysconfig_1.26.2" "sysconfig_cli.bat"
 }
 if ([string]::IsNullOrWhiteSpace($Mspm0SdkRoot)) {
-    $Mspm0SdkRoot = "D:\ti\mspm0_sdk_2_10_00_04"
+    $Mspm0SdkRoot = Resolve-TiPath $env:NUEDC_TI_MSPM0_SDK_ROOT "mspm0_sdk_2_10_00_04" ".metadata/product.json"
 }
 
 $sysConfigCli = Join-Path $SysConfigToolRoot "sysconfig_cli.bat"
