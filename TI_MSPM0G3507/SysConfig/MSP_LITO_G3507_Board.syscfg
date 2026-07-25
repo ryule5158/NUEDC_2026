@@ -77,7 +77,7 @@ ADC_VOLTAGE.$name                      = "ADC_VOLTAGE";
 ADC_VOLTAGE.sampClkSrc                 = "DL_ADC12_CLOCK_SYSOSC";
 ADC_VOLTAGE.sampClkDiv                 = "DL_ADC12_CLOCK_DIVIDE_1";
 ADC_VOLTAGE.samplingOperationMode      = "single";
-ADC_VOLTAGE.repeatMode                 = false;
+ADC_VOLTAGE.repeatMode                 = true;
 ADC_VOLTAGE.sampleMode                 = "DL_ADC12_SAMPLING_SOURCE_AUTO";
 ADC_VOLTAGE.trigSrc                    = "DL_ADC12_TRIG_SRC_EVENT";
 ADC_VOLTAGE.resolution                 = "DL_ADC12_SAMP_CONV_RES_12_BIT";
@@ -85,6 +85,7 @@ ADC_VOLTAGE.dataFormat                 = "DL_ADC12_SAMP_CONV_DATA_FORMAT_UNSIGNE
 ADC_VOLTAGE.adcMem0chansel             = "DL_ADC12_INPUT_CHAN_4";
 ADC_VOLTAGE.adcMem0vref                = "VDDA";
 ADC_VOLTAGE.adcMem0stime               = "DL_ADC12_SAMPLE_TIMER_SOURCE_SCOMP0";
+ADC_VOLTAGE.adcMem0trig                = "DL_ADC12_TRIGGER_MODE_TRIGGER_NEXT";
 ADC_VOLTAGE.adcMem0avgen               = false;
 ADC_VOLTAGE.enableFIFO                 = false;
 ADC_VOLTAGE.configureDMA               = true;
@@ -98,7 +99,7 @@ ADC_VOLTAGE.peripheral.adcPin4.$assign = "PB25";
 ADC_VOLTAGE.DMA_CHANNEL.$name          = "DMA_ADC_VOLTAGE";
 ADC_VOLTAGE.DMA_CHANNEL.peripheral.$assign = "DMA_CH0";
 ADC_VOLTAGE.DMA_CHANNEL.addressMode    = "f2b";
-ADC_VOLTAGE.DMA_CHANNEL.transferMode   = "FULL_CH_REPEAT_SINGLE";
+ADC_VOLTAGE.DMA_CHANNEL.transferMode   = "SINGLE";
 ADC_VOLTAGE.DMA_CHANNEL.srcLength      = "HALF_WORD";
 ADC_VOLTAGE.DMA_CHANNEL.dstLength      = "HALF_WORD";
 ADC_VOLTAGE.DMA_CHANNEL.srcIncDec      = "UNCHANGED";
@@ -118,7 +119,7 @@ ADC_CURRENT.$name                      = "ADC_CURRENT";
 ADC_CURRENT.sampClkSrc                 = "DL_ADC12_CLOCK_SYSOSC";
 ADC_CURRENT.sampClkDiv                 = "DL_ADC12_CLOCK_DIVIDE_1";
 ADC_CURRENT.samplingOperationMode      = "single";
-ADC_CURRENT.repeatMode                 = false;
+ADC_CURRENT.repeatMode                 = true;
 ADC_CURRENT.sampleMode                 = "DL_ADC12_SAMPLING_SOURCE_AUTO";
 ADC_CURRENT.trigSrc                    = "DL_ADC12_TRIG_SRC_EVENT";
 ADC_CURRENT.resolution                 = "DL_ADC12_SAMP_CONV_RES_12_BIT";
@@ -126,6 +127,7 @@ ADC_CURRENT.dataFormat                 = "DL_ADC12_SAMP_CONV_DATA_FORMAT_UNSIGNE
 ADC_CURRENT.adcMem0chansel             = "DL_ADC12_INPUT_CHAN_4";
 ADC_CURRENT.adcMem0vref                = "VDDA";
 ADC_CURRENT.adcMem0stime               = "DL_ADC12_SAMPLE_TIMER_SOURCE_SCOMP0";
+ADC_CURRENT.adcMem0trig                = "DL_ADC12_TRIGGER_MODE_TRIGGER_NEXT";
 ADC_CURRENT.adcMem0avgen               = false;
 ADC_CURRENT.enableFIFO                 = false;
 ADC_CURRENT.configureDMA               = true;
@@ -139,7 +141,7 @@ ADC_CURRENT.peripheral.adcPin4.$assign = "PB17";
 ADC_CURRENT.DMA_CHANNEL.$name          = "DMA_ADC_CURRENT";
 ADC_CURRENT.DMA_CHANNEL.peripheral.$assign = "DMA_CH1";
 ADC_CURRENT.DMA_CHANNEL.addressMode    = "f2b";
-ADC_CURRENT.DMA_CHANNEL.transferMode   = "FULL_CH_REPEAT_SINGLE";
+ADC_CURRENT.DMA_CHANNEL.transferMode   = "SINGLE";
 ADC_CURRENT.DMA_CHANNEL.srcLength      = "HALF_WORD";
 ADC_CURRENT.DMA_CHANNEL.dstLength      = "HALF_WORD";
 ADC_CURRENT.DMA_CHANNEL.srcIncDec      = "UNCHANGED";
@@ -151,7 +153,8 @@ ADC_CURRENT.DMA_CHANNEL.enableEarlyInterrupt = true;
 ADC_CURRENT.DMA_CHANNEL.earlyIntThresh = "HALF";
 
 /*
- * Common 1 MHz sampling clock. The timer publishes a zero event to both ADCs.
+ * Common sampling trigger. adc_app.c sets the timer period at runtime and the
+ * timer publishes each zero event to both ADCs.
  */
 const ADC_SAMPLE_TIMER = TIMER.addInstance();
 ADC_SAMPLE_TIMER.$name                    = "ADC_SAMPLE_TIMER";

@@ -104,6 +104,8 @@ MSPM0G3507 Cortex-M0+没有DWT。兼容层以1 ms SysTick计数和当前递减�
 - AD5687/DAC8831的软件送点上限限定为1000点/秒。
 - 片上ADC由TIMG12事件触发；`ADC_MODE_ONESHOT`采满512点后停止，
   `ADC_MODE_CONTINUOUS`每256点发布一次成对电压/电流数据。
+- ADC重复模式下，`ADCMEM0`使用`TRIGGER_NEXT`等待每个TIMG12事件；不能使用
+  会在第一次触发后自由运行的`AUTO_NEXT`。
 - DMA只搬运12位原始码。高速实时算法应直接使用原始码，浮点电压换算留给
   单次调试或低速显示路径。
 - FPGA ADC/DAC时钟完全由FPGA产生，不受MSPM0软件定时精度影响。

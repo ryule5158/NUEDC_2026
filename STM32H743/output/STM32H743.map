@@ -3453,19 +3453,23 @@ Section Cross References
     pe4302.o(.text.PE4302_SetAttenStep) refers to pe4302.o(.text.PE4302_WriteCode) for PE4302_WriteCode
     pe4302.o(.ARM.exidx.text.PE4302_SetAttenStep) refers to pe4302.o(.text.PE4302_SetAttenStep) for [Anonymous Symbol]
     pe4302.o(.ARM.exidx.text.PE4302_CodeToDb) refers to pe4302.o(.text.PE4302_CodeToDb) for [Anonymous Symbol]
-    adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.rodata.str1.1) for .L.str
-    adc_app.o(.text.ADC_Sample_Init) refers to printfa.o(i.__0printf) for printf
+    adc_app.o(.ARM.exidx.text.ADC_Sample_GetDefaultConfig) refers to adc_app.o(.text.ADC_Sample_GetDefaultConfig) for [Anonymous Symbol]
+    adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.bss.s_initialized) for s_initialized
+    adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.text.GetAdcClockHz) for GetAdcClockHz
     adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.bss.s_mode) for s_mode
+    adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.bss.s_quality) for s_quality
     adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.data.s_vref_v) for s_vref_v
-    adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.bss.s_mode_a_ready) for s_mode_a_ready
-    adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.bss.s_mode_b_half) for s_mode_b_half
-    adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.text.ResetModeBPending) for ResetModeBPending
+    adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.data.s_sample_count) for s_sample_count
+    adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.bss.s_active_channel) for s_active_channel
     adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.bss.s_sync_enabled) for s_sync_enabled
+    adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.bss.s_mode_a_ready) for s_mode_a_ready
+    adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.text.ResetModeBPending) for ResetModeBPending
     adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.bss.s_consumer_locked) for s_consumer_locked
     adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.bss.s_overrun_count) for s_overrun_count
-    adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.bss.s_active_channel) for s_active_channel
     adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.bss.s_voltage_ready) for s_voltage_ready
     adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.bss.s_last_raw_start_idx) for s_last_raw_start_idx
+    adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.bss.s_error_flags) for s_error_flags
+    adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.bss.s_running) for s_running
     adc_app.o(.text.ADC_Sample_Init) refers to adc.o(.bss.hadc1) for hadc1
     adc_app.o(.text.ADC_Sample_Init) refers to stm32h7xx_hal_adc.o(.text.HAL_ADC_Stop_DMA) for HAL_ADC_Stop_DMA
     adc_app.o(.text.ADC_Sample_Init) refers to stm32h7xx_hal_adc.o(.text.HAL_ADC_Stop) for HAL_ADC_Stop
@@ -3474,20 +3478,23 @@ Section Cross References
     adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.text.ConfigTimerSampleRate) for ConfigTimerSampleRate
     adc_app.o(.text.ADC_Sample_Init) refers to adc_app.o(.bss.s_adc_calibrated) for s_adc_calibrated
     adc_app.o(.text.ADC_Sample_Init) refers to stm32h7xx_hal_adc_ex.o(.text.HAL_ADCEx_Calibration_Start) for HAL_ADCEx_Calibration_Start
-    adc_app.o(.text.ADC_Sample_Init) refers to stm32h7xx_hal_adc.o(.text.HAL_ADC_GetError) for HAL_ADC_GetError
     adc_app.o(.ARM.exidx.text.ADC_Sample_Init) refers to adc_app.o(.text.ADC_Sample_Init) for [Anonymous Symbol]
-    adc_app.o(.text.ResetModeBPending) refers to adc_app.o(.bss.s_mode_b_pending_mask) for s_mode_b_pending_mask
-    adc_app.o(.text.ResetModeBPending) refers to adc_app.o(.bss.s_mode_b_half) for s_mode_b_half
+    adc_app.o(.text.GetAdcClockHz) refers to stm32h7xx_hal_rcc_ex.o(.text.HAL_RCCEx_GetPeriphCLKFreq) for HAL_RCCEx_GetPeriphCLKFreq
+    adc_app.o(.text.GetAdcClockHz) refers to adc.o(.bss.hadc1) for hadc1
+    adc_app.o(.ARM.exidx.text.GetAdcClockHz) refers to adc_app.o(.text.GetAdcClockHz) for [Anonymous Symbol]
+    adc_app.o(.text.ResetModeBPending) refers to adc_app.o(.bss.s_mode_b_pending) for s_mode_b_pending
     adc_app.o(.ARM.exidx.text.ResetModeBPending) refers to adc_app.o(.text.ResetModeBPending) for [Anonymous Symbol]
     adc_app.o(.text.ConfigTimerSampleRate) refers to adc_app.o(.text.GetTim3ClockHz) for GetTim3ClockHz
     adc_app.o(.text.ConfigTimerSampleRate) refers to tim.o(.bss.htim3) for htim3
     adc_app.o(.text.ConfigTimerSampleRate) refers to adc_app.o(.data.s_sample_rate_hz) for s_sample_rate_hz
     adc_app.o(.ARM.exidx.text.ConfigTimerSampleRate) refers to adc_app.o(.text.ConfigTimerSampleRate) for [Anonymous Symbol]
+    adc_app.o(.text.ADC_Sample_Start) refers to adc_app.o(.bss.s_initialized) for s_initialized
+    adc_app.o(.text.ADC_Sample_Start) refers to adc_app.o(.bss.s_running) for s_running
     adc_app.o(.text.ADC_Sample_Start) refers to adc_app.o(.bss.s_mode_a_ready) for s_mode_a_ready
-    adc_app.o(.text.ADC_Sample_Start) refers to adc_app.o(.bss.s_mode_b_half) for s_mode_b_half
     adc_app.o(.text.ADC_Sample_Start) refers to adc_app.o(.text.ResetModeBPending) for ResetModeBPending
     adc_app.o(.text.ADC_Sample_Start) refers to adc_app.o(.bss.s_voltage_ready) for s_voltage_ready
     adc_app.o(.text.ADC_Sample_Start) refers to adc_app.o(.bss.s_last_raw_start_idx) for s_last_raw_start_idx
+    adc_app.o(.text.ADC_Sample_Start) refers to adc_app.o(.bss.s_error_flags) for s_error_flags
     adc_app.o(.text.ADC_Sample_Start) refers to adc_app.o(.bss.s_mode) for s_mode
     adc_app.o(.text.ADC_Sample_Start) refers to adc_app.o(.text.StartModeB) for StartModeB
     adc_app.o(.text.ADC_Sample_Start) refers to adc_app.o(.text.StartModeA) for StartModeA
@@ -3498,13 +3505,13 @@ Section Cross References
     adc_app.o(.text.StartModeB) refers to stm32h7xx_hal_adc.o(.text.HAL_ADC_Stop_DMA) for HAL_ADC_Stop_DMA
     adc_app.o(.text.StartModeB) refers to stm32h7xx_hal_adc.o(.text.HAL_ADC_Init) for HAL_ADC_Init
     adc_app.o(.text.StartModeB) refers to stm32h7xx_hal_adc.o(.text.HAL_ADC_GetError) for HAL_ADC_GetError
-    adc_app.o(.text.StartModeB) refers to adc_app.o(.rodata.str1.1) for .L.str.16
+    adc_app.o(.text.StartModeB) refers to adc_app.o(.rodata.str1.1) for .L.str.11
     adc_app.o(.text.StartModeB) refers to printfa.o(i.__0printf) for printf
     adc_app.o(.text.StartModeB) refers to adc_app.o(.text.ConfigDmaMode) for ConfigDmaMode
-    adc_app.o(.text.StartModeB) refers to adc_app.o(.bss.s_mode_b_half) for s_mode_b_half
     adc_app.o(.text.StartModeB) refers to adc_app.o(.text.ResetModeBPending) for ResetModeBPending
     adc_app.o(.text.StartModeB) refers to adc_app.o(.text.IsRawBufferDmaAccessible) for IsRawBufferDmaAccessible
     adc_app.o(.text.StartModeB) refers to adc_app.o(.text.PrepareRawBufferForDma) for PrepareRawBufferForDma
+    adc_app.o(.text.StartModeB) refers to adc_app.o(.data.s_sample_count) for s_sample_count
     adc_app.o(.text.StartModeB) refers to adc_app.o(.bss.adc_dma_buffer) for s_raw_buffer
     adc_app.o(.text.StartModeB) refers to stm32h7xx_hal_adc.o(.text.HAL_ADC_Start_DMA) for HAL_ADC_Start_DMA
     adc_app.o(.text.StartModeB) refers to stm32h7xx_hal_dma.o(.text.HAL_DMA_GetError) for HAL_DMA_GetError
@@ -3516,12 +3523,13 @@ Section Cross References
     adc_app.o(.text.StartModeA) refers to stm32h7xx_hal_adc.o(.text.HAL_ADC_Stop_DMA) for HAL_ADC_Stop_DMA
     adc_app.o(.text.StartModeA) refers to stm32h7xx_hal_adc.o(.text.HAL_ADC_Init) for HAL_ADC_Init
     adc_app.o(.text.StartModeA) refers to stm32h7xx_hal_adc.o(.text.HAL_ADC_GetError) for HAL_ADC_GetError
-    adc_app.o(.text.StartModeA) refers to adc_app.o(.rodata.str1.1) for .L.str.11
+    adc_app.o(.text.StartModeA) refers to adc_app.o(.rodata.str1.1) for .L.str.6
     adc_app.o(.text.StartModeA) refers to printfa.o(i.__0printf) for printf
     adc_app.o(.text.StartModeA) refers to adc_app.o(.text.ConfigDmaMode) for ConfigDmaMode
     adc_app.o(.text.StartModeA) refers to adc_app.o(.bss.s_mode_a_ready) for s_mode_a_ready
     adc_app.o(.text.StartModeA) refers to adc_app.o(.text.IsRawBufferDmaAccessible) for IsRawBufferDmaAccessible
     adc_app.o(.text.StartModeA) refers to adc_app.o(.text.PrepareRawBufferForDma) for PrepareRawBufferForDma
+    adc_app.o(.text.StartModeA) refers to adc_app.o(.data.s_sample_count) for s_sample_count
     adc_app.o(.text.StartModeA) refers to adc_app.o(.bss.adc_dma_buffer) for s_raw_buffer
     adc_app.o(.text.StartModeA) refers to stm32h7xx_hal_adc.o(.text.HAL_ADC_Start_DMA) for HAL_ADC_Start_DMA
     adc_app.o(.text.StartModeA) refers to stm32h7xx_hal_dma.o(.text.HAL_DMA_GetError) for HAL_DMA_GetError
@@ -3536,9 +3544,9 @@ Section Cross References
     adc_app.o(.text.ADC_Sample_Stop) refers to tim.o(.bss.htim3) for htim3
     adc_app.o(.text.ADC_Sample_Stop) refers to stm32h7xx_hal_tim.o(.text.HAL_TIM_Base_Stop) for HAL_TIM_Base_Stop
     adc_app.o(.text.ADC_Sample_Stop) refers to adc_app.o(.bss.s_mode_a_ready) for s_mode_a_ready
-    adc_app.o(.text.ADC_Sample_Stop) refers to adc_app.o(.bss.s_mode_b_half) for s_mode_b_half
     adc_app.o(.text.ADC_Sample_Stop) refers to adc_app.o(.text.ResetModeBPending) for ResetModeBPending
     adc_app.o(.text.ADC_Sample_Stop) refers to adc_app.o(.bss.s_voltage_ready) for s_voltage_ready
+    adc_app.o(.text.ADC_Sample_Stop) refers to adc_app.o(.bss.s_running) for s_running
     adc_app.o(.ARM.exidx.text.ADC_Sample_Stop) refers to adc_app.o(.text.ADC_Sample_Stop) for [Anonymous Symbol]
     adc_app.o(.text.ADC_Sample_Process) refers to adc_app.o(.text.ADC_Sample_ConvertReadyData) for ADC_Sample_ConvertReadyData
     adc_app.o(.ARM.exidx.text.ADC_Sample_Process) refers to adc_app.o(.text.ADC_Sample_Process) for [Anonymous Symbol]
@@ -3546,16 +3554,18 @@ Section Cross References
     adc_app.o(.text.ADC_Sample_ConvertReadyData) refers to adc_app.o(.text.ProcessModeB) for ProcessModeB
     adc_app.o(.text.ADC_Sample_ConvertReadyData) refers to adc_app.o(.text.ProcessModeA) for ProcessModeA
     adc_app.o(.ARM.exidx.text.ADC_Sample_ConvertReadyData) refers to adc_app.o(.text.ADC_Sample_ConvertReadyData) for [Anonymous Symbol]
-    adc_app.o(.text.ProcessModeB) refers to adc_app.o(.text.PopModeBPending) for PopModeBPending
+    adc_app.o(.text.ProcessModeB) refers to adc_app.o(.text.PeekModeBPending) for PeekModeBPending
     adc_app.o(.text.ProcessModeB) refers to adc_app.o(.bss.s_sync_enabled) for s_sync_enabled
     adc_app.o(.text.ProcessModeB) refers to adc_app.o(.bss.s_consumer_locked) for s_consumer_locked
-    adc_app.o(.text.ProcessModeB) refers to adc_app.o(.bss.s_overrun_count) for s_overrun_count
+    adc_app.o(.text.ProcessModeB) refers to adc_app.o(.text.PopModeBPending) for PopModeBPending
+    adc_app.o(.text.ProcessModeB) refers to adc_app.o(.data.s_sample_count) for s_sample_count
     adc_app.o(.text.ProcessModeB) refers to adc_app.o(.text.InvalidateRawBufferCache) for InvalidateRawBufferCache
     adc_app.o(.text.ProcessModeB) refers to adc_app.o(.bss.s_last_raw_start_idx) for s_last_raw_start_idx
     adc_app.o(.text.ProcessModeB) refers to adc_app.o(.text.ConvertRawToVoltage) for ConvertRawToVoltage
     adc_app.o(.text.ProcessModeB) refers to adc_app.o(.bss.s_voltage_ready) for s_voltage_ready
     adc_app.o(.ARM.exidx.text.ProcessModeB) refers to adc_app.o(.text.ProcessModeB) for [Anonymous Symbol]
     adc_app.o(.text.ProcessModeA) refers to adc_app.o(.bss.s_mode_a_ready) for s_mode_a_ready
+    adc_app.o(.text.ProcessModeA) refers to adc_app.o(.data.s_sample_count) for s_sample_count
     adc_app.o(.text.ProcessModeA) refers to adc_app.o(.text.InvalidateRawBufferCache) for InvalidateRawBufferCache
     adc_app.o(.text.ProcessModeA) refers to adc_app.o(.bss.s_last_raw_start_idx) for s_last_raw_start_idx
     adc_app.o(.text.ProcessModeA) refers to adc_app.o(.text.ConvertRawToVoltage) for ConvertRawToVoltage
@@ -3563,11 +3573,10 @@ Section Cross References
     adc_app.o(.ARM.exidx.text.ProcessModeA) refers to adc_app.o(.text.ProcessModeA) for [Anonymous Symbol]
     adc_app.o(.text.ADC_Sample_DataReady) refers to adc_app.o(.bss.s_mode_a_ready) for s_mode_a_ready
     adc_app.o(.ARM.exidx.text.ADC_Sample_DataReady) refers to adc_app.o(.text.ADC_Sample_DataReady) for [Anonymous Symbol]
-    adc_app.o(.text.ADC_Sample_GetReadyHalf) refers to adc_app.o(.text.PopModeBPending) for PopModeBPending
+    adc_app.o(.text.ADC_Sample_GetReadyHalf) refers to adc_app.o(.text.PeekModeBPending) for PeekModeBPending
     adc_app.o(.ARM.exidx.text.ADC_Sample_GetReadyHalf) refers to adc_app.o(.text.ADC_Sample_GetReadyHalf) for [Anonymous Symbol]
-    adc_app.o(.text.PopModeBPending) refers to adc_app.o(.bss.s_mode_b_pending_mask) for s_mode_b_pending_mask
-    adc_app.o(.text.PopModeBPending) refers to adc_app.o(.bss.s_mode_b_half) for s_mode_b_half
-    adc_app.o(.ARM.exidx.text.PopModeBPending) refers to adc_app.o(.text.PopModeBPending) for [Anonymous Symbol]
+    adc_app.o(.text.PeekModeBPending) refers to adc_app.o(.bss.s_mode_b_pending) for s_mode_b_pending
+    adc_app.o(.ARM.exidx.text.PeekModeBPending) refers to adc_app.o(.text.PeekModeBPending) for [Anonymous Symbol]
     adc_app.o(.text.ADC_Sample_BufferLock) refers to adc_app.o(.bss.s_sync_enabled) for s_sync_enabled
     adc_app.o(.text.ADC_Sample_BufferLock) refers to adc_app.o(.bss.s_consumer_locked) for s_consumer_locked
     adc_app.o(.ARM.exidx.text.ADC_Sample_BufferLock) refers to adc_app.o(.text.ADC_Sample_BufferLock) for [Anonymous Symbol]
@@ -3588,45 +3597,52 @@ Section Cross References
     adc_app.o(.ARM.exidx.text.ADC_Sample_GetActiveChannel) refers to adc_app.o(.text.ADC_Sample_GetActiveChannel) for [Anonymous Symbol]
     adc_app.o(.text.ADC_Sample_GetSampleRateHz) refers to adc_app.o(.data.s_sample_rate_hz) for s_sample_rate_hz
     adc_app.o(.ARM.exidx.text.ADC_Sample_GetSampleRateHz) refers to adc_app.o(.text.ADC_Sample_GetSampleRateHz) for [Anonymous Symbol]
+    adc_app.o(.text.ADC_Sample_GetSampleCount) refers to adc_app.o(.data.s_sample_count) for s_sample_count
+    adc_app.o(.ARM.exidx.text.ADC_Sample_GetSampleCount) refers to adc_app.o(.text.ADC_Sample_GetSampleCount) for [Anonymous Symbol]
+    adc_app.o(.text.ADC_Sample_IsRunning) refers to adc_app.o(.bss.s_running) for s_running
+    adc_app.o(.ARM.exidx.text.ADC_Sample_IsRunning) refers to adc_app.o(.text.ADC_Sample_IsRunning) for [Anonymous Symbol]
+    adc_app.o(.text.ADC_Sample_GetAndClearError) refers to adc_app.o(.bss.s_error_flags) for s_error_flags
+    adc_app.o(.ARM.exidx.text.ADC_Sample_GetAndClearError) refers to adc_app.o(.text.ADC_Sample_GetAndClearError) for [Anonymous Symbol]
     adc_app.o(.text.ADC_Sample_VoltageReady) refers to adc_app.o(.bss.s_voltage_ready) for s_voltage_ready
     adc_app.o(.ARM.exidx.text.ADC_Sample_VoltageReady) refers to adc_app.o(.text.ADC_Sample_VoltageReady) for [Anonymous Symbol]
     adc_app.o(.text.HAL_ADC_ConvCpltCallback) refers to adc_app.o(.bss.s_mode) for s_mode
     adc_app.o(.text.HAL_ADC_ConvCpltCallback) refers to tim.o(.bss.htim3) for htim3
-    adc_app.o(.text.HAL_ADC_ConvCpltCallback) refers to stm32h7xx_hal_tim.o(.text.HAL_TIM_Base_Stop) for HAL_TIM_Base_Stop
     adc_app.o(.text.HAL_ADC_ConvCpltCallback) refers to adc_app.o(.bss.s_mode_a_ready) for s_mode_a_ready
+    adc_app.o(.text.HAL_ADC_ConvCpltCallback) refers to adc_app.o(.bss.s_running) for s_running
     adc_app.o(.text.HAL_ADC_ConvCpltCallback) refers to adc_app.o(.text.SetModeBPending) for SetModeBPending
     adc_app.o(.ARM.exidx.text.HAL_ADC_ConvCpltCallback) refers to adc_app.o(.text.HAL_ADC_ConvCpltCallback) for [Anonymous Symbol]
-    adc_app.o(.text.SetModeBPending) refers to adc_app.o(.bss.s_mode_b_pending_mask) for s_mode_b_pending_mask
+    adc_app.o(.text.SetModeBPending) refers to adc_app.o(.bss.s_mode_b_pending) for s_mode_b_pending
     adc_app.o(.text.SetModeBPending) refers to adc_app.o(.bss.s_overrun_count) for s_overrun_count
-    adc_app.o(.text.SetModeBPending) refers to adc_app.o(.bss.s_mode_b_half) for s_mode_b_half
     adc_app.o(.ARM.exidx.text.SetModeBPending) refers to adc_app.o(.text.SetModeBPending) for [Anonymous Symbol]
     adc_app.o(.text.HAL_ADC_ConvHalfCpltCallback) refers to adc_app.o(.bss.s_mode) for s_mode
     adc_app.o(.text.HAL_ADC_ConvHalfCpltCallback) refers to adc_app.o(.text.SetModeBPending) for SetModeBPending
     adc_app.o(.ARM.exidx.text.HAL_ADC_ConvHalfCpltCallback) refers to adc_app.o(.text.HAL_ADC_ConvHalfCpltCallback) for [Anonymous Symbol]
-    adc_app.o(.text.HAL_ADC_ErrorCallback) refers to stm32h7xx_hal_adc.o(.text.HAL_ADC_GetError) for HAL_ADC_GetError
-    adc_app.o(.text.HAL_ADC_ErrorCallback) refers to adc_app.o(.rodata.str1.1) for .L.str.3
-    adc_app.o(.text.HAL_ADC_ErrorCallback) refers to printfa.o(i.__0printf) for printf
+    adc_app.o(.text.HAL_ADC_ErrorCallback) refers to adc_app.o(.bss.s_error_flags) for s_error_flags
+    adc_app.o(.text.HAL_ADC_ErrorCallback) refers to adc_app.o(.bss.s_running) for s_running
+    adc_app.o(.text.HAL_ADC_ErrorCallback) refers to tim.o(.bss.htim3) for htim3
     adc_app.o(.ARM.exidx.text.HAL_ADC_ErrorCallback) refers to adc_app.o(.text.HAL_ADC_ErrorCallback) for [Anonymous Symbol]
     adc_app.o(.text.HAL_DMA_ErrorCallback) refers to adc.o(.bss.hadc1) for hadc1
-    adc_app.o(.text.HAL_DMA_ErrorCallback) refers to stm32h7xx_hal_dma.o(.text.HAL_DMA_GetError) for HAL_DMA_GetError
-    adc_app.o(.text.HAL_DMA_ErrorCallback) refers to adc_app.o(.rodata.str1.1) for .L.str.4
-    adc_app.o(.text.HAL_DMA_ErrorCallback) refers to printfa.o(i.__0printf) for printf
+    adc_app.o(.text.HAL_DMA_ErrorCallback) refers to adc_app.o(.bss.s_error_flags) for s_error_flags
+    adc_app.o(.text.HAL_DMA_ErrorCallback) refers to adc_app.o(.bss.s_running) for s_running
+    adc_app.o(.text.HAL_DMA_ErrorCallback) refers to tim.o(.bss.htim3) for htim3
     adc_app.o(.ARM.exidx.text.HAL_DMA_ErrorCallback) refers to adc_app.o(.text.HAL_DMA_ErrorCallback) for [Anonymous Symbol]
     adc_app.o(.text.ADC_Sample_PrintRaw) refers to adc_app.o(.text.ADC_Sample_ConvertReadyData) for ADC_Sample_ConvertReadyData
     adc_app.o(.text.ADC_Sample_PrintRaw) refers to adc_app.o(.bss.s_voltage_ready) for s_voltage_ready
-    adc_app.o(.text.ADC_Sample_PrintRaw) refers to adc_app.o(.rodata.str1.1) for .L.str.5
+    adc_app.o(.text.ADC_Sample_PrintRaw) refers to adc_app.o(.rodata.str1.1) for .L.str
     adc_app.o(.text.ADC_Sample_PrintRaw) refers to printfa.o(i.__0printf) for printf
+    adc_app.o(.text.ADC_Sample_PrintRaw) refers to adc_app.o(.data.s_sample_count) for s_sample_count
     adc_app.o(.text.ADC_Sample_PrintRaw) refers to adc_app.o(.bss.s_last_raw_start_idx) for s_last_raw_start_idx
     adc_app.o(.text.ADC_Sample_PrintRaw) refers to adc_app.o(.bss.s_active_channel) for s_active_channel
     adc_app.o(.text.ADC_Sample_PrintRaw) refers to adc_app.o(.bss.adc_dma_buffer) for s_raw_buffer
     adc_app.o(.ARM.exidx.text.ADC_Sample_PrintRaw) refers to adc_app.o(.text.ADC_Sample_PrintRaw) for [Anonymous Symbol]
-    adc_app.o(.text.ADC_Sample_PrintArray) refers to adc_app.o(.rodata.str1.1) for .L.str.7
+    adc_app.o(.text.ADC_Sample_PrintArray) refers to adc_app.o(.rodata.str1.1) for .L.str.2
     adc_app.o(.text.ADC_Sample_PrintArray) refers to printfa.o(i.__0printf) for printf
     adc_app.o(.ARM.exidx.text.ADC_Sample_PrintArray) refers to adc_app.o(.text.ADC_Sample_PrintArray) for [Anonymous Symbol]
     adc_app.o(.text.ADC_Sample_PrintVoltage) refers to adc_app.o(.text.ADC_Sample_ConvertReadyData) for ADC_Sample_ConvertReadyData
     adc_app.o(.text.ADC_Sample_PrintVoltage) refers to adc_app.o(.bss.s_voltage_ready) for s_voltage_ready
-    adc_app.o(.text.ADC_Sample_PrintVoltage) refers to adc_app.o(.rodata.str1.1) for .L.str.8
+    adc_app.o(.text.ADC_Sample_PrintVoltage) refers to adc_app.o(.rodata.str1.1) for .L.str.3
     adc_app.o(.text.ADC_Sample_PrintVoltage) refers to printfa.o(i.__0printf) for printf
+    adc_app.o(.text.ADC_Sample_PrintVoltage) refers to adc_app.o(.data.s_sample_count) for s_sample_count
     adc_app.o(.text.ADC_Sample_PrintVoltage) refers to adc_app.o(.bss.s_active_channel) for s_active_channel
     adc_app.o(.text.ADC_Sample_PrintVoltage) refers to adc_app.o(.bss.s_voltage_buffer) for s_voltage_buffer
     adc_app.o(.text.ADC_Sample_PrintVoltage) refers to adc_app.o(.text.VoltageToMillivolt) for VoltageToMillivolt
@@ -3637,6 +3653,8 @@ Section Cross References
     adc_app.o(.ARM.exidx.text.ConfigDmaMode) refers to adc_app.o(.text.ConfigDmaMode) for [Anonymous Symbol]
     adc_app.o(.text.IsRawBufferDmaAccessible) refers to adc_app.o(.bss.adc_dma_buffer) for s_raw_buffer
     adc_app.o(.ARM.exidx.text.IsRawBufferDmaAccessible) refers to adc_app.o(.text.IsRawBufferDmaAccessible) for [Anonymous Symbol]
+    adc_app.o(.text.PrepareRawBufferForDma) refers to adc_app.o(.data.s_sample_count) for s_sample_count
+    adc_app.o(.text.PrepareRawBufferForDma) refers to adc_app.o(.bss.s_mode) for s_mode
     adc_app.o(.text.PrepareRawBufferForDma) refers to adc_app.o(.text.CleanInvalidateRawBufferCache) for CleanInvalidateRawBufferCache
     adc_app.o(.ARM.exidx.text.PrepareRawBufferForDma) refers to adc_app.o(.text.PrepareRawBufferForDma) for [Anonymous Symbol]
     adc_app.o(.text.CleanInvalidateRawBufferCache) refers to adc_app.o(.bss.adc_dma_buffer) for s_raw_buffer
@@ -3647,32 +3665,37 @@ Section Cross References
     adc_app.o(.text.InvalidateRawBufferCache) refers to adc_app.o(.text.IsDCacheEnabled) for IsDCacheEnabled
     adc_app.o(.ARM.exidx.text.InvalidateRawBufferCache) refers to adc_app.o(.text.InvalidateRawBufferCache) for [Anonymous Symbol]
     adc_app.o(.text.ConvertRawToVoltage) refers to adc_app.o(.bss.adc_dma_buffer) for s_raw_buffer
+    adc_app.o(.text.ConvertRawToVoltage) refers to adc_app.o(.bss.s_quality) for s_quality
+    adc_app.o(.text.ConvertRawToVoltage) refers to adc_app.o(.text.Median3) for Median3
     adc_app.o(.text.ConvertRawToVoltage) refers to adc_app.o(.text.ConvertCodeToVoltage) for ConvertCodeToVoltage
     adc_app.o(.text.ConvertRawToVoltage) refers to adc_app.o(.bss.s_voltage_buffer) for s_voltage_buffer
     adc_app.o(.ARM.exidx.text.ConvertRawToVoltage) refers to adc_app.o(.text.ConvertRawToVoltage) for [Anonymous Symbol]
+    adc_app.o(.ARM.exidx.text.Median3) refers to adc_app.o(.text.Median3) for [Anonymous Symbol]
     adc_app.o(.text.ConvertCodeToVoltage) refers to adc_app.o(.data.s_vref_v) for s_vref_v
     adc_app.o(.ARM.exidx.text.ConvertCodeToVoltage) refers to adc_app.o(.text.ConvertCodeToVoltage) for [Anonymous Symbol]
+    adc_app.o(.text.PopModeBPending) refers to adc_app.o(.bss.s_mode_b_pending) for s_mode_b_pending
+    adc_app.o(.ARM.exidx.text.PopModeBPending) refers to adc_app.o(.text.PopModeBPending) for [Anonymous Symbol]
     adc_app.o(.text.GetTim3ClockHz) refers to stm32h7xx_hal_rcc.o(.text.HAL_RCC_GetClockConfig) for HAL_RCC_GetClockConfig
     adc_app.o(.text.GetTim3ClockHz) refers to stm32h7xx_hal_rcc.o(.text.HAL_RCC_GetPCLK1Freq) for HAL_RCC_GetPCLK1Freq
     adc_app.o(.ARM.exidx.text.GetTim3ClockHz) refers to adc_app.o(.text.GetTim3ClockHz) for [Anonymous Symbol]
     serial_buffer.o(.text.Command_Write) refers to serial_buffer.o(.text.Command_GetRemain) for Command_GetRemain
-    serial_buffer.o(.text.Command_Write) refers to serial_buffer.o(.bss.writeIndex) for writeIndex
-    serial_buffer.o(.text.Command_Write) refers to serial_buffer.o(.bss.buffer) for buffer
+    serial_buffer.o(.text.Command_Write) refers to serial_buffer.o(.bss.s_write_index) for s_write_index
+    serial_buffer.o(.text.Command_Write) refers to serial_buffer.o(.bss.s_buffer) for s_buffer
     serial_buffer.o(.text.Command_Write) refers to memcpya.o(.text) for __aeabi_memcpy
     serial_buffer.o(.ARM.exidx.text.Command_Write) refers to serial_buffer.o(.text.Command_Write) for [Anonymous Symbol]
     serial_buffer.o(.text.Command_GetRemain) refers to serial_buffer.o(.text.Command_GetLength) for Command_GetLength
     serial_buffer.o(.ARM.exidx.text.Command_GetRemain) refers to serial_buffer.o(.text.Command_GetRemain) for [Anonymous Symbol]
     serial_buffer.o(.text.Command_GetCommand) refers to serial_buffer.o(.text.Command_GetLength) for Command_GetLength
-    serial_buffer.o(.text.Command_GetCommand) refers to serial_buffer.o(.bss.readIndex) for readIndex
+    serial_buffer.o(.text.Command_GetCommand) refers to serial_buffer.o(.bss.s_read_index) for s_read_index
     serial_buffer.o(.text.Command_GetCommand) refers to serial_buffer.o(.text.Command_Read) for Command_Read
     serial_buffer.o(.text.Command_GetCommand) refers to serial_buffer.o(.text.Command_AddReadIndex) for Command_AddReadIndex
     serial_buffer.o(.ARM.exidx.text.Command_GetCommand) refers to serial_buffer.o(.text.Command_GetCommand) for [Anonymous Symbol]
-    serial_buffer.o(.text.Command_GetLength) refers to serial_buffer.o(.bss.writeIndex) for writeIndex
-    serial_buffer.o(.text.Command_GetLength) refers to serial_buffer.o(.bss.readIndex) for readIndex
+    serial_buffer.o(.text.Command_GetLength) refers to serial_buffer.o(.bss.s_write_index) for s_write_index
+    serial_buffer.o(.text.Command_GetLength) refers to serial_buffer.o(.bss.s_read_index) for s_read_index
     serial_buffer.o(.ARM.exidx.text.Command_GetLength) refers to serial_buffer.o(.text.Command_GetLength) for [Anonymous Symbol]
-    serial_buffer.o(.text.Command_Read) refers to serial_buffer.o(.bss.buffer) for buffer
+    serial_buffer.o(.text.Command_Read) refers to serial_buffer.o(.bss.s_buffer) for s_buffer
     serial_buffer.o(.ARM.exidx.text.Command_Read) refers to serial_buffer.o(.text.Command_Read) for [Anonymous Symbol]
-    serial_buffer.o(.text.Command_AddReadIndex) refers to serial_buffer.o(.bss.readIndex) for readIndex
+    serial_buffer.o(.text.Command_AddReadIndex) refers to serial_buffer.o(.bss.s_read_index) for s_read_index
     serial_buffer.o(.ARM.exidx.text.Command_AddReadIndex) refers to serial_buffer.o(.text.Command_AddReadIndex) for [Anonymous Symbol]
     fft.o(.text.FFT_Input) refers to fft.o(.bss.FFT_input) for FFT_input
     fft.o(.ARM.exidx.text.FFT_Input) refers to fft.o(.text.FFT_Input) for [Anonymous Symbol]
@@ -3789,6 +3812,7 @@ Section Cross References
     adc_fft.o(.text.ADC_Sample_RunFft) refers to adc_app.o(.text.ADC_Sample_VoltageReady) for ADC_Sample_VoltageReady
     adc_fft.o(.text.ADC_Sample_RunFft) refers to adc_fft.o(.bss.s_result) for s_result
     adc_fft.o(.text.ADC_Sample_RunFft) refers to adc_app.o(.text.ADC_Sample_GetVoltageData) for ADC_Sample_GetVoltageData
+    adc_fft.o(.text.ADC_Sample_RunFft) refers to adc_app.o(.text.ADC_Sample_GetSampleCount) for ADC_Sample_GetSampleCount
     adc_fft.o(.text.ADC_Sample_RunFft) refers to adc_app.o(.text.ADC_Sample_GetSampleRateHz) for ADC_Sample_GetSampleRateHz
     adc_fft.o(.text.ADC_Sample_RunFft) refers to adc_fft.o(.text.ADC_FFT_Run) for ADC_FFT_Run
     adc_fft.o(.ARM.exidx.text.ADC_Sample_RunFft) refers to adc_fft.o(.text.ADC_Sample_RunFft) for [Anonymous Symbol]
@@ -9086,17 +9110,21 @@ Removing Unused input sections from the image.
     Removing pe4302.o(.text.PE4302_CodeToDb), (42 bytes).
     Removing pe4302.o(.ARM.exidx.text.PE4302_CodeToDb), (8 bytes).
     Removing adc_app.o(.text), (0 bytes).
-    Removing adc_app.o(.text.ADC_Sample_Init), (386 bytes).
+    Removing adc_app.o(.text.ADC_Sample_GetDefaultConfig), (68 bytes).
+    Removing adc_app.o(.ARM.exidx.text.ADC_Sample_GetDefaultConfig), (8 bytes).
+    Removing adc_app.o(.text.ADC_Sample_Init), (528 bytes).
     Removing adc_app.o(.ARM.exidx.text.ADC_Sample_Init), (8 bytes).
-    Removing adc_app.o(.text.ResetModeBPending), (54 bytes).
+    Removing adc_app.o(.text.GetAdcClockHz), (240 bytes).
+    Removing adc_app.o(.ARM.exidx.text.GetAdcClockHz), (8 bytes).
+    Removing adc_app.o(.text.ResetModeBPending), (44 bytes).
     Removing adc_app.o(.ARM.exidx.text.ResetModeBPending), (8 bytes).
     Removing adc_app.o(.text.ConfigTimerSampleRate), (310 bytes).
     Removing adc_app.o(.ARM.exidx.text.ConfigTimerSampleRate), (8 bytes).
-    Removing adc_app.o(.text.ADC_Sample_Start), (98 bytes).
+    Removing adc_app.o(.text.ADC_Sample_Start), (166 bytes).
     Removing adc_app.o(.ARM.exidx.text.ADC_Sample_Start), (8 bytes).
-    Removing adc_app.o(.text.StartModeB), (338 bytes).
+    Removing adc_app.o(.text.StartModeB), (334 bytes).
     Removing adc_app.o(.ARM.exidx.text.StartModeB), (8 bytes).
-    Removing adc_app.o(.text.StartModeA), (332 bytes).
+    Removing adc_app.o(.text.StartModeA), (340 bytes).
     Removing adc_app.o(.ARM.exidx.text.StartModeA), (8 bytes).
     Removing adc_app.o(.text.ADC_Sample_ConfigSync), (52 bytes).
     Removing adc_app.o(.ARM.exidx.text.ADC_Sample_ConfigSync), (8 bytes).
@@ -9106,21 +9134,21 @@ Removing Unused input sections from the image.
     Removing adc_app.o(.ARM.exidx.text.ADC_Sample_Process), (8 bytes).
     Removing adc_app.o(.text.ADC_Sample_ConvertReadyData), (48 bytes).
     Removing adc_app.o(.ARM.exidx.text.ADC_Sample_ConvertReadyData), (8 bytes).
-    Removing adc_app.o(.text.ProcessModeB), (186 bytes).
+    Removing adc_app.o(.text.ProcessModeB), (190 bytes).
     Removing adc_app.o(.ARM.exidx.text.ProcessModeB), (8 bytes).
-    Removing adc_app.o(.text.ProcessModeA), (98 bytes).
+    Removing adc_app.o(.text.ProcessModeA), (106 bytes).
     Removing adc_app.o(.ARM.exidx.text.ProcessModeA), (8 bytes).
     Removing adc_app.o(.text.ADC_Sample_DataReady), (18 bytes).
     Removing adc_app.o(.ARM.exidx.text.ADC_Sample_DataReady), (8 bytes).
     Removing adc_app.o(.text.ADC_Sample_GetReadyHalf), (8 bytes).
     Removing adc_app.o(.ARM.exidx.text.ADC_Sample_GetReadyHalf), (8 bytes).
-    Removing adc_app.o(.text.PopModeBPending), (204 bytes).
-    Removing adc_app.o(.ARM.exidx.text.PopModeBPending), (8 bytes).
+    Removing adc_app.o(.text.PeekModeBPending), (50 bytes).
+    Removing adc_app.o(.ARM.exidx.text.PeekModeBPending), (8 bytes).
     Removing adc_app.o(.text.ADC_Sample_BufferLock), (30 bytes).
     Removing adc_app.o(.ARM.exidx.text.ADC_Sample_BufferLock), (8 bytes).
     Removing adc_app.o(.text.ADC_Sample_BufferUnlock), (14 bytes).
     Removing adc_app.o(.ARM.exidx.text.ADC_Sample_BufferUnlock), (8 bytes).
-    Removing adc_app.o(.text.ADC_Sample_IsOverrun), (28 bytes).
+    Removing adc_app.o(.text.ADC_Sample_IsOverrun), (54 bytes).
     Removing adc_app.o(.ARM.exidx.text.ADC_Sample_IsOverrun), (8 bytes).
     Removing adc_app.o(.text.ADC_Sample_GetRawData), (10 bytes).
     Removing adc_app.o(.ARM.exidx.text.ADC_Sample_GetRawData), (8 bytes).
@@ -9134,23 +9162,29 @@ Removing Unused input sections from the image.
     Removing adc_app.o(.ARM.exidx.text.ADC_Sample_GetActiveChannel), (8 bytes).
     Removing adc_app.o(.text.ADC_Sample_GetSampleRateHz), (14 bytes).
     Removing adc_app.o(.ARM.exidx.text.ADC_Sample_GetSampleRateHz), (8 bytes).
+    Removing adc_app.o(.text.ADC_Sample_GetSampleCount), (12 bytes).
+    Removing adc_app.o(.ARM.exidx.text.ADC_Sample_GetSampleCount), (8 bytes).
+    Removing adc_app.o(.text.ADC_Sample_IsRunning), (12 bytes).
+    Removing adc_app.o(.ARM.exidx.text.ADC_Sample_IsRunning), (8 bytes).
+    Removing adc_app.o(.text.ADC_Sample_GetAndClearError), (50 bytes).
+    Removing adc_app.o(.ARM.exidx.text.ADC_Sample_GetAndClearError), (8 bytes).
     Removing adc_app.o(.text.ADC_Sample_VoltageReady), (18 bytes).
     Removing adc_app.o(.ARM.exidx.text.ADC_Sample_VoltageReady), (8 bytes).
-    Removing adc_app.o(.text.HAL_ADC_ConvCpltCallback), (84 bytes).
+    Removing adc_app.o(.text.HAL_ADC_ConvCpltCallback), (158 bytes).
     Removing adc_app.o(.ARM.exidx.text.HAL_ADC_ConvCpltCallback), (8 bytes).
-    Removing adc_app.o(.text.SetModeBPending), (122 bytes).
+    Removing adc_app.o(.text.SetModeBPending), (94 bytes).
     Removing adc_app.o(.ARM.exidx.text.SetModeBPending), (8 bytes).
     Removing adc_app.o(.text.HAL_ADC_ConvHalfCpltCallback), (60 bytes).
     Removing adc_app.o(.ARM.exidx.text.HAL_ADC_ConvHalfCpltCallback), (8 bytes).
-    Removing adc_app.o(.text.HAL_ADC_ErrorCallback), (58 bytes).
+    Removing adc_app.o(.text.HAL_ADC_ErrorCallback), (136 bytes).
     Removing adc_app.o(.ARM.exidx.text.HAL_ADC_ErrorCallback), (8 bytes).
-    Removing adc_app.o(.text.HAL_DMA_ErrorCallback), (58 bytes).
+    Removing adc_app.o(.text.HAL_DMA_ErrorCallback), (136 bytes).
     Removing adc_app.o(.ARM.exidx.text.HAL_DMA_ErrorCallback), (8 bytes).
-    Removing adc_app.o(.text.ADC_Sample_PrintRaw), (148 bytes).
+    Removing adc_app.o(.text.ADC_Sample_PrintRaw), (154 bytes).
     Removing adc_app.o(.ARM.exidx.text.ADC_Sample_PrintRaw), (8 bytes).
     Removing adc_app.o(.text.ADC_Sample_PrintArray), (78 bytes).
     Removing adc_app.o(.ARM.exidx.text.ADC_Sample_PrintArray), (8 bytes).
-    Removing adc_app.o(.text.ADC_Sample_PrintVoltage), (242 bytes).
+    Removing adc_app.o(.text.ADC_Sample_PrintVoltage), (248 bytes).
     Removing adc_app.o(.ARM.exidx.text.ADC_Sample_PrintVoltage), (8 bytes).
     Removing adc_app.o(.text.VoltageToMillivolt), (84 bytes).
     Removing adc_app.o(.ARM.exidx.text.VoltageToMillivolt), (8 bytes).
@@ -9158,7 +9192,7 @@ Removing Unused input sections from the image.
     Removing adc_app.o(.ARM.exidx.text.ConfigDmaMode), (8 bytes).
     Removing adc_app.o(.text.IsRawBufferDmaAccessible), (70 bytes).
     Removing adc_app.o(.ARM.exidx.text.IsRawBufferDmaAccessible), (8 bytes).
-    Removing adc_app.o(.text.PrepareRawBufferForDma), (14 bytes).
+    Removing adc_app.o(.text.PrepareRawBufferForDma), (52 bytes).
     Removing adc_app.o(.ARM.exidx.text.PrepareRawBufferForDma), (8 bytes).
     Removing adc_app.o(.text.CleanInvalidateRawBufferCache), (154 bytes).
     Removing adc_app.o(.ARM.exidx.text.CleanInvalidateRawBufferCache), (8 bytes).
@@ -9166,44 +9200,52 @@ Removing Unused input sections from the image.
     Removing adc_app.o(.ARM.exidx.text.IsDCacheEnabled), (8 bytes).
     Removing adc_app.o(.text.InvalidateRawBufferCache), (154 bytes).
     Removing adc_app.o(.ARM.exidx.text.InvalidateRawBufferCache), (8 bytes).
-    Removing adc_app.o(.text.ConvertRawToVoltage), (132 bytes).
+    Removing adc_app.o(.text.ConvertRawToVoltage), (212 bytes).
     Removing adc_app.o(.ARM.exidx.text.ConvertRawToVoltage), (8 bytes).
+    Removing adc_app.o(.text.Median3), (126 bytes).
+    Removing adc_app.o(.ARM.exidx.text.Median3), (8 bytes).
     Removing adc_app.o(.text.ConvertCodeToVoltage), (52 bytes).
     Removing adc_app.o(.ARM.exidx.text.ConvertCodeToVoltage), (8 bytes).
+    Removing adc_app.o(.text.PopModeBPending), (58 bytes).
+    Removing adc_app.o(.ARM.exidx.text.PopModeBPending), (8 bytes).
     Removing adc_app.o(.text.GetTim3ClockHz), (38 bytes).
     Removing adc_app.o(.ARM.exidx.text.GetTim3ClockHz), (8 bytes).
-    Removing adc_app.o(.rodata.str1.1), (752 bytes).
+    Removing adc_app.o(.bss.s_initialized), (1 bytes).
     Removing adc_app.o(.bss.s_mode), (1 bytes).
+    Removing adc_app.o(.bss.s_quality), (1 bytes).
     Removing adc_app.o(.data.s_vref_v), (4 bytes).
-    Removing adc_app.o(.bss.s_mode_a_ready), (1 bytes).
-    Removing adc_app.o(.bss.s_mode_b_half), (1 bytes).
+    Removing adc_app.o(.data.s_sample_count), (2 bytes).
+    Removing adc_app.o(.bss.s_active_channel), (1 bytes).
     Removing adc_app.o(.bss.s_sync_enabled), (1 bytes).
+    Removing adc_app.o(.bss.s_mode_a_ready), (1 bytes).
     Removing adc_app.o(.bss.s_consumer_locked), (1 bytes).
     Removing adc_app.o(.bss.s_overrun_count), (1 bytes).
-    Removing adc_app.o(.bss.s_active_channel), (1 bytes).
     Removing adc_app.o(.bss.s_voltage_ready), (1 bytes).
     Removing adc_app.o(.bss.s_last_raw_start_idx), (4 bytes).
+    Removing adc_app.o(.bss.s_error_flags), (4 bytes).
+    Removing adc_app.o(.bss.s_running), (1 bytes).
     Removing adc_app.o(.bss.s_adc_calibrated), (1 bytes).
     Removing adc_app.o(.bss.adc_dma_buffer), (32768 bytes).
     Removing adc_app.o(.bss.s_voltage_buffer), (32768 bytes).
     Removing adc_app.o(.data.s_sample_rate_hz), (4 bytes).
-    Removing adc_app.o(.bss.s_mode_b_pending_mask), (1 bytes).
+    Removing adc_app.o(.rodata.str1.1), (527 bytes).
+    Removing adc_app.o(.bss.s_mode_b_pending), (1 bytes).
     Removing serial_buffer.o(.text), (0 bytes).
-    Removing serial_buffer.o(.text.Command_Write), (198 bytes).
+    Removing serial_buffer.o(.text.Command_Write), (176 bytes).
     Removing serial_buffer.o(.ARM.exidx.text.Command_Write), (8 bytes).
     Removing serial_buffer.o(.text.Command_GetRemain), (14 bytes).
     Removing serial_buffer.o(.ARM.exidx.text.Command_GetRemain), (8 bytes).
-    Removing serial_buffer.o(.text.Command_GetCommand), (314 bytes).
+    Removing serial_buffer.o(.text.Command_GetCommand), (366 bytes).
     Removing serial_buffer.o(.ARM.exidx.text.Command_GetCommand), (8 bytes).
     Removing serial_buffer.o(.text.Command_GetLength), (30 bytes).
     Removing serial_buffer.o(.ARM.exidx.text.Command_GetLength), (8 bytes).
-    Removing serial_buffer.o(.text.Command_Read), (36 bytes).
+    Removing serial_buffer.o(.text.Command_Read), (28 bytes).
     Removing serial_buffer.o(.ARM.exidx.text.Command_Read), (8 bytes).
-    Removing serial_buffer.o(.text.Command_AddReadIndex), (36 bytes).
+    Removing serial_buffer.o(.text.Command_AddReadIndex), (32 bytes).
     Removing serial_buffer.o(.ARM.exidx.text.Command_AddReadIndex), (8 bytes).
-    Removing serial_buffer.o(.bss.writeIndex), (1 bytes).
-    Removing serial_buffer.o(.bss.buffer), (128 bytes).
-    Removing serial_buffer.o(.bss.readIndex), (1 bytes).
+    Removing serial_buffer.o(.bss.s_write_index), (1 bytes).
+    Removing serial_buffer.o(.bss.s_buffer), (128 bytes).
+    Removing serial_buffer.o(.bss.s_read_index), (1 bytes).
     Removing fft.o(.text), (0 bytes).
     Removing fft.o(.text.FFT_Input), (62 bytes).
     Removing fft.o(.ARM.exidx.text.FFT_Input), (8 bytes).
@@ -9275,7 +9317,7 @@ Removing Unused input sections from the image.
     Removing adc_fft.o(.ARM.exidx.text.ADC_FFT_ScaleFloat), (8 bytes).
     Removing adc_fft.o(.text.ADC_Sample_SetFftMaxHarmonic), (20 bytes).
     Removing adc_fft.o(.ARM.exidx.text.ADC_Sample_SetFftMaxHarmonic), (8 bytes).
-    Removing adc_fft.o(.text.ADC_Sample_RunFft), (82 bytes).
+    Removing adc_fft.o(.text.ADC_Sample_RunFft), (86 bytes).
     Removing adc_fft.o(.ARM.exidx.text.ADC_Sample_RunFft), (8 bytes).
     Removing adc_fft.o(.text.ADC_Sample_GetResult), (8 bytes).
     Removing adc_fft.o(.ARM.exidx.text.ADC_Sample_GetResult), (8 bytes).
@@ -11659,7 +11701,7 @@ Removing Unused input sections from the image.
     Removing fpstat.o(.text), (4 bytes).
     Removing fepilogue.o(.text), (110 bytes).
 
-5128 unused section(s) (total 1389472 bytes) removed from the image.
+5146 unused section(s) (total 1390319 bytes) removed from the image.
 
 ==============================================================================
 
@@ -12310,7 +12352,7 @@ Image Symbol Table
     HAL_UART_TxCpltCallback                  0x08009ea1   Thumb Code     8  stm32h7xx_hal_uart.o(.text.HAL_UART_TxCpltCallback)
     HardFault_DumpRegisters                  0x08009ea9   Thumb Code   202  stm32h7xx_it.o(.text.HardFault_DumpRegisters)
     HardFault_Handler                        0x08009f79   Thumb Code    22  stm32h7xx_it.o(.text.HardFault_Handler)
-    MX_ADC1_Init                             0x0800a221   Thumb Code   236  adc.o(.text.MX_ADC1_Init)
+    MX_ADC1_Init                             0x0800a221   Thumb Code   240  adc.o(.text.MX_ADC1_Init)
     MX_DMA_Init                              0x0800a311   Thumb Code    56  dma.o(.text.MX_DMA_Init)
     MX_GPIO_Init                             0x0800a349   Thumb Code   662  gpio.o(.text.MX_GPIO_Init)
     MX_SPI2_Init                             0x0800a5e1   Thumb Code   106  spi.o(.text.MX_SPI2_Init)
@@ -12377,30 +12419,30 @@ Memory Map of the image
     Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
 
     0x08000000   0x08000000   0x00000298   Data   RO            3    RESET               startup_stm32h743xx.o
-    0x08000298   0x08000298   0x00000000   Code   RO         5943  * .ARM.Collect$$$$00000000  mc_w.l(entry.o)
-    0x08000298   0x08000298   0x00000004   Code   RO         6037    .ARM.Collect$$$$00000001  mc_w.l(entry2.o)
-    0x0800029c   0x0800029c   0x00000004   Code   RO         6040    .ARM.Collect$$$$00000004  mc_w.l(entry5.o)
-    0x080002a0   0x080002a0   0x00000000   Code   RO         6042    .ARM.Collect$$$$00000008  mc_w.l(entry7b.o)
-    0x080002a0   0x080002a0   0x00000000   Code   RO         6044    .ARM.Collect$$$$0000000A  mc_w.l(entry8b.o)
-    0x080002a0   0x080002a0   0x00000008   Code   RO         6045    .ARM.Collect$$$$0000000B  mc_w.l(entry9a.o)
-    0x080002a8   0x080002a8   0x00000000   Code   RO         6047    .ARM.Collect$$$$0000000D  mc_w.l(entry10a.o)
-    0x080002a8   0x080002a8   0x00000000   Code   RO         6049    .ARM.Collect$$$$0000000F  mc_w.l(entry11a.o)
-    0x080002a8   0x080002a8   0x00000004   Code   RO         6038    .ARM.Collect$$$$00002712  mc_w.l(entry2.o)
+    0x08000298   0x08000298   0x00000000   Code   RO         5961  * .ARM.Collect$$$$00000000  mc_w.l(entry.o)
+    0x08000298   0x08000298   0x00000004   Code   RO         6055    .ARM.Collect$$$$00000001  mc_w.l(entry2.o)
+    0x0800029c   0x0800029c   0x00000004   Code   RO         6058    .ARM.Collect$$$$00000004  mc_w.l(entry5.o)
+    0x080002a0   0x080002a0   0x00000000   Code   RO         6060    .ARM.Collect$$$$00000008  mc_w.l(entry7b.o)
+    0x080002a0   0x080002a0   0x00000000   Code   RO         6062    .ARM.Collect$$$$0000000A  mc_w.l(entry8b.o)
+    0x080002a0   0x080002a0   0x00000008   Code   RO         6063    .ARM.Collect$$$$0000000B  mc_w.l(entry9a.o)
+    0x080002a8   0x080002a8   0x00000000   Code   RO         6065    .ARM.Collect$$$$0000000D  mc_w.l(entry10a.o)
+    0x080002a8   0x080002a8   0x00000000   Code   RO         6067    .ARM.Collect$$$$0000000F  mc_w.l(entry11a.o)
+    0x080002a8   0x080002a8   0x00000004   Code   RO         6056    .ARM.Collect$$$$00002712  mc_w.l(entry2.o)
     0x080002ac   0x080002ac   0x0000002c   Code   RO            4    .text               startup_stm32h743xx.o
-    0x080002d8   0x080002d8   0x00000062   Code   RO         5946    .text               mc_w.l(uldiv.o)
-    0x0800033a   0x0800033a   0x00000024   Code   RO         5952    .text               mc_w.l(memseta.o)
-    0x0800035e   0x0800035e   0x0000002c   Code   RO         6061    .text               mc_w.l(uidiv.o)
-    0x0800038a   0x0800038a   0x0000001e   Code   RO         6063    .text               mc_w.l(llshl.o)
-    0x080003a8   0x080003a8   0x00000020   Code   RO         6065    .text               mc_w.l(llushr.o)
-    0x080003c8   0x080003c8   0x00000000   Code   RO         6074    .text               mc_w.l(iusefp.o)
-    0x080003c8   0x080003c8   0x0000014e   Code   RO         6077    .text               mf_w.l(dadd.o)
-    0x08000516   0x08000516   0x000000e4   Code   RO         6079    .text               mf_w.l(dmul.o)
-    0x080005fa   0x080005fa   0x000000de   Code   RO         6081    .text               mf_w.l(ddiv.o)
-    0x080006d8   0x080006d8   0x00000030   Code   RO         6083    .text               mf_w.l(dfixul.o)
-    0x08000708   0x08000708   0x00000030   Code   RO         6085    .text               mf_w.l(cdrcmple.o)
-    0x08000738   0x08000738   0x00000030   Code   RO         6095    .text               mc_w.l(init.o)
-    0x08000768   0x08000768   0x00000024   Code   RO         6097    .text               mc_w.l(llsshr.o)
-    0x0800078c   0x0800078c   0x000000ba   Code   RO         6101    .text               mf_w.l(depilogue.o)
+    0x080002d8   0x080002d8   0x00000062   Code   RO         5964    .text               mc_w.l(uldiv.o)
+    0x0800033a   0x0800033a   0x00000024   Code   RO         5970    .text               mc_w.l(memseta.o)
+    0x0800035e   0x0800035e   0x0000002c   Code   RO         6079    .text               mc_w.l(uidiv.o)
+    0x0800038a   0x0800038a   0x0000001e   Code   RO         6081    .text               mc_w.l(llshl.o)
+    0x080003a8   0x080003a8   0x00000020   Code   RO         6083    .text               mc_w.l(llushr.o)
+    0x080003c8   0x080003c8   0x00000000   Code   RO         6092    .text               mc_w.l(iusefp.o)
+    0x080003c8   0x080003c8   0x0000014e   Code   RO         6095    .text               mf_w.l(dadd.o)
+    0x08000516   0x08000516   0x000000e4   Code   RO         6097    .text               mf_w.l(dmul.o)
+    0x080005fa   0x080005fa   0x000000de   Code   RO         6099    .text               mf_w.l(ddiv.o)
+    0x080006d8   0x080006d8   0x00000030   Code   RO         6101    .text               mf_w.l(dfixul.o)
+    0x08000708   0x08000708   0x00000030   Code   RO         6103    .text               mf_w.l(cdrcmple.o)
+    0x08000738   0x08000738   0x00000030   Code   RO         6113    .text               mc_w.l(init.o)
+    0x08000768   0x08000768   0x00000024   Code   RO         6115    .text               mc_w.l(llsshr.o)
+    0x0800078c   0x0800078c   0x000000ba   Code   RO         6119    .text               mf_w.l(depilogue.o)
     0x08000846   0x08000846   0x00000002   PAD
     0x08000848   0x08000848   0x00000218   Code   RO          168    .text.ADC_ConfigureBoostMode  stm32h7xx_hal_adc.o
     0x08000a60   0x08000a60   0x00000032   Code   RO          116    .text.BusFault_Handler  stm32h7xx_it.o
@@ -12533,8 +12575,7 @@ Memory Map of the image
     0x0800a1c0   0x0800a1c0   0x00000032   Code   RO          232    .text.LL_ADC_SetOffset  stm32h7xx_hal_adc.o
     0x0800a1f2   0x0800a1f2   0x00000006   PAD
     0x0800a1f8   0x0800a1f8   0x00000028   Code   RO          234    .text.LL_ADC_SetOffsetSignedSaturation  stm32h7xx_hal_adc.o
-    0x0800a220   0x0800a220   0x000000ec   Code   RO           33    .text.MX_ADC1_Init  adc.o
-    0x0800a30c   0x0800a30c   0x00000004   PAD
+    0x0800a220   0x0800a220   0x000000f0   Code   RO           33    .text.MX_ADC1_Init  adc.o
     0x0800a310   0x0800a310   0x00000038   Code   RO           48    .text.MX_DMA_Init   dma.o
     0x0800a348   0x0800a348   0x00000296   Code   RO           25    .text.MX_GPIO_Init  gpio.o
     0x0800a5de   0x0800a5de   0x00000002   PAD
@@ -12605,15 +12646,15 @@ Memory Map of the image
     0x0800c2c0   0x0800c2c0   0x0000002a   Code   RO           84    .text.fputc         usart.o
     0x0800c2ea   0x0800c2ea   0x00000006   PAD
     0x0800c2f0   0x0800c2f0   0x00000034   Code   RO           11    .text.main          main.o
-    0x0800c324   0x0800c324   0x00000020   Code   RO         5957    i.__0printf         mc_w.l(printfa.o)
-    0x0800c344   0x0800c344   0x0000000e   Code   RO         6105    i.__scatterload_copy  mc_w.l(handlers.o)
-    0x0800c352   0x0800c352   0x00000002   Code   RO         6106    i.__scatterload_null  mc_w.l(handlers.o)
-    0x0800c354   0x0800c354   0x0000000e   Code   RO         6107    i.__scatterload_zeroinit  mc_w.l(handlers.o)
+    0x0800c324   0x0800c324   0x00000020   Code   RO         5975    i.__0printf         mc_w.l(printfa.o)
+    0x0800c344   0x0800c344   0x0000000e   Code   RO         6123    i.__scatterload_copy  mc_w.l(handlers.o)
+    0x0800c352   0x0800c352   0x00000002   Code   RO         6124    i.__scatterload_null  mc_w.l(handlers.o)
+    0x0800c354   0x0800c354   0x0000000e   Code   RO         6125    i.__scatterload_zeroinit  mc_w.l(handlers.o)
     0x0800c362   0x0800c362   0x00000002   PAD
-    0x0800c364   0x0800c364   0x00000184   Code   RO         5964    i._fp_digits        mc_w.l(printfa.o)
-    0x0800c4e8   0x0800c4e8   0x000006dc   Code   RO         5965    i._printf_core      mc_w.l(printfa.o)
-    0x0800cbc4   0x0800cbc4   0x00000024   Code   RO         5966    i._printf_post_padding  mc_w.l(printfa.o)
-    0x0800cbe8   0x0800cbe8   0x0000002e   Code   RO         5967    i._printf_pre_padding  mc_w.l(printfa.o)
+    0x0800c364   0x0800c364   0x00000184   Code   RO         5982    i._fp_digits        mc_w.l(printfa.o)
+    0x0800c4e8   0x0800c4e8   0x000006dc   Code   RO         5983    i._printf_core      mc_w.l(printfa.o)
+    0x0800cbc4   0x0800cbc4   0x00000024   Code   RO         5984    i._printf_post_padding  mc_w.l(printfa.o)
+    0x0800cbe8   0x0800cbe8   0x0000002e   Code   RO         5985    i._printf_pre_padding  mc_w.l(printfa.o)
     0x0800cc16   0x0800cc16   0x00000010   Data   RO         1968    .rodata.D1CorePrescTable  system_stm32h7xx.o
     0x0800cc26   0x0800cc26   0x00000008   Data   RO          693    .rodata.DMA_CalcBaseAndBitshift.flagBitshiftOffset  stm32h7xx_hal_dma.o
     0x0800cc2e   0x0800cc2e   0x00000008   Data   RO         1952    .rodata.UARTEx_SetNbDataToProcess.denominator  stm32h7xx_hal_uart_ex.o
@@ -12621,7 +12662,7 @@ Memory Map of the image
     0x0800cc3e   0x0800cc3e   0x00000018   Data   RO         1907    .rodata.UARTPrescTable  stm32h7xx_hal_uart.o
     0x0800cc56   0x0800cc56   0x000001c5   Data   RO          132    .rodata.str1.1      stm32h7xx_it.o
     0x0800ce1b   0x0800ce1b   0x00000001   PAD
-    0x0800ce1c   0x0800ce1c   0x00000020   Data   RO         6104    Region$$Table       anon$$obj.o
+    0x0800ce1c   0x0800ce1c   0x00000020   Data   RO         6122    Region$$Table       anon$$obj.o
 
 
     Execution Region RW_IRAM2 (Exec base: 0x20000000, Load base: 0x0800ce58, Size: 0x00000000, Max: 0x00020000, ABSOLUTE)
@@ -12633,7 +12674,7 @@ Memory Map of the image
 
     Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
 
-    0x24000000   0x0800ce40   0x00000004   Data   RW         6051    .data               mc_w.l(stdout.o)
+    0x24000000   0x0800ce40   0x00000004   Data   RW         6069    .data               mc_w.l(stdout.o)
     0x24000004   0x0800ce44   0x00000004   Data   RW         1966    .data.SystemCoreClock  system_stm32h7xx.o
     0x24000008   0x0800ce48   0x00000004   Data   RW         1967    .data.SystemD2Clock  system_stm32h7xx.o
     0x2400000c   0x0800ce4c   0x00000001   Data   RW         1077    .data.uwTickFreq    stm32h7xx_hal.o
@@ -12658,7 +12699,7 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   Object Name
 
-       512          0          0          0        220       8923   adc.o
+       516          0          0          0        220       8923   adc.o
         56          0          0          0          0       5289   dma.o
        662          0          0          0          0       3189   gpio.o
        288          0          0          0          0       3119   main.o
@@ -12687,7 +12728,7 @@ Image component sizes
     ----------------------------------------------------------------------
      47880        466       1214         16      17268     303261   Object Totals
          0          0         32          0          0          0   (incl. Generated)
-       332          4          1          3          4          0   (incl. Padding)
+       328          4          1          3          4          0   (incl. Padding)
 
     ----------------------------------------------------------------------
 

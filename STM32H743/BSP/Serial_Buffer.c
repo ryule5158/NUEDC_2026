@@ -1,118 +1,101 @@
 #include "Serial_Buffer.h"
 
-#define COMMAND_MIN_LENGTH 4U   /* 一条合法指令的最小字节数。 */
-#define BUFFER_SIZE 128U        /* 串口指令循环缓冲区容量。 */
+#define COMMAND_HEADER       0xAAU /* 指令帧头。 */
+#define COMMAND_MIN_LENGTH      4U /* 合法指令最小长度。 */
+#define BUFFER_SIZE           128U /* 循环缓冲区物理容量。 */
 
-static uint8_t buffer[BUFFER_SIZE]; /* 串口指令循环缓冲区。 */
-static uint8_t readIndex;           /* 下一待读取位置。 */
-static uint8_t writeIndex;          /* 下一待写入位置。 */
+static uint8_t s_buffer[BUFFER_SIZE]; /* 串口指令循环缓冲区。 */
+static uint8_t s_read_index;          /* 下一待读取位置。 */
+static uint8_t s_write_index;         /* 下一待写入位置。 */
 
-/**
-* @brief 增加读索引
-* @param length 要增加的长度
-*/
+/* 增加循环缓冲区读索引。 */
 static void Command_AddReadIndex(uint8_t length)
 {
-    readIndex += length;
-    readIndex %= BUFFER_SIZE;
+    s_read_index = (uint8_t)((s_read_index + length) % BUFFER_SIZE);
 }
 
-/**
-* @brief 读取第i位数据 超过缓存区长度自动循环
-* @param i 要读取的数据索引
-*/
-
-static uint8_t Command_Read(uint8_t i)
+/* 读取循环缓冲区指定偏移的数据。 */
+static uint8_t Command_Read(uint8_t index)
 {
-    uint8_t index = i % BUFFER_SIZE;
-    return buffer[index];
+    return s_buffer[index % BUFFER_SIZE];
 }
 
-/**
-* @brief 计算未处理的数据长度
-* @return 未处理的数据长度
-*/
+/* 返回循环缓冲区内有效数据长度。 */
 static uint8_t Command_GetLength(void)
 {
-    return (writeIndex + BUFFER_SIZE - readIndex) % BUFFER_SIZE;
+    return (uint8_t)((s_write_index + BUFFER_SIZE - s_read_index) %
+                     BUFFER_SIZE);
 }
 
-
-/**
-* @brief 计算缓冲区剩余空间
-* @return 剩余空间
-* @retval 0 缓冲区已满
-* @retval 1~BUFFER_SIZE-1 剩余空间
-* @retval BUFFER_SIZE 缓冲区为空
-*/
+/* 返回循环缓冲区可写长度，保留一格区分满和空。 */
 static uint8_t Command_GetRemain(void)
 {
-    return BUFFER_SIZE - Command_GetLength();
+    return (uint8_t)(BUFFER_SIZE - 1U - Command_GetLength());
 }
 
-/**
-* @brief 向缓冲区写入数据
-* @param data 要写入的数据指针
-* @param length 要写入的数据长度
-* @return 写入的数据长度
-*/
-uint8_t Command_Write(uint8_t *data, uint8_t length)
+uint8_t Command_Write(const uint8_t *data, uint8_t length)
 {
-    // 如果缓冲区不足 则不写入数据 返回0
-    if (Command_GetRemain() < length) {
-        return 0;
+    uint8_t first_length;
+
+    if ((data == NULL) || (length == 0U) ||
+        (Command_GetRemain() < length)) {
+        return 0U;
     }
-    // 使用memcpy函数将数据写入缓冲区
-    if (writeIndex + length < BUFFER_SIZE) {
-        memcpy(buffer + writeIndex, data, length);
-        writeIndex += length;
-    } else {
-        uint8_t firstLength = BUFFER_SIZE - writeIndex;
-        memcpy(buffer + writeIndex, data, firstLength);
-        memcpy(buffer, data + firstLength, length - firstLength);
-        writeIndex = length - firstLength;
+
+    first_length = (uint8_t)(BUFFER_SIZE - s_write_index);
+    if (first_length > length) {
+        first_length = length;
     }
+    memcpy(&s_buffer[s_write_index], data, first_length);
+    memcpy(s_buffer, &data[first_length], length - first_length);
+    s_write_index =
+        (uint8_t)((s_write_index + length) % BUFFER_SIZE);
     return length;
 }
 
-/**
-* @brief 尝试获取一条指令
-* @param command 指令存放指针
-* @return 获取的指令长度
-* @retval 0 没有获取到指令
-*/
 uint8_t Command_GetCommand(uint8_t *command)
 {
-    // 寻找完整指令
-    while (1) {
-        // 如果缓冲区长度小于COMMAND_MIN_LENGTH 则不可能有完整的指令
-        if (Command_GetLength() < COMMAND_MIN_LENGTH) {
-        return 0;
+    uint8_t length;
+    uint8_t sum;
+    uint8_t index;
+
+    if (command == NULL) {
+        return 0U;
+    }
+
+    while (Command_GetLength() >= COMMAND_MIN_LENGTH) {
+        if (Command_Read(s_read_index) != COMMAND_HEADER) {
+            Command_AddReadIndex(1U);
+            continue;
         }
-        // 如果不是包头 则跳过 重新开始寻找
-        if (Command_Read(readIndex) != 0xAA) {
-        Command_AddReadIndex(1);
-        continue;
+
+        length = Command_Read((uint8_t)(s_read_index + 1U));
+        if ((length < COMMAND_MIN_LENGTH) || (length >= BUFFER_SIZE)) {
+            Command_AddReadIndex(1U);
+            continue;
         }
-        // 如果缓冲区长度小于指令长度 则不可能有完整的指令
-        uint8_t length = Command_Read(readIndex + 1);
         if (Command_GetLength() < length) {
-        return 0;
+            return 0U;
         }
-        // 如果校验和不正确 则跳过 重新开始寻找
-        uint8_t sum = 0;
-        for (uint8_t i = 0; i < length - 1; i++) {
-        sum += Command_Read(readIndex + i);
+
+        sum = 0U;
+        for (index = 0U; index < (uint8_t)(length - 1U); index++) {
+            sum = (uint8_t)(sum +
+                Command_Read((uint8_t)(s_read_index + index)));
         }
-        if (sum != Command_Read(readIndex + length - 1)) {
-        Command_AddReadIndex(1);
-        continue;
+        if (sum !=
+            Command_Read((uint8_t)(s_read_index + length - 1U))) {
+            Command_AddReadIndex(1U);
+            continue;
         }
-        // 如果找到完整指令 则将指令写入command 返回指令长度
-        for (uint8_t i = 0; i < length; i++) {
-        command[i] = Command_Read(readIndex + i);
+
+        for (index = 0U; index < length; index++) {
+            command[index] =
+                Command_Read((uint8_t)(s_read_index + index));
         }
         Command_AddReadIndex(length);
         return length;
     }
+
+    return 0U;
 }

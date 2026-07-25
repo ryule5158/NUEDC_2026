@@ -87,6 +87,11 @@ SysConfig 出现错误或警告时，构建会停止，避免使用过期生成�
 | 默认采样率 | 1 MSPS；驱动可把TIMG12改为1 kSPS～1 MSPS |
 | 调试保留 | PA19/PA20 保留 SWD，PA18 不占用 |
 
+两路ADC均使用重复单通道模式，但`ADCMEM0`的触发方式必须保持为
+`DL_ADC12_TRIGGER_MODE_TRIGGER_NEXT`。这样每次转换结束后会等待下一次
+TIMG12事件，采样率才由定时器决定。不要改成`AUTO_NEXT`；该模式会在首个
+事件后自由连续转换，使实际采样率脱离TIMG12配置。
+
 SPI0的帧格式直接由SysConfig生成。图形配置选择Motorola 4-wire，并把
 SPI0_CS0分配到未外接的PA2；实际BX71片选仍由PA15 GPIO在完整6字节帧前后
 控制。这样生成代码天然包含`MOTO4_POL0_PHA0`，不需要在初始化后修改SPI

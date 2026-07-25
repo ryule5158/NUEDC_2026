@@ -139,7 +139,7 @@ void ADC_Sample_RunFft(void)
     }
 
     (void)ADC_FFT_Run(ADC_Sample_GetVoltageData(),
-                      ADC_APP_SAMPLE_LENGTH,
+                      ADC_Sample_GetSampleCount(),
                       ADC_Sample_GetSampleRateHz());
 }
 
