@@ -44,6 +44,7 @@ ProMax、AD9708 和 AD9280 共用 SPI2，裸机业务必须在主循环中串行
 ## 通用库边界
 
 - 保留 AD9910、AD9708、AD9280、AD5687、DAC8831、ADS8363、ADS8688、PE4302、BSP、CPU DSP 和 FPGA ProMax 控制库。
+- CPU DSP 的 THD 接口已按 2020 E 题与 2021 A 题升级：支持 THD5、H1~H5 归一化幅度、1 kHz~100 kHz 限频搜索、单周期波形与自动测量状态；用法见 `DSP/THD.md`。
 - 删除 C 题任务、C 题串口屏交互和六档 SM 外部延时封装。
 - AD9910 使用 STM32 PB8 直接输出 `IO_UPDATE`，不再依赖 FPGA 同步寄存器。
 - `Modules_Header.h` 只汇总 APP 层与必要的通用接口；底层寄存器与链路细节留在各自驱动内。

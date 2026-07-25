@@ -133,19 +133,23 @@ void Process_FFT_magEx(float fs){
 }
 
 
-/* 将当前FFT幅度谱归一化为单边谱。 */
-void Normalize_FFT_To_Single_Side(void)
+/* 按实际 FFT 点数将当前幅度谱归一化为单边谱。 */
+bool Normalize_FFT_To_Single_SideN(uint32_t len)
 {
-    float scale = 1.0f / (float)FFT_length;
-    int single_side_length = FFT_length / 2 + 1;
+    if (FFT_SelectCfft(len) == NULL || len > FFT_length) {
+        FFT_normalized_output[0] = 0.0f;
+        return false;
+    }
+    float scale = 1.0f / (float)len;
+    uint32_t single_side_length = len / 2u + 1u;
 
-    for (int i = 0; i < single_side_length; i++)
+    for (uint32_t i = 0u; i < single_side_length; i++)
     {
-        if (i == 0)
+        if (i == 0u)
         {
             FFT_normalized_output[i] = FFT_output[i] * scale;
         }
-        else if (i == FFT_length / 2)
+        else if (i == len / 2u)
         {
             FFT_normalized_output[i] = FFT_output[i] * scale;
         }
@@ -154,6 +158,13 @@ void Normalize_FFT_To_Single_Side(void)
             FFT_normalized_output[i] = FFT_output[i] * 2.0f * scale;
         }
     }
+    return true;
+}
+
+/* 兼容旧工程的固定 4096 点归一化入口。 */
+void Normalize_FFT_To_Single_Side(void)
+{
+    (void)Normalize_FFT_To_Single_SideN(FFT_length);
 }
 
 /* 使用Goertzel算法计算指定频率幅度。 */
@@ -212,14 +223,16 @@ uint8_t FFT_GetHarmonics(float data[], uint32_t len, float fs, float f0,
     return count;
 }
 
-/* 从当前FFT频谱提取整数倍谐波。 */
-uint8_t FFT_GetHarmonics_FromFFT(float fs, float f0, float max_freq,
-                                 float freq_out[], float amp_out[])
+/* 从当前可变点数 FFT 的单边归一化频谱提取整数倍谐波。 */
+uint8_t FFT_GetHarmonics_FromFFTN(uint32_t len, float fs, float f0,
+                                  float max_freq, float freq_out[],
+                                  float amp_out[])
 {
     uint8_t count = 0;
-    float df = fs / (float)FFT_length;
+    float df = fs / (float)len;
 
     if ((freq_out == NULL) || (amp_out == NULL) || !(fs > 0.0f) ||
+        (FFT_SelectCfft(len) == NULL) || (len > FFT_length) ||
         (f0 < 1.0f) || !(max_freq > 0.0f)) {
         return 0;
     }
@@ -230,30 +243,42 @@ uint8_t FFT_GetHarmonics_FromFFT(float fs, float f0, float max_freq,
         float freq = h * f0;
         uint32_t k = (uint32_t)(freq / df + 0.5f);
 
-        if (k == 0 || k >= FFT_length / 2) break;
+        if (k == 0u || k >= len / 2u) break;
 
         uint32_t k_best = k;
-        float mag = FFT_output[k];
+        float mag = FFT_normalized_output[k];
 
-        if (k > 1 && FFT_output[k - 1] > mag)
+        if (k > 1u && FFT_normalized_output[k - 1u] > mag)
         {
-            mag = FFT_output[k - 1];
-            k_best = k - 1;
+            mag = FFT_normalized_output[k - 1u];
+            k_best = k - 1u;
         }
 
-        if (k + 1 < FFT_length / 2 && FFT_output[k + 1] > mag)
+        if (k + 1u < len / 2u && FFT_normalized_output[k + 1u] > mag)
         {
-            mag = FFT_output[k + 1];
-            k_best = k + 1;
+            mag = FFT_normalized_output[k + 1u];
+            k_best = k + 1u;
         }
 
         freq_out[count] = (float)k_best * df;
-        amp_out[count] = mag * 2.0f / (float)FFT_length;
+        amp_out[count] = mag;
 
         count++;
     }
 
     return count;
+}
+
+/* 兼容旧工程的固定 4096 点谐波提取入口。 */
+uint8_t FFT_GetHarmonics_FromFFT(float fs, float f0, float max_freq,
+                                 float freq_out[], float amp_out[])
+{
+    return FFT_GetHarmonics_FromFFTN(FFT_length,
+                                     fs,
+                                     f0,
+                                     max_freq,
+                                     freq_out,
+                                     amp_out);
 }
 
 /* 打印当前FFT原始结果。 */

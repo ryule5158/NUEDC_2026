@@ -13,8 +13,8 @@
 | `IQ.*` | 已知频率的幅相测量、双通道相位差 | 输入需为有限值；非整周期采样会产生泄漏误差 |
 | `SoftPll.*` | 与 HAL 解耦的软件相位/频率控制器 | 调用者负责把命令施加到 DDS/NCO/PWM；无效输入会拒绝更新 |
 | `Demod.*` | AM/FM/BPSK 解调、载波恢复、频偏/调制度估计 | FFT Hilbert 需要 `2*n` float；PLL/Costas 必须使用 Context 跨块保存状态 |
-| `Measure.*` | RMS、Vpp、频率、THD、SNR、SINAD、ENOB、波形参数 | 统计函数跳过非有限样本；FFT 质量分析最大支持 8192 点 |
-| `DSP_ProMax.*` | 一次聚合时域、FFT、谐波和质量分析结果 | 完整频域分析固定使用4096点全局FFT工作区，不可重入 |
+| `Measure.*` | RMS、Vpp、频率、THD、H1~H16、SNR、SINAD、ENOB、单周期波形 | THD 支持限频搜索、亚 bin 谐波跟踪、噪声底扣除和明确错误状态；详见 `THD.md` |
+| `DSP_ProMax.*` | 一次聚合时域、可变点数 FFT、THD 和质量分析结果 | 支持 64~4096 点二次幂，使用全局 FFT 工作区，不可重入 |
 | `Correlate.*` | 时延、互相关、自相关、基频估计 | 时域复杂度约为 `O(len*max_lag)` |
 | `Fit.*` / `ModelFit.*` | 标定曲线和二阶网络模型拟合 | 拟合前应归一化自变量；无效样本会被拒绝或跳过 |
 | `Adaptive.*` | LMS、正弦分离、自适应陷波、在线统计 | LMS 步长需要按输入功率和收敛速度实测整定 |
@@ -40,7 +40,7 @@
 
 - `FFT` 的全局输入、复数工作区和幅度谱约占 68 KiB RAM，不可在 ISR 与主循环并发调用。
 - `Demod` 的旧百分位/兼容接口含静态 4096 点工作区，也不可重入；Context 只解决环路和滤波状态，不会把 FFT Hilbert 变成流式 overlap-save。
-- `Measure_Quality()` 使用约 516 B 栈上位图，因此可重入；调用前仍应确认任务栈余量。
+- `Measure_THDFromSpectrum()` 和 `Measure_Quality()` 不使用动态内存或大频点位图；普通测量接口可重入。
 - `FilterEx`、`IQ`、普通 `Measure` 和调用者持有状态的自适应模块可以各实例独立使用。
 
 ## BPSK 当前适用范围
@@ -49,11 +49,11 @@
 
 ## 已知限制
 
-- 尚无可在 PC 上自动运行的单元/随机测试套件；当前验证是 Arm Compiler 6 全工程构建。
+- THD 有 PC 数值回归和 C 测试向量；当前桌面若缺少 MSVC C 运行库头文件，会运行数值回归并由 Arm Compiler 6 全工程构建覆盖嵌入式 C 编译。
 - `ADC_FFT` 的基波搜索范围仍为 50～1000 Hz，超出范围应使用通用 FFT/Goertzel 接口。
 - FFT Hilbert 采用整帧周期延拓，帧边缘会有误差；分析时使用 `edge_discard_samples`，真正连续处理需 FIR Hilbert 或 overlap-save。
 - 旧 `Filter` 保留全局缓冲和简化高阶设计以兼容已有工程；要求可重入、精确高阶 Butterworth 或明确容量时使用 `FilterEx`。
 
 ## 构建验证
 
-2026-07-23 使用 Keil μVision / ArmClang 6.23 构建 `MDK-ARM/STM32H743.uvprojx`：`0 Error(s), 0 Warning(s)`。
+2026-07-24 使用 Keil μVision / ArmClang 6.23 构建 `MDK-ARM/STM32H743.uvprojx`：`0 Error(s), 0 Warning(s)`；THD 数值回归通过。

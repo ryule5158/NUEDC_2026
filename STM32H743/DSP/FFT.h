@@ -41,6 +41,11 @@ void Process_FFT_mag(void);
 void Process_FFT_magEx(float fs);
 /* 将当前FFT幅度谱归一化为单边谱。 */
 void Normalize_FFT_To_Single_Side();
+/**
+ * @brief 按实际 FFT 点数归一化当前频谱，支持 FFT_StartN() 的 64~4096 点结果。
+ * @return len 合法时返回 true，否则清空首项并返回 false。
+ */
+bool Normalize_FFT_To_Single_SideN(uint32_t len);
 /* 打印当前FFT原始结果。 */
 void FFT_Data_Print();
 /* 使用Goertzel算法计算指定频率幅度。 */
@@ -51,6 +56,13 @@ float max_freq, float freq_out[], float amp_out[]);
 /* 从当前FFT频谱提取整数倍谐波。 */
 uint8_t FFT_GetHarmonics_FromFFT(float fs, float f0, float max_freq,
                                  float freq_out[], float amp_out[]);
+/**
+ * @brief 从当前可变点数 FFT 的单边归一化频谱提取整数倍谐波。
+ * @note  必须先依次调用 FFT_StartN() 和 Normalize_FFT_To_Single_SideN()。
+ */
+uint8_t FFT_GetHarmonics_FromFFTN(uint32_t len, float fs, float f0,
+                                  float max_freq, float freq_out[],
+                                  float amp_out[]);
 
 /* ==================================================================== */
 /*  窗函数库 — FFT 前加窗，抑制频谱泄漏                                   */

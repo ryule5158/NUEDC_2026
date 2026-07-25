@@ -6,9 +6,6 @@
 #include <math.h>
 #include <string.h>
 
-#define MEASURE_MAX_HALF 4097u /* 支持的最大单边频谱长度。 */
-#define MEASURE_USED_WORDS ((MEASURE_MAX_HALF + 31u) / 32u) /* 频点标记位图字数。 */
-
 /* 判断浮点测量值是否有效。 */
 static int Measure_IsFinite(float x)
 {
@@ -202,33 +199,315 @@ float Measure_THD(const float *amp, uint32_t count, float *thd_db)
     return thd;
 }
 
-/* 查询频点是否已计入某个功率分量。 */
-static int Measure_UsedGet(const uint32_t *used, uint32_t index)
+/* 填充面向电赛失真度题的默认配置。 */
+void Measure_THDConfigDefault(Measure_THDConfig_t *config)
 {
-    return (used[index / 32u] & (1UL << (index % 32u))) != 0u;
+    if (config == NULL) return;
+    config->fund_min_hz = 0.0f;
+    config->fund_max_hz = 0.0f;
+    config->min_fundamental_amplitude = 0.0f;
+    config->max_harmonic = 5u;
+    config->required_harmonic = 5u;
+    config->search_half_width_bins = 1u;
+    config->integration_half_width_bins = 2u;
+    config->subtract_noise = 1u;
 }
 
-/* 将频点标记为已计入功率分量。 */
-static void Measure_UsedSet(uint32_t *used, uint32_t index)
+/* 清空 THD 结果并给出确定的失败默认值。 */
+static void Measure_THDResultInit(Measure_THDResult_t *result)
 {
-    used[index / 32u] |= (1UL << (index % 32u));
+    memset(result, 0, sizeof(*result));
+    result->status = MEASURE_THD_ERROR_PARAM;
+    result->thd_db = -240.0f;
+    result->fund_snr_db = -240.0f;
 }
 
-/* 聚合中心频点附近的功率并标记已用频点。 */
-static float Measure_ClusterPower(const float *mag, uint32_t half_len,
-                                  uint32_t center, uint32_t leak_bins,
-                                  uint32_t *used)
+/* 返回给定预测位置附近的最大有限谱线。 */
+static uint32_t Measure_FindLocalPeak(const float *mag,
+                                      uint32_t half,
+                                      float predicted_bin,
+                                      uint32_t search_bins)
 {
-    float p = 0.0f;
-    uint32_t lo = (center > leak_bins) ? (center - leak_bins) : 1u; /* 不含直流 */
-    uint32_t hi = (leak_bins >= (half_len - 1u - center)) ?
-                  (half_len - 1u) : (center + leak_bins);
+    uint32_t center = (uint32_t)(predicted_bin + 0.5f);
+    uint32_t lo = (center > search_bins) ? (center - search_bins) : 1u;
+    uint32_t hi = center + search_bins;
+    if (lo < 1u) lo = 1u;
+    if (hi >= half) hi = half - 1u;
+    if (lo > hi) return 0u;
+
+    uint32_t best = 0u;
+    float best_mag = 0.0f;
     for (uint32_t k = lo; k <= hi; k++) {
-        if (Measure_UsedGet(used, k)) continue;
-        if (Measure_IsFinite(mag[k])) p += mag[k] * mag[k];
-        Measure_UsedSet(used, k);
+        if (Measure_IsFinite(mag[k]) && (best == 0u || mag[k] > best_mag)) {
+            best = k;
+            best_mag = mag[k];
+        }
     }
-    return p;
+    return best;
+}
+
+/* 聚合一个谱峰主瓣内的功率。 */
+static float Measure_ClusterPowerRaw(const float *mag,
+                                     uint32_t half,
+                                     uint32_t center,
+                                     uint32_t integration_bins,
+                                     uint32_t *bin_count)
+{
+    uint32_t lo = (center > integration_bins) ? (center - integration_bins) : 1u;
+    uint32_t hi = center + integration_bins;
+    float power = 0.0f;
+    uint32_t count = 0u;
+    if (lo < 1u) lo = 1u;
+    if (hi >= half) hi = half - 1u;
+
+    for (uint32_t k = lo; k <= hi; k++) {
+        if (Measure_IsFinite(mag[k])) {
+            power += mag[k] * mag[k];
+            count++;
+        }
+    }
+    if (bin_count != NULL) *bin_count = count;
+    return power;
+}
+
+/* 判断频点是否属于已定位的任一基波/谐波簇。 */
+static int Measure_IsComponentBin(uint32_t bin,
+                                  const uint32_t *centers,
+                                  uint32_t center_count,
+                                  uint32_t integration_bins)
+{
+    for (uint32_t i = 0u; i < center_count; i++) {
+        uint32_t distance = (bin >= centers[i]) ?
+                            (bin - centers[i]) : (centers[i] - bin);
+        if (distance <= integration_bins) return 1;
+    }
+    return 0;
+}
+
+/* 从单边幅度谱自动定位基波和谐波并计算 THD。 */
+Measure_THDStatus_t Measure_THDFromSpectrum(const float *mag,
+                                            uint32_t n,
+                                            float fs,
+                                            const Measure_THDConfig_t *config,
+                                            Measure_THDResult_t *result)
+{
+    Measure_THDConfig_t cfg;
+    Measure_Peak_t fundamental_peak;
+    uint32_t centers[MEASURE_THD_MAX_HARMONICS];
+    float raw_power[MEASURE_THD_MAX_HARMONICS];
+    uint32_t cluster_bins[MEASURE_THD_MAX_HARMONICS];
+    uint32_t half;
+    float df;
+
+    if (result == NULL) return MEASURE_THD_ERROR_PARAM;
+    Measure_THDResultInit(result);
+    if (mag == NULL || n < 8u || (n & 1u) != 0u || !(fs > 0.0f)) {
+        result->status = (n < 8u || (n & 1u) != 0u) ?
+                         MEASURE_THD_ERROR_LENGTH : MEASURE_THD_ERROR_PARAM;
+        return result->status;
+    }
+
+    Measure_THDConfigDefault(&cfg);
+    if (config != NULL) cfg = *config;
+    if (cfg.max_harmonic < 2u ||
+        cfg.max_harmonic > MEASURE_THD_MAX_HARMONICS ||
+        cfg.required_harmonic < 2u ||
+        cfg.required_harmonic > cfg.max_harmonic ||
+        cfg.fund_min_hz < 0.0f ||
+        cfg.fund_max_hz < 0.0f ||
+        cfg.min_fundamental_amplitude < 0.0f) {
+        result->status = MEASURE_THD_ERROR_PARAM;
+        return result->status;
+    }
+
+    half = n / 2u;
+    df = fs / (float)n;
+    result->requested_harmonic = cfg.max_harmonic;
+
+    float search_min_hz = (cfg.fund_min_hz > 0.0f) ? cfg.fund_min_hz : df;
+    float search_max_hz = (cfg.fund_max_hz > 0.0f) ?
+                          cfg.fund_max_hz : (0.5f * fs - df);
+    if (!(search_max_hz >= search_min_hz) || search_min_hz >= 0.5f * fs) {
+        result->status = MEASURE_THD_ERROR_PARAM;
+        return result->status;
+    }
+
+    /*
+     * 把每个 FFT bin 视为中心频率 ±0.5 bin 的频带。这样即使低频搜索范围
+     * 小于一个 bin，只要真实基波落在范围内，最近的谱线仍会参与搜索。
+     */
+    float min_bin_edge = search_min_hz / df - 0.5f;
+    float max_bin_edge = search_max_hz / df + 0.5f;
+    uint32_t k_min = (min_bin_edge > 0.0f) ?
+                     (uint32_t)min_bin_edge : 1u;
+    if ((float)k_min < min_bin_edge) k_min++;
+    uint32_t k_max = (max_bin_edge > 0.0f) ?
+                     (uint32_t)max_bin_edge : 0u;
+    if (k_min < 1u) k_min = 1u;
+    if (k_max >= half) k_max = half - 1u;
+    if (k_min > k_max) {
+        result->status = MEASURE_THD_ERROR_NO_FUNDAMENTAL;
+        return result->status;
+    }
+
+    uint32_t k0 = 0u;
+    float max_mag = 0.0f;
+    for (uint32_t k = k_min; k <= k_max; k++) {
+        if (Measure_IsFinite(mag[k]) && (k0 == 0u || mag[k] > max_mag)) {
+            k0 = k;
+            max_mag = mag[k];
+        }
+    }
+    if (k0 == 0u || !(max_mag > 0.0f)) {
+        result->status = MEASURE_THD_ERROR_NO_FUNDAMENTAL;
+        return result->status;
+    }
+
+    Measure_PeakInterp(mag, n, k0, fs, &fundamental_peak);
+    result->fund_freq = fundamental_peak.freq;
+    if (fundamental_peak.amplitude < cfg.min_fundamental_amplitude) {
+        result->status = MEASURE_THD_ERROR_LOW_AMPLITUDE;
+        return result->status;
+    }
+
+    /* 分量间距必须大于搜索漂移和两个积分半宽，防止相邻谐波簇重叠。 */
+    uint32_t min_spacing = 2u *
+        ((uint32_t)cfg.search_half_width_bins +
+         (uint32_t)cfg.integration_half_width_bins) + 1u;
+    if (!(fundamental_peak.bin >= (float)min_spacing)) {
+        result->status = MEASURE_THD_ERROR_RESOLUTION;
+        return result->status;
+    }
+
+    uint32_t found = 0u;
+    for (uint32_t harmonic = 1u; harmonic <= cfg.max_harmonic; harmonic++) {
+        float predicted_bin = fundamental_peak.bin * (float)harmonic;
+        uint32_t center;
+        if (harmonic == 1u) {
+            center = k0;
+        } else {
+            if (predicted_bin +
+                (float)cfg.search_half_width_bins +
+                (float)cfg.integration_half_width_bins >= (float)half) {
+                break;
+            }
+            center = Measure_FindLocalPeak(mag,
+                                           half,
+                                           predicted_bin,
+                                           cfg.search_half_width_bins);
+            if (center == 0u) break;
+        }
+
+        if (center <= cfg.integration_half_width_bins ||
+            center + cfg.integration_half_width_bins >= half) {
+            break;
+        }
+
+        Measure_Peak_t component_peak;
+        Measure_PeakInterp(mag, n, center, fs, &component_peak);
+        centers[found] = center;
+        raw_power[found] = Measure_ClusterPowerRaw(
+            mag,
+            half,
+            center,
+            cfg.integration_half_width_bins,
+            &cluster_bins[found]);
+        result->harmonic_freq[found] = component_peak.freq;
+        found++;
+    }
+
+    if (found == 0u) {
+        result->status = MEASURE_THD_ERROR_NO_FUNDAMENTAL;
+        return result->status;
+    }
+    result->harmonics_found = (uint8_t)found;
+    result->highest_harmonic = (uint8_t)found;
+
+    float noise_power = 0.0f;
+    uint32_t noise_bins = 0u;
+    for (uint32_t k = 1u; k < half; k++) {
+        if (Measure_IsComponentBin(k,
+                                   centers,
+                                   found,
+                                   cfg.integration_half_width_bins)) {
+            continue;
+        }
+        if (Measure_IsFinite(mag[k])) {
+            noise_power += mag[k] * mag[k];
+            noise_bins++;
+        }
+    }
+    float noise_power_per_bin = (noise_bins > 0u) ?
+                                (noise_power / (float)noise_bins) : 0.0f;
+    /*
+     * 再做一次 4 倍均值限幅，避免单个非谐波强杂散把噪声底抬高，
+     * 进而把 H4/H5 的小功率全部扣掉。被剔除的杂散仍会计入 SINAD。
+     */
+    if (noise_bins > 0u && noise_power_per_bin > 0.0f) {
+        float clipped_power = 0.0f;
+        uint32_t clipped_bins = 0u;
+        float clip_limit = 4.0f * noise_power_per_bin;
+        for (uint32_t k = 1u; k < half; k++) {
+            if (Measure_IsComponentBin(k,
+                                       centers,
+                                       found,
+                                       cfg.integration_half_width_bins) ||
+                !Measure_IsFinite(mag[k])) {
+                continue;
+            }
+            float bin_power = mag[k] * mag[k];
+            if (bin_power <= clip_limit) {
+                clipped_power += bin_power;
+                clipped_bins++;
+            }
+        }
+        if (clipped_bins > 0u) {
+            noise_power_per_bin = clipped_power / (float)clipped_bins;
+        }
+    }
+    result->noise_rms_per_bin = sqrtf(noise_power_per_bin);
+
+    for (uint32_t i = 0u; i < found; i++) {
+        float component_power = raw_power[i];
+        if (cfg.subtract_noise != 0u) {
+            float correction = noise_power_per_bin * (float)cluster_bins[i];
+            component_power = (component_power > correction) ?
+                              (component_power - correction) : 0.0f;
+        }
+        result->harmonic_amp[i] = sqrtf(component_power);
+    }
+
+    result->fund_amplitude = result->harmonic_amp[0];
+    if (!(result->fund_amplitude > 1e-12f)) {
+        result->status = MEASURE_THD_ERROR_NO_FUNDAMENTAL;
+        return result->status;
+    }
+
+    float harmonic_power = 0.0f;
+    result->harmonic_ratio[0] = 1.0f;
+    for (uint32_t i = 1u; i < found; i++) {
+        result->harmonic_ratio[i] =
+            result->harmonic_amp[i] / result->fund_amplitude;
+        harmonic_power += result->harmonic_amp[i] * result->harmonic_amp[i];
+    }
+    result->thd = sqrtf(harmonic_power) / result->fund_amplitude;
+    result->thd_percent = 100.0f * result->thd;
+    result->thd_db = 20.0f * log10f(result->thd > 1e-12f ?
+                                    result->thd : 1e-12f);
+
+    float equal_band_noise = noise_power_per_bin * (float)cluster_bins[0];
+    result->fund_snr_db = (equal_band_noise > 1e-20f) ?
+        10.0f * log10f((result->fund_amplitude * result->fund_amplitude) /
+                       equal_band_noise) : 240.0f;
+
+    if (found < (uint32_t)cfg.required_harmonic) {
+        result->status = MEASURE_THD_ERROR_BANDWIDTH;
+        return result->status;
+    }
+
+    result->status = MEASURE_THD_OK;
+    result->valid = 1u;
+    return result->status;
 }
 
 /* 由单边幅度谱计算THD、SNR、SINAD和ENOB。 */
@@ -236,63 +515,57 @@ void Measure_Quality(const float *mag, uint32_t n, float fs,
                      uint32_t num_harm, uint32_t leak_bins,
                      Measure_Quality_t *q)
 {
+    Measure_THDConfig_t cfg;
+    Measure_THDResult_t thd;
     if (q == NULL) return;
-    q->thd = 0.0f; q->thd_db = -999.0f;
+    q->thd = 0.0f; q->thd_db = -240.0f;
     q->snr_db = 0.0f; q->sinad_db = 0.0f; q->enob = 0.0f; q->fund_freq = 0.0f;
-    if (mag == NULL || n < 8u || !(fs > 0.0f)) return;
+    if (mag == NULL || n < 8u || (n & 1u) != 0u || !(fs > 0.0f)) return;
 
-    const uint32_t half_len = n / 2u + 1u;      /* 单边谱长度 */
-    if (half_len > MEASURE_MAX_HALF) return;
+    Measure_THDConfigDefault(&cfg);
+    if (num_harm < 2u) num_harm = 2u;
+    if (num_harm > MEASURE_THD_MAX_HARMONICS) {
+        num_harm = MEASURE_THD_MAX_HARMONICS;
+    }
+    cfg.max_harmonic = (uint8_t)num_harm;
+    cfg.required_harmonic = 2u;
+    cfg.integration_half_width_bins =
+        (leak_bins > 255u) ? 255u : (uint8_t)leak_bins;
+    (void)Measure_THDFromSpectrum(mag, n, fs, &cfg, &thd);
+    if (thd.harmonics_found == 0u || !(thd.fund_amplitude > 0.0f)) return;
 
-    /* 局部位图替代静态字节数组：函数保持可重入，同时把栈占用控制在约 516 B。 */
-    uint32_t used[MEASURE_USED_WORDS];
-    const uint32_t mark_len = half_len;
-    memset(used, 0, sizeof(used));
+    q->thd = thd.thd;
+    q->thd_db = thd.thd_db;
+    q->fund_freq = thd.fund_freq;
 
-    /* 1) 找基波 bin（跳过直流） */
-    uint32_t k0 = 1u;
-    int found = Measure_IsFinite(mag[1]);
-    float vmax = found ? mag[1] : 0.0f;
-    for (uint32_t k = 2u; k < (n / 2u); k++) {
-        if (Measure_IsFinite(mag[k]) && (!found || mag[k] > vmax)) {
-            vmax = mag[k]; k0 = k; found = 1;
+    float signal_power = thd.fund_amplitude * thd.fund_amplitude;
+    float harmonic_power = 0.0f;
+    for (uint32_t i = 1u; i < thd.harmonics_found; i++) {
+        harmonic_power += thd.harmonic_amp[i] * thd.harmonic_amp[i];
+    }
+
+    float noise_power = 0.0f;
+    uint32_t half = n / 2u;
+    uint32_t centers[MEASURE_THD_MAX_HARMONICS];
+    for (uint32_t i = 0u; i < thd.harmonics_found; i++) {
+        centers[i] = (uint32_t)(thd.harmonic_freq[i] / fs * (float)n + 0.5f);
+    }
+    for (uint32_t k = 1u; k < half; k++) {
+        if (!Measure_IsComponentBin(k,
+                                    centers,
+                                    thd.harmonics_found,
+                                    leak_bins) &&
+            Measure_IsFinite(mag[k])) {
+            noise_power += mag[k] * mag[k];
         }
     }
-    if (!found) return;
-    q->fund_freq = (float)k0 * fs / (float)n;
-
-    /* 2) 总功率（去直流，bin0 不计） */
-    float p_total = 0.0f;
-    for (uint32_t k = 1u; k < half_len && k < MEASURE_MAX_HALF; k++) {
-        if (Measure_IsFinite(mag[k])) p_total += mag[k] * mag[k];
-    }
-
-    /* 3) 基波功率（聚合主瓣泄漏） */
-    float p_sig = Measure_ClusterPower(mag, mark_len, k0, leak_bins, used);
-
-    /* 4) 各次谐波功率 */
-    float p_harm = 0.0f;
-    for (uint32_t h = 2u; h <= num_harm; h++) {
-        if (k0 > ((n / 2u) - 1u) / h) break;
-        uint32_t kh = k0 * h;
-        if (kh >= (n / 2u)) break;              /* 超出奈奎斯特则停止 */
-        p_harm += Measure_ClusterPower(mag, mark_len, kh, leak_bins, used);
-    }
-
-    /* 5) 噪声功率 = 总 - 基波 - 谐波；噪声+失真 = 总 - 基波 */
-    float p_noise   = p_total - p_sig - p_harm;
-    float p_noisdist = p_total - p_sig;
-    if (p_noise   < 1e-20f) p_noise   = 1e-20f;
-    if (p_noisdist < 1e-20f) p_noisdist = 1e-20f;
-    if (p_sig     < 1e-20f) p_sig     = 1e-20f;
-
-    /* 6) 指标 */
-    q->thd      = (p_harm > 0.0f) ? (sqrtf(p_harm) / sqrtf(p_sig)) : 0.0f;
-    q->thd_db   = 20.0f * log10f(q->thd > 1e-12f ? q->thd : 1e-12f);
-    q->snr_db   = 10.0f * log10f(p_sig / p_noise);
-    q->sinad_db = 10.0f * log10f(p_sig / p_noisdist);
-    q->enob     = (q->sinad_db - 1.76f) / 6.02f;
-
+    if (noise_power < 1e-20f) noise_power = 1e-20f;
+    if (signal_power < 1e-20f) signal_power = 1e-20f;
+    float noise_and_distortion = noise_power + harmonic_power;
+    if (noise_and_distortion < 1e-20f) noise_and_distortion = 1e-20f;
+    q->snr_db = 10.0f * log10f(signal_power / noise_power);
+    q->sinad_db = 10.0f * log10f(signal_power / noise_and_distortion);
+    q->enob = (q->sinad_db - 1.76f) / 6.02f;
 }
 
 /* ====================== 时域波形参数 ====================== */
@@ -328,6 +601,56 @@ float Measure_FreqZeroCross(const float *data, uint32_t len, float fs)
     float period_samples = (last_cross - first_cross) / (float)(count - 1u);
     if (period_samples <= 0.0f) return 0.0f;
     return fs / period_samples;
+}
+
+/* 提取从上升过零点开始的一个周期，并重采样为固定显示点数。 */
+uint32_t Measure_ExtractPeriod(const float *data,
+                               uint32_t len,
+                               float fs,
+                               float freq,
+                               float *output,
+                               uint32_t out_len)
+{
+    if (data == NULL || output == NULL || len < 4u || out_len < 2u ||
+        !(fs > 0.0f) || freq < 0.0f) {
+        return 0u;
+    }
+    for (uint32_t i = 0u; i < len; i++) {
+        if (!Measure_IsFinite(data[i])) return 0u;
+    }
+    if (!(freq > 0.0f)) freq = Measure_FreqZeroCross(data, len, fs);
+    if (!(freq > 0.0f)) return 0u;
+
+    float period_samples = fs / freq;
+    if (period_samples < 2.0f || period_samples > (float)(len - 1u)) return 0u;
+    float mean = Measure_Mean(data, len);
+    float start = -1.0f;
+
+    for (uint32_t i = 1u; i < len; i++) {
+        float prev = data[i - 1u] - mean;
+        float cur = data[i] - mean;
+        if (prev < 0.0f && cur >= 0.0f) {
+            float denom = cur - prev;
+            float frac = (fabsf(denom) > 1e-20f) ? (-prev / denom) : 0.0f;
+            float candidate = (float)(i - 1u) + frac;
+            if (candidate + period_samples <= (float)(len - 1u)) {
+                start = candidate;
+                break;
+            }
+        }
+    }
+    if (start < 0.0f) return 0u;
+
+    for (uint32_t i = 0u; i < out_len; i++) {
+        float position = start +
+            period_samples * (float)i / (float)out_len;
+        uint32_t index = (uint32_t)position;
+        float fraction = position - (float)index;
+        if (index + 1u >= len) return 0u;
+        output[i] = data[index] +
+                    (data[index + 1u] - data[index]) * fraction;
+    }
+    return out_len;
 }
 
 /* 根据上下电平中点计算占空比。 */
