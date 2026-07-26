@@ -125,7 +125,7 @@ static float FindFundamentalFft(void)
 {
     float    df      = FFT_Fs / (float)FFT_length;
     uint32_t k_start = (uint32_t)(50.0f / df + 1.0f);
-    uint32_t k_end   = (uint32_t)(1000.0f / df);
+    uint32_t k_end   = (uint32_t)(s_max_harmonic_hz / df);
 
     if (k_end >= (FFT_length / 2U)) {
         k_end = (FFT_length / 2U) - 1U;

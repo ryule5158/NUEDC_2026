@@ -133,6 +133,12 @@ void ADC_Sample_ConvertHalf(ADC_HalfReady_t half);
 /* 打印默认通道原始ADC码。 */
 void ADC_Sample_PrintRaw(void);
 
+/* 打印两通道电压值（需先完成采集与转换）。 */
+void ADC_Sample_PrintVoltages(void);
+
+/* 对电压通道数据运行FFT并打印基频（需先完成采集与转换）。 */
+void ADC_Sample_PrintFrequency(void);
+
 #ifdef __cplusplus
 }
 #endif

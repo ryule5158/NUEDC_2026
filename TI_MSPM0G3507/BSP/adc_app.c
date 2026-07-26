@@ -1,4 +1,5 @@
 #include "adc_app.h"
+#include "ADC_FFT.h"
 
 #undef GPIOA
 #undef GPIOB
@@ -250,7 +251,7 @@ HAL_StatusTypeDef ADC_Sample_Init(const ADC_SampleConfig_t *config)
     return HAL_OK;
 }
 
-/* 按当前模式启动同步双ADC采集。 */
+/* 按当前模式启动同步双ADC采集。ONESHOT模式阻塞至完成并自动转换电压。 */
 HAL_StatusTypeDef ADC_Sample_Start(void)
 {
     DL_DMA_TRANSFER_MODE dma_transfer_mode;
@@ -306,6 +307,19 @@ HAL_StatusTypeDef ADC_Sample_Start(void)
     s_running = 1U;
     DL_TimerG_setLoadValue(ADC_SAMPLE_TIMER_INST, s_timer_load_value);
     DL_TimerG_startCounter(ADC_SAMPLE_TIMER_INST);
+
+    /* ONESHOT模式：阻塞等待DMA完成，并自动转换电压。 */
+    if (s_mode == ADC_MODE_ONESHOT) {
+        while ((s_data_ready == 0U) && (s_dma_error == 0U)) {
+            __WFI();
+        }
+        if (s_dma_error != 0U) {
+            ADC_Sample_StopHardware();
+            return HAL_ERROR;
+        }
+        ADC_Sample_ConvertRange(0U, s_sample_count);
+        s_frame_converted = 1U;
+    }
 
     return HAL_OK;
 }
@@ -552,6 +566,35 @@ void ADC_Sample_PrintRaw(void)
                    s_raw_buffer[ADC_APP_CHANNEL_VOLTAGE][index],
                (unsigned int)
                    s_raw_buffer[ADC_APP_CHANNEL_CURRENT][index]);
+    }
+}
+
+/* 打印双通道电压值（需先通过Start完成采集和转换）。 */
+void ADC_Sample_PrintVoltages(void)
+{
+    uint32_t index;
+
+    for (index = 0U; index < s_sample_count; index++) {
+        printf("%.6f,%.6f\r\n",
+               (double)s_voltage_buffer[ADC_APP_CHANNEL_VOLTAGE][index],
+               (double)s_voltage_buffer[ADC_APP_CHANNEL_CURRENT][index]);
+    }
+}
+
+/* 对电压通道数据运行FFT并打印基频。 */
+void ADC_Sample_PrintFrequency(void)
+{
+    const ADC_FFT_Result_t *result;
+
+    printf("FFT_START\r\n");
+    ADC_FFT_SetMaxHarmonic(s_sample_rate_hz * 0.5f);
+    ADC_Sample_RunFft();
+    printf("FFT_DONE\r\n");
+    result = ADC_Sample_GetResult();
+    if (result->status == ADC_FFT_STATUS_OK) {
+        printf("%.2f\r\n", (double)result->fundamental_hz);
+    } else {
+        printf("FFT_ERROR\r\n");
     }
 }
 
