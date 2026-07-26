@@ -93,6 +93,21 @@ AD9910_Status AD9910_SetFrequencyFineHz(float freq_hz);
 AD9910_Status AD9910_SetPhaseOffsetWord(uint16_t phase_word);
 
 /**
+  * @brief  原子更新当前Profile0的频率、相位和幅度。
+  *
+  * 该接口只写一次8字节Profile0并只产生一次IO_UPDATE，供PLL等高更新率
+  * 闭环使用。调用前必须先执行AD9910_Init()，且不能处于RAM或数字扫频模式。
+  *
+  * @param  freq_hz 输出频率，单位Hz，允许小数。
+  * @param  phase_word 16位相位偏移字，0~65535对应0~360度。
+  * @param  amplitude 14位幅度控制值，范围0~AD9910_MAX_AMPLITUDE。
+  * @retval AD9910_OK、AD9910_BAD_PARAM或AD9910_ERROR。
+  */
+AD9910_Status AD9910_UpdateSingleToneFast(double freq_hz,
+                                           uint16_t phase_word,
+                                           uint16_t amplitude);
+
+/**
   * @brief  只更新当前单频输出的幅度。
   * @param  amplitude 14位幅度控制值，超过16383的值会被截取为14位。
   * @retval AD9910_OK或AD9910_ERROR。

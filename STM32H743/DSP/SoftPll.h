@@ -1,16 +1,13 @@
 /**
  * @file    SoftPll.h
- * @brief   Generic software PLL controller for embedded DSP applications.
+ * @brief   Reusable second-order software PLL controller.
  *
- * The module does not touch ADC, DDS, timer, or HAL state.  It only compares
- * a reference phase and a feedback phase, then produces small frequency and
- * phase correction commands.  The caller decides how to apply those commands
- * to a DDS/NCO/PWM/timer.
+ * The controller is hardware independent: ADC/IQ code supplies phase and
+ * amplitude measurements, while the caller applies dds_freq_cmd_hz and the
+ * incremental phase_step_deg to an AD9910, an NCO, or a test DAC backend.
  */
-
-/* 软件锁相环模块头文件保护宏。 */
 #ifndef __SOFT_PLL_H
-#define __SOFT_PLL_H /* 软件锁相环模块头文件保护宏。 */
+#define __SOFT_PLL_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,91 +16,152 @@ extern "C" {
 #include <stdint.h>
 #include "IQ.h"
 
-/* 单精度圆周率，允许工程在外部覆盖。 */
 #ifndef SOFTPLL_PI
-#define SOFTPLL_PI 3.14159265358979323846f /* 单精度圆周率。 */
+#define SOFTPLL_PI                              3.14159265358979323846f
 #endif
 
-/* 公共接口使用的相位单位。 */
+/* Conservative defaults. They are macros so that board tests can override
+ * them globally without modifying the controller source. */
+#ifndef SOFTPLL_DEFAULT_LOOP_BANDWIDTH_HZ
+#define SOFTPLL_DEFAULT_LOOP_BANDWIDTH_HZ       10.0f
+#endif
+#ifndef SOFTPLL_DEFAULT_DAMPING_RATIO
+#define SOFTPLL_DEFAULT_DAMPING_RATIO           0.70710678f
+#endif
+#ifndef SOFTPLL_DEFAULT_UPDATE_RATE_HZ
+#define SOFTPLL_DEFAULT_UPDATE_RATE_HZ          1000.0f
+#endif
+#ifndef SOFTPLL_DEFAULT_PHASE_KP
+#define SOFTPLL_DEFAULT_PHASE_KP                0.12f
+#endif
+#ifndef SOFTPLL_DEFAULT_PHASE_KI
+#define SOFTPLL_DEFAULT_PHASE_KI                0.0f
+#endif
+#ifndef SOFTPLL_DEFAULT_FREQ_KD
+#define SOFTPLL_DEFAULT_FREQ_KD                 0.20f
+#endif
+#ifndef SOFTPLL_DEFAULT_RATE_ALPHA
+#define SOFTPLL_DEFAULT_RATE_ALPHA              0.25f
+#endif
+#ifndef SOFTPLL_DEFAULT_LOCK_ERROR_DEG
+#define SOFTPLL_DEFAULT_LOCK_ERROR_DEG          3.0f
+#endif
+#ifndef SOFTPLL_DEFAULT_LOCK_RATE_HZ
+#define SOFTPLL_DEFAULT_LOCK_RATE_HZ            0.5f
+#endif
+#ifndef SOFTPLL_DEFAULT_LOCK_COUNT
+#define SOFTPLL_DEFAULT_LOCK_COUNT              12U
+#endif
+#ifndef SOFTPLL_DEFAULT_UNLOCK_COUNT
+#define SOFTPLL_DEFAULT_UNLOCK_COUNT            4U
+#endif
+
 typedef enum {
     SOFTPLL_UNIT_RAD = 0,
     SOFTPLL_UNIT_DEG = 1
 } SoftPll_PhaseUnit_t;
 
-/* 单次锁相环更新所需的参考与反馈输入。 */
 typedef struct {
-    float reference_phase;  /**< Reference/input phase, rad or deg. */
-    float feedback_phase;   /**< Feedback/output phase, rad or deg. */
-    float dt_s;             /**< Time since previous update, seconds. */
-    float reference_amp;    /**< Reference amplitude; use 1.0f if unknown. */
-    float feedback_amp;     /**< Feedback amplitude; use 1.0f if unknown. */
-    float target_offset;    /**< Desired feedback-reference offset, rad or deg. */
-    float fixed_cal;        /**< Fixed phase calibration, rad or deg. */
+    float reference_phase;  /**< Input/reference phase, rad or deg. */
+    float feedback_phase;   /**< Measured output phase, rad or deg. */
+    float dt_s;             /**< Exact interval since the prior update. */
+    float reference_amp;    /**< Normalized reference amplitude. */
+    float feedback_amp;     /**< Normalized feedback amplitude. */
+    float target_offset;    /**< Desired feedback-reference phase offset. */
+    float fixed_cal;        /**< Board/frontend fixed phase calibration. */
 } SoftPll_PhaseInput_t;
 
-/* 软件锁相环可调参数，内部相位统一使用度。 */
 typedef struct {
-    float nominal_freq_hz;       /**< Locked nominal frequency. */
-    float initial_phase_deg;     /**< Initial phase command. */
-    float freq_cal_hz;           /**< Fixed frequency calibration added to command. */
-    float max_freq_offset_hz;    /**< Clamp around nominal frequency. 0 disables clamp. */
+    float nominal_freq_hz;
+    float initial_phase_deg;
+    float freq_cal_hz;
+    float max_freq_offset_hz;
 
-    float min_reference_amp;     /**< Reject update when reference amplitude is too small. */
-    float min_feedback_amp;      /**< Reject update when feedback amplitude is too small. */
+    float min_reference_amp;
+    float min_feedback_amp;
 
-    float phase_kp;              /**< Phase-command proportional gain, deg/deg. */
-    float phase_ki;              /**< Phase-command integral gain, deg/update/deg. */
-    float max_phase_step_deg;    /**< Max phase command change per update. */
-    float max_integral_deg;      /**< Integral clamp. */
-    float phase_deadband_deg;    /**< No phase command update inside this error band. */
+    /* Optional bounded direct phase shifter. This is deliberately separate
+     * from the type-II frequency loop so AD9910 POW updates remain optional. */
+    float phase_kp;
+    float phase_ki;
+    float max_phase_step_deg;
+    float max_integral_deg;
+    float phase_deadband_deg;
 
-    float freq_kp_hz_per_deg;    /**< Direct phase-error to frequency gain. */
-    float freq_kd;               /**< Phase-drift to frequency gain. */
-    float phase_rate_alpha;      /**< Low-pass factor for phase drift, 0..1. */
-    float max_freq_step_hz;      /**< Max frequency command change per update. */
-    float freq_step_deadband_hz; /**< Small frequency step suppression. */
-    float hold_error_deg;        /**< Apply freq deadband only when abs(error) is below this. */
+    /* Type-II loop:
+     *   f_cmd = f_nominal + Kp*phase_error + integral + Kd*phase_rate
+     *   d(integral)/dt = Ki*phase_error
+     */
+    float freq_kp_hz_per_deg;
+    float freq_kd;
+    float phase_rate_alpha;
+    float max_freq_step_hz;
+    float freq_step_deadband_hz;
+    float hold_error_deg;
 
-    float freq_direction;        /**< Set to -1 if frequency correction direction is inverted. */
-    float phase_direction;       /**< Set to -1 if phase correction direction is inverted. */
+    float freq_direction;
+    float phase_direction;
+
+    /* Appended fields preserve all existing source-level field names. */
+    float freq_ki_hz_per_deg_s;
+    float lock_error_deg;
+    float lock_rate_hz;
+    uint16_t lock_count_required;
+    uint16_t unlock_count_required;
 } SoftPll_Config_t;
 
-/* 软件锁相环运行状态与最近一次诊断结果。 */
 typedef struct {
     SoftPll_Config_t cfg;
 
-    float phase_cmd_deg;       /**< Current phase command, 0..360 deg. */
-    float freq_cmd_hz;         /**< Current frequency command before fixed calibration. */
-    float dds_freq_cmd_hz;     /**< Current frequency command after fixed calibration. */
-    float integral_deg;        /**< Phase integral accumulator. */
+    float phase_cmd_deg;
+    float freq_cmd_hz;
+    float dds_freq_cmd_hz;
+    float integral_deg;
 
-    float error_deg;           /**< Last normalized phase error, -180..180 deg. */
-    float last_error_deg;      /**< Previous normalized phase error. */
-    float delta_error_deg;     /**< Last error delta, -180..180 deg. */
-    float phase_rate_hz;       /**< Low-passed phase drift converted to Hz. */
-    float freq_step_hz;        /**< Last frequency correction step. */
-    float phase_step_deg;      /**< Last phase correction step. */
+    float error_deg;
+    float last_error_deg;
+    float delta_error_deg;
+    float phase_rate_hz;
+    float freq_step_hz;
+    float phase_step_deg;
 
-    uint8_t ready;             /**< Set after init/reset. */
-    uint8_t last_error_valid;  /**< Internal derivative validity flag. */
-    uint8_t feedback_valid;    /**< Last update accepted amplitudes. */
+    float freq_integral_hz;
+    uint16_t lock_count;
+    uint16_t unlock_count;
+    uint8_t locked;
+    uint8_t ready;
+    uint8_t last_error_valid;
+    uint8_t feedback_valid;
 } SoftPll_t;
 
-/* 填充适合 DDS 频率和相位微调的保守默认配置。 */
 void SoftPll_DefaultConfig(SoftPll_Config_t *cfg, float nominal_freq_hz);
 
-/* 按配置初始化锁相环状态。 */
-void SoftPll_Init(SoftPll_t *pll, const SoftPll_Config_t *cfg);
+/**
+ * @brief Calculate continuous-time type-II gains from natural frequency.
+ * @note  loop_bandwidth_hz is used as fn (wn = 2*pi*fn). The update interval
+ *        is still supplied on every SoftPll_UpdatePhase call, so gains remain
+ *        correct if block timing has small variations.
+ */
+uint8_t SoftPll_DesignType2(SoftPll_Config_t *cfg,
+                            float loop_bandwidth_hz,
+                            float damping_ratio,
+                            float update_rate_hz);
 
-/* 保留配置并复位频率与相位指令状态。 */
+void SoftPll_Init(SoftPll_t *pll, const SoftPll_Config_t *cfg);
 void SoftPll_Reset(SoftPll_t *pll, float initial_phase_deg, float nominal_freq_hz);
 
-/* 使用弧度或度相位更新锁相环，接受更新时返回 1。 */
+/**
+ * @brief Immediately acquire a new centre frequency without changing API users.
+ * @param preserve_phase Non-zero keeps the current DDS phase offset.
+ */
+uint8_t SoftPll_Retune(SoftPll_t *pll,
+                       float nominal_freq_hz,
+                       uint8_t preserve_phase);
+
 uint8_t SoftPll_UpdatePhase(SoftPll_t *pll,
                             const SoftPll_PhaseInput_t *input,
                             SoftPll_PhaseUnit_t unit);
 
-/* 使用 IQ 解调结果更新锁相环，目标和校准相位单位为度。 */
 uint8_t SoftPll_UpdateIq(SoftPll_t *pll,
                          const IQ_Result_t *reference,
                          const IQ_Result_t *feedback,
@@ -111,13 +169,10 @@ uint8_t SoftPll_UpdateIq(SoftPll_t *pll,
                          float target_offset_deg,
                          float fixed_cal_deg);
 
-/* 将角度折返到 [0, 360) 度。 */
+uint8_t SoftPll_IsLocked(const SoftPll_t *pll);
 float SoftPll_Wrap360Deg(float phase_deg);
-/* 将角度归一化到 (-180, 180] 度。 */
 float SoftPll_Normalize180Deg(float phase_deg);
-/* 将弧度转换为度。 */
 float SoftPll_RadToDeg(float phase_rad);
-/* 将度转换为弧度。 */
 float SoftPll_DegToRad(float phase_deg);
 
 #ifdef __cplusplus

@@ -9,39 +9,19 @@ param(
 
 $ErrorActionPreference = 'Stop' # 任一命令失败即停止打包。
 
-# 按“用户指定优先、候选路径其次”的顺序查找Xilinx工具。
-function Find-XilinxTool {
-    # 指定路径、默认候选路径和报错用工具名。
-    param(
-        [string]$SpecifiedPath,
-        [string[]]$CandidatePaths,
-        [string]$ToolName
-    )
+. (Join-Path $PSScriptRoot 'XilinxTools.ps1')
 
-    if (-not [string]::IsNullOrWhiteSpace($SpecifiedPath)) {
-        return $SpecifiedPath
-    }
-
-    foreach ($candidate in $CandidatePaths) {
-        if (Test-Path -LiteralPath $candidate) {
-            return $candidate
-        }
-    }
-
-    throw "$ToolName was not found. Pass its full path explicitly."
-}
-
-# 自动定位Vivado 2018.3和配套bootgen。
-$Vivado = Find-XilinxTool $Vivado @(
-    'D:\Tools\Xilinx\Vivado\2018.3\bin\vivado.bat',
-    'C:\Xilinx\Vivado\2018.3\bin\vivado.bat',
-    'E:\Vivado\2018.3\bin\vivado.bat'
-) 'Vivado 2018.3'
-$Bootgen = Find-XilinxTool $Bootgen @(
-    'D:\Tools\Xilinx\SDK\2018.3\bin\bootgen.bat',
-    'C:\Xilinx\SDK\2018.3\bin\bootgen.bat',
-    'E:\SDK\2018.3\bin\bootgen.bat'
-) 'bootgen 2018.3'
+# 自动定位任意盘符/常见安装目录下的Vivado 2018.3和配套bootgen。
+$Vivado = Resolve-XilinxTool `
+    -ToolName 'vivado.bat' `
+    -Product Vivado `
+    -Version '2018.3' `
+    -SpecifiedPath $Vivado
+$Bootgen = Resolve-XilinxTool `
+    -ToolName 'bootgen.bat' `
+    -Product SDK `
+    -Version '2018.3' `
+    -SpecifiedPath $Bootgen
 
 # FPGA工程根目录、构建入口和输出文件路径。
 $fpgaRoot = Split-Path -Parent $PSScriptRoot
@@ -89,14 +69,6 @@ if ($fpgaRoot -match '[^\x00-\x7F]') {
 try {
     # 将工程内路径映射到工具可访问的ASCII入口。
     $toolBuildTcl = Join-Path $toolFpgaRoot 'scripts\build_ps7_project.tcl'
-    $toolBitFile = Join-Path $toolFpgaRoot 'output\BX71_V4_U3_tail_AD9708_PS7.bit'
-    $toolBifFile = Join-Path $toolFpgaRoot 'output\ad9708_ps7_qspi.bif'
-    $toolBootFile = Join-Path $toolFpgaRoot 'output\BOOT_PS7.bin'
-    $toolFsbl = if ($Fsbl.StartsWith($fpgaRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
-        $toolFpgaRoot + $Fsbl.Substring($fpgaRoot.Length)
-    } else {
-        $Fsbl
-    }
 
     # 默认先生成含PS7的位流，调试时可选择复用已有位流。
     if (-not $SkipVivado) {
@@ -107,33 +79,70 @@ try {
         }
     }
 
-    if (-not (Test-Path -LiteralPath $bitFile)) {
-        throw "PS7-integrated bitstream not found: $bitFile"
+} finally {
+    # 无论成功或失败都清理临时目录联接。
+    if (($null -ne $asciiLink) -and (Test-Path -LiteralPath $asciiLink)) {
+        [System.IO.Directory]::Delete($asciiLink)
     }
+}
 
-    # 生成bootgen所需BIF，依次装入FSBL和PL位流。
-    New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
-    $fsblBif = (Resolve-Path -LiteralPath $toolFsbl).Path.Replace('\', '/')
-    $bitBif = (Resolve-Path -LiteralPath $toolBitFile).Path.Replace('\', '/')
+if (-not (Test-Path -LiteralPath $bitFile -PathType Leaf)) {
+    throw "PS7-integrated bitstream not found: $bitFile"
+}
+
+# Bootgen 2018.3会把中文路径静默转换成“?”，并可能错误返回0。
+# 因此把FSBL、位流、BIF和生成结果全部放入纯ASCII临时目录。
+$bootStageDir = Join-Path $env:TEMP ("BX71_BOOT_{0}" -f $PID)
+$stagedFsbl = Join-Path $bootStageDir 'FSBL.elf'
+$stagedBit = Join-Path $bootStageDir 'design.bit'
+$stagedBif = Join-Path $bootStageDir 'boot.bif'
+$stagedBoot = Join-Path $bootStageDir 'BOOT_PS7.bin'
+try {
+    New-Item -ItemType Directory -Path $bootStageDir -Force | Out-Null
+    Copy-Item -LiteralPath $Fsbl -Destination $stagedFsbl -Force
+    Copy-Item -LiteralPath $bitFile -Destination $stagedBit -Force
+
+    $fsblBif = $stagedFsbl.Replace('\', '/')
+    $bitBif = $stagedBit.Replace('\', '/')
     @"
 the_ROM_image:
 {
   [bootloader] $fsblBif
   $bitBif
 }
-"@ | Set-Content -LiteralPath $toolBifFile -Encoding ASCII
+"@ | Set-Content -LiteralPath $stagedBif -Encoding ASCII
+
+    if (Test-Path -LiteralPath $stagedBoot) {
+        Remove-Item -LiteralPath $stagedBoot -Force
+    }
 
     Write-Host 'Packaging BOOT_PS7.bin...'
-    & $Bootgen -image $toolBifFile -arch zynq -o $toolBootFile -w on
-    if ($LASTEXITCODE -ne 0) {
-        throw "bootgen failed with exit code $LASTEXITCODE"
+    $bootgenOutput = @(
+        & $Bootgen -image $stagedBif -arch zynq -o $stagedBoot -w on 2>&1
+    )
+    $bootgenExitCode = $LASTEXITCODE
+    $bootgenOutput | ForEach-Object { Write-Host $_ }
+    $bootgenText = $bootgenOutput | Out-String
+    if ($bootgenExitCode -ne 0) {
+        throw "bootgen failed with exit code $bootgenExitCode"
     }
-    # BIF只用于本次打包，成功后删除，避免输出目录残留临时路径。
-    [System.IO.File]::Delete($toolBifFile)
+    if ($bootgenText -match '(?im)^\s*(\[ERROR\]|ERROR:)') {
+        throw "bootgen reported an error even though its exit code was 0.`n$bootgenText"
+    }
+    if (-not (Test-Path -LiteralPath $stagedBoot -PathType Leaf)) {
+        throw 'bootgen returned success but did not create BOOT_PS7.bin'
+    }
+
+    $stagedBootItem = Get-Item -LiteralPath $stagedBoot
+    if ($stagedBootItem.Length -le 0) {
+        throw 'bootgen created an empty BOOT_PS7.bin'
+    }
+
+    New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
+    Copy-Item -LiteralPath $stagedBoot -Destination $bootFile -Force
 } finally {
-    # 无论成功或失败都清理临时目录联接。
-    if (($null -ne $asciiLink) -and (Test-Path -LiteralPath $asciiLink)) {
-        [System.IO.Directory]::Delete($asciiLink)
+    if (Test-Path -LiteralPath $bootStageDir) {
+        Remove-Item -LiteralPath $bootStageDir -Recurse -Force
     }
 }
 
@@ -152,4 +161,4 @@ Write-Host "  $($bootItem.FullName)"
 Write-Host "  Length: $($bootItem.Length) bytes"
 Write-Host "  SHA256: $bootHash"
 Write-Host ''
-Write-Host 'Program it in SDK with qspi-x1-single and Verify after flash enabled.'
+Write-Host 'To program without an SDK workspace, double-click scripts\Program-Qspi.cmd.'

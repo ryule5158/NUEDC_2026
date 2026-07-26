@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $keilRoot = Join-Path $projectRoot "MDK-ARM"
-$uv4 = "C:\Keil_v5\UV4\UV4.exe"
+$uv4 = "C:\Users\LENOVO\AppData\Local\Keil_v5\UV4\uVision.com"
 $project = Join-Path $keilRoot "STM32H743.uvprojx"
 $log = Join-Path $keilRoot "build.log"
 $output = Join-Path $projectRoot "output"
@@ -20,9 +20,11 @@ try {
     if (Test-Path -LiteralPath $log) {
         Remove-Item -LiteralPath $log
     }
-    Start-Process -FilePath $uv4 `
-        -ArgumentList '-r "STM32H743.uvprojx" -j0 -o "build.log"' `
-        -WindowStyle Hidden -Wait | Out-Null
+    & $uv4 -r $project -j0 -o $log
+    $uvExitCode = $LASTEXITCODE
+    if (($uvExitCode -ne 0) -and (-not (Test-Path -LiteralPath $log))) {
+        throw "Keil rebuild failed before producing a log (exit $uvExitCode)."
+    }
     $buildResult = Get-Content -Raw -LiteralPath $log
     Write-Output $buildResult
     if ($buildResult -notmatch '0 Error\(s\), 0 Warning\(s\)') {

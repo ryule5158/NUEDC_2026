@@ -142,12 +142,12 @@ static int TestAddressMap(void)
   static const uint8_t logical[] = {
     0x00U, 0x05U, 0x10U, 0x17U, 0x20U, 0x27U,
     0x40U, 0x41U, 0x50U, 0x57U, 0x58U, 0x5FU,
-    0x60U, 0x67U
+    0x60U, 0x67U, 0x70U, 0x7AU
   }; /* 合法逻辑地址边界。 */
   static const uint8_t physical[] = {
     0x30U, 0x35U, 0x38U, 0x3FU, 0x40U, 0x47U,
     0x48U, 0x49U, 0x50U, 0x57U, 0x58U, 0x5FU,
-    0x60U, 0x67U
+    0x60U, 0x67U, 0x68U, 0x72U
   }; /* 对应物理地址边界。 */
   static const uint8_t invalid[] = {
     0x06U, 0x0FU, 0x18U, 0x28U, 0x3FU, 0x42U,
@@ -172,6 +172,7 @@ static int TestAddressMap(void)
   TEST_CHECK(FPGA_ProMaxIsWritable(0x10U) == 1U);
   TEST_CHECK(FPGA_ProMaxIsWritable(0x27U) == 1U);
   TEST_CHECK(FPGA_ProMaxIsWritable(FPGA_PROMAX_REG_MF_COEFF) == 1U);
+  TEST_CHECK(FPGA_ProMaxIsWritable(FPGA_PROMAX_REG_WAVE_CONTROL) == 1U);
   TEST_CHECK(FPGA_ProMaxIsWritable(FPGA_PROMAX_REG_ID) == 0U);
   TEST_CHECK(FPGA_ProMaxIsWritable(FPGA_PROMAX_REG_POWER_LO0) == 0U);
 
@@ -196,6 +197,9 @@ static int TestAddressMap(void)
   TEST_CHECK(FPGA_ProMaxVerifyWrite(FPGA_PROMAX_REG_MF_COEFF,
                                     0xFFFFFFFFU,
                                     0x0003FFFFU) == 1U);
+  TEST_CHECK(FPGA_ProMaxVerifyWrite(FPGA_PROMAX_REG_WAVE_CONTROL,
+                                    0x00000106U,
+                                    0x00000006U) == 1U);
   TEST_CHECK(FPGA_ProMaxVerifyWrite(FPGA_PROMAX_REG_STATUS,
                                     0U,
                                     0U) == 0U);
@@ -206,25 +210,32 @@ static int TestAddressMap(void)
 static int TestCoreApi(void)
 {
   FpgaPromax dev;
+  FpgaPromax_AmEstimate am;
   FpgaPromax_FftPeak fft_peak;
+  FpgaPromax_WaveMetrics metrics;
+  FpgaPromax_WaveStats wave;
   FpgaPromax_Result result;
   int32_t score;
   uint32_t index;
   uint32_t value;
   uint64_t power;
+  int32_t fir_coeff[FPGA_PROMAX_MF_TAPS];
+  size_t tap;
 
   memset(s_registers, 0, sizeof(s_registers));
   s_registers[0x30U] = FPGA_PROMAX_EXPECTED_ID;
-  s_registers[0x31U] = 0x00010000U;
-  s_registers[0x32U] = FPGA_PROMAX_CAPABILITY_REALTIME;
+  s_registers[0x31U] = 0x00010100U;
+  s_registers[0x32U] = FPGA_PROMAX_CAPABILITY_REALTIME |
+                       FPGA_PROMAX_CAPABILITY_WAVE_STATS;
   s_registers[0x34U] = FPGA_PROMAX_STATUS_RUN |
                        FPGA_PROMAX_STATUS_ALL_RESULTS;
 
   result = FpgaPromax_Init(&dev, TestMockTransport, NULL, 10U);
   TEST_CHECK(result == FPGA_PROMAX_OK);
-  TEST_CHECK(dev.version == 0x00010000U);
+  TEST_CHECK(dev.version == 0x00010100U);
   TEST_CHECK(FpgaPromax_HasRealtime(&dev) == 1U);
   TEST_CHECK(FpgaPromax_HasFft(&dev) == 0U);
+  TEST_CHECK(FpgaPromax_HasWaveStats(&dev) == 1U);
   TEST_CHECK(FpgaPromax_SetFft(&dev, 1U, 0U, 1U) ==
              FPGA_PROMAX_E_UNSUPPORTED);
 
@@ -235,6 +246,63 @@ static int TestCoreApi(void)
   TEST_CHECK(FpgaPromax_SetDdcFrequency(&dev, 0U, 16000001U, 32000000U) ==
              FPGA_PROMAX_E_RANGE);
 
+  for (tap = 0U; tap < FPGA_PROMAX_MF_TAPS; tap++)
+  {
+    fir_coeff[tap] = 0;
+  }
+  fir_coeff[FPGA_PROMAX_MF_TAPS - 1U] = 65536;
+  TEST_CHECK(FpgaPromax_LoadFirBank(&dev, 2U, fir_coeff,
+                                    FPGA_PROMAX_MF_TAPS) ==
+             FPGA_PROMAX_OK);
+  TEST_CHECK(s_registers[0x48U] == 0x0000021FU);
+  TEST_CHECK(s_registers[0x49U] == 0x00010000U);
+  fir_coeff[0] = 32768;
+  TEST_CHECK(FpgaPromax_LoadCorrelationTemplate(
+               &dev, 3U, fir_coeff, FPGA_PROMAX_MF_TAPS) == FPGA_PROMAX_OK);
+  TEST_CHECK(s_registers[0x48U] == 0x0000031FU);
+  TEST_CHECK(s_registers[0x49U] == 0x00008000U);
+
+  result = FpgaPromax_SetWaveBlockLog2(&dev, 6U);
+  TEST_CHECK(result == FPGA_PROMAX_OK);
+  TEST_CHECK((s_registers[0x68U] & 0x1FU) == 6U);
+  s_registers[0x69U] = 0x00060203U;
+  s_registers[0x6AU] = 0x0000649CU;
+  s_registers[0x6BU] = 0U;
+  s_registers[0x6CU] = 0U;
+  s_registers[0x6DU] = 321312U;
+  s_registers[0x6EU] = 0U;
+  s_registers[0x6FU] = 32U;
+  s_registers[0x70U] = 8U;
+  s_registers[0x71U] = 56U;
+  s_registers[0x72U] = 64U;
+  result = FpgaPromax_ReadWaveStats(&dev, &wave, 10U);
+  TEST_CHECK(result == FPGA_PROMAX_OK);
+  TEST_CHECK((wave.minimum_code == -100) &&
+             (wave.maximum_code == 100) &&
+             (wave.sample_count == 64U) &&
+             (wave.generation == 2U));
+  result = FpgaPromax_ComputeWaveMetrics(&wave,
+                                         32000000U,
+                                         0.0f,
+                                         1.0f,
+                                         &metrics);
+  TEST_CHECK(result == FPGA_PROMAX_OK);
+  TEST_CHECK((metrics.vpp > 199.9f) && (metrics.vpp < 200.1f));
+  TEST_CHECK((metrics.rms > 70.8f) && (metrics.rms < 70.9f));
+  TEST_CHECK((metrics.frequency_hz > 3999999.0f) &&
+             (metrics.frequency_hz < 4000001.0f));
+  TEST_CHECK((metrics.duty_percent > 49.9f) &&
+             (metrics.duty_percent < 50.1f));
+
+  {
+    static const uint32_t rf_tones[3] = {
+      35000000U, 37000000U, 39000000U
+    };
+    result = FpgaPromax_ConfigureToneBank(&dev, rf_tones, 3U, 32000000U);
+    TEST_CHECK(result == FPGA_PROMAX_OK);
+    TEST_CHECK(s_registers[0x38U] == 0x18000000U);
+  }
+
   s_registers[0x50U] = 0x89ABCDEFU;
   s_registers[0x58U] = 0x0000001FU;
   result = FpgaPromax_GetBandPower(&dev, 0U, &power);
@@ -244,10 +312,21 @@ static int TestCoreApi(void)
 
   s_registers[0x60U] = 0x00FFFFFFU;
   s_registers[0x64U] = 1234U;
-  result = FpgaPromax_GetMatchedPeak(&dev, 0U, &score, &index);
+  result = FpgaPromax_GetFirPeak(&dev, 0U, &score, &index);
   TEST_CHECK(result == FPGA_PROMAX_OK);
   TEST_CHECK(score == -1);
   TEST_CHECK(index == 1234U);
+
+  s_registers[0x50U] = 1000000U;
+  s_registers[0x58U] = 0U;
+  s_registers[0x51U] = 62500U;
+  s_registers[0x59U] = 0U;
+  s_registers[0x52U] = 62500U;
+  s_registers[0x5AU] = 0U;
+  result = FpgaPromax_ReadAmEstimate(&dev, &am, 10U);
+  TEST_CHECK(result == FPGA_PROMAX_OK);
+  TEST_CHECK((am.modulation_depth > 0.499f) &&
+             (am.modulation_depth < 0.501f));
 
   result = FpgaPromax_WriteRegister(&dev, FPGA_PROMAX_REG_ID, 1U);
   TEST_CHECK(result == FPGA_PROMAX_E_FPGA_STATUS);

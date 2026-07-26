@@ -1,4 +1,5 @@
 #include "fpga_promax.h"
+#include <math.h>
 #include <string.h>
 
 /* 将32位整数按大端序写入字节数组。 */
@@ -494,6 +495,36 @@ FpgaPromax_Result FpgaPromax_LoadMatchedTemplate(FpgaPromax *dev,
   return FPGA_PROMAX_OK;
 }
 
+/*
+ * 普通实时FIR接口。装载结束后无需STM32继续参与：
+ * 4个bank在FPGA中对同一个ADC采样流逐点并行运行。
+ */
+FpgaPromax_Result FpgaPromax_LoadFirBank(FpgaPromax *dev,
+                                        uint8_t bank,
+                                        const int32_t *coeff_q16,
+                                        size_t count)
+{
+  return FpgaPromax_LoadMatchedTemplate(dev,
+                                       bank,
+                                       coeff_q16,
+                                       count,
+                                       0U);
+}
+
+/* 相关检测就是把模板反序后作为FIR系数装入硬件。 */
+FpgaPromax_Result FpgaPromax_LoadCorrelationTemplate(
+  FpgaPromax *dev,
+  uint8_t bank,
+  const int32_t *template_q16,
+  size_t count)
+{
+  return FpgaPromax_LoadMatchedTemplate(dev,
+                                       bank,
+                                       template_q16,
+                                       count,
+                                       1U);
+}
+
 /* 解冻快照，并在清理成功时保留更早的传输和协议错误。 */
 static FpgaPromax_Result FpgaPromax_EndSnapshotPreserveFailure(
   FpgaPromax *dev,
@@ -696,6 +727,15 @@ FpgaPromax_Result FpgaPromax_GetMatchedPeak(FpgaPromax *dev,
   return result;
 }
 
+/* 给普通FIR用户一个无需理解“matched filter”术语的同义接口。 */
+FpgaPromax_Result FpgaPromax_GetFirPeak(FpgaPromax *dev,
+                                       uint8_t bank,
+                                       int32_t *value,
+                                       uint32_t *sample_index)
+{
+  return FpgaPromax_GetMatchedPeak(dev, bank, value, sample_index);
+}
+
 /* 在一个冻结窗口内读取全部实时压缩结果。 */
 FpgaPromax_Result FpgaPromax_ReadAllResults(FpgaPromax *dev,
                                            FpgaPromax_AllResults *results,
@@ -815,6 +855,15 @@ uint8_t FpgaPromax_HasFft(const FpgaPromax *dev)
 }
 
 /* 配置FFT启停、方向和流水线重启。 */
+/* 判断当前位流是否包含连续满速波形统计器。 */
+uint8_t FpgaPromax_HasWaveStats(const FpgaPromax *dev)
+{
+  return ((dev != NULL) &&
+          ((dev->capability & FPGA_PROMAX_CAPABILITY_WAVE_STATS) != 0U)) ?
+         1U :
+         0U;
+}
+
 FpgaPromax_Result FpgaPromax_SetFft(FpgaPromax *dev,
                                    uint8_t enable,
                                    uint8_t inverse,
@@ -969,6 +1018,468 @@ FpgaPromax_Result FpgaPromax_GetFftPeak(FpgaPromax *dev,
 }
 
 /* 返回通用结果状态的简短调试字符串。 */
+/* 等待波形统计器发布已使用自动门限的完整数据块。 */
+static FpgaPromax_Result FpgaPromax_WaitWaveStats(
+  FpgaPromax *dev,
+  uint32_t timeout_ms)
+{
+  FpgaPromax_Result result;
+  uint32_t fallback_polls;
+  uint32_t start_ms;
+  uint32_t status;
+
+  if ((dev == NULL) || (timeout_ms == 0U))
+  {
+    return FPGA_PROMAX_E_ARGUMENT;
+  }
+  start_ms = (dev->time_ms != NULL) ? dev->time_ms(dev->time_user) : 0U;
+  fallback_polls = timeout_ms;
+  for (;;)
+  {
+    result = FpgaPromax_ReadRegister(dev,
+                                    FPGA_PROMAX_REG_WAVE_STATUS,
+                                    &status);
+    if (result != FPGA_PROMAX_OK)
+    {
+      return result;
+    }
+    if ((status & (FPGA_PROMAX_WAVE_STATUS_VALID |
+                   FPGA_PROMAX_WAVE_STATUS_SETTLED)) ==
+        (FPGA_PROMAX_WAVE_STATUS_VALID |
+         FPGA_PROMAX_WAVE_STATUS_SETTLED))
+    {
+      return FPGA_PROMAX_OK;
+    }
+
+    if (dev->time_ms != NULL)
+    {
+      if ((dev->time_ms(dev->time_user) - start_ms) >= timeout_ms)
+      {
+        return FPGA_PROMAX_E_TIMEOUT;
+      }
+      if (dev->delay_ms != NULL)
+      {
+        dev->delay_ms(dev->time_user, 1U);
+      }
+    }
+    else
+    {
+      fallback_polls--;
+      if (fallback_polls == 0U)
+      {
+        return FPGA_PROMAX_E_TIMEOUT;
+      }
+    }
+  }
+}
+
+/* 设置统计块长度并通过自清零位丢弃旧门限和旧结果。 */
+FpgaPromax_Result FpgaPromax_SetWaveBlockLog2(FpgaPromax *dev,
+                                              uint8_t block_log2)
+{
+  if (dev == NULL)
+  {
+    return FPGA_PROMAX_E_ARGUMENT;
+  }
+  if (FpgaPromax_HasWaveStats(dev) == 0U)
+  {
+    return FPGA_PROMAX_E_UNSUPPORTED;
+  }
+  if ((block_log2 < FPGA_PROMAX_WAVE_MIN_BLOCK_LOG2) ||
+      (block_log2 > FPGA_PROMAX_WAVE_MAX_BLOCK_LOG2))
+  {
+    return FPGA_PROMAX_E_RANGE;
+  }
+  return FpgaPromax_WriteRegister(
+    dev,
+    FPGA_PROMAX_REG_WAVE_CONTROL,
+    (uint32_t)block_log2 | FPGA_PROMAX_WAVE_CONTROL_CLEAR);
+}
+
+/* 将硬件的40位有符号整数恢复为C的int64_t。 */
+static int64_t FpgaPromax_DecodeSigned40(uint32_t low, uint32_t high)
+{
+  uint64_t packed;
+
+  packed = ((uint64_t)(high & 0xFFU) << 32) | low;
+  if ((packed & (UINT64_C(1) << 39)) != 0U)
+  {
+    packed |= ~((UINT64_C(1) << 40) - UINT64_C(1));
+  }
+  return (int64_t)packed;
+}
+
+/* 在同一冻结窗口内读取全部波形统计寄存器。 */
+FpgaPromax_Result FpgaPromax_ReadWaveStats(FpgaPromax *dev,
+                                           FpgaPromax_WaveStats *stats,
+                                           uint32_t timeout_ms)
+{
+  FpgaPromax_Result result;
+  uint32_t high;
+  uint32_t low;
+  uint32_t packed;
+  uint32_t status;
+  uint8_t opened_snapshot;
+
+  if ((dev == NULL) || (stats == NULL) || (timeout_ms == 0U))
+  {
+    return FPGA_PROMAX_E_ARGUMENT;
+  }
+  if (FpgaPromax_HasWaveStats(dev) == 0U)
+  {
+    return FPGA_PROMAX_E_UNSUPPORTED;
+  }
+
+  result = FpgaPromax_WaitWaveStats(dev, timeout_ms);
+  if (result != FPGA_PROMAX_OK)
+  {
+    return result;
+  }
+
+  opened_snapshot = (dev->snapshot_held == 0U) ? 1U : 0U;
+  if (opened_snapshot != 0U)
+  {
+    result = FpgaPromax_BeginResultSnapshot(dev);
+    if (result != FPGA_PROMAX_OK)
+    {
+      return result;
+    }
+  }
+
+  memset(stats, 0, sizeof(*stats));
+  result = FpgaPromax_ReadRegister(dev,
+                                   FPGA_PROMAX_REG_WAVE_STATUS,
+                                   &status);
+  if (result == FPGA_PROMAX_OK)
+  {
+    result = FpgaPromax_ReadRegister(dev,
+                                     FPGA_PROMAX_REG_WAVE_MIN_MAX,
+                                     &packed);
+  }
+  if (result == FPGA_PROMAX_OK)
+  {
+    stats->minimum_code = (int8_t)(packed & 0xFFU);
+    stats->maximum_code = (int8_t)((packed >> 8) & 0xFFU);
+    stats->threshold_code = (int8_t)((packed >> 16) & 0xFFU);
+    result = FpgaPromax_ReadRegister(dev,
+                                     FPGA_PROMAX_REG_WAVE_SUM_LO,
+                                     &low);
+  }
+  if (result == FPGA_PROMAX_OK)
+  {
+    result = FpgaPromax_ReadRegister(dev,
+                                     FPGA_PROMAX_REG_WAVE_SUM_HI,
+                                     &high);
+  }
+  if (result == FPGA_PROMAX_OK)
+  {
+    stats->sum_codes = FpgaPromax_DecodeSigned40(low, high);
+    result = FpgaPromax_ReadRegister(dev,
+                                     FPGA_PROMAX_REG_WAVE_SQ_LO,
+                                     &low);
+  }
+  if (result == FPGA_PROMAX_OK)
+  {
+    result = FpgaPromax_ReadRegister(dev,
+                                     FPGA_PROMAX_REG_WAVE_SQ_HI,
+                                     &high);
+  }
+  if (result == FPGA_PROMAX_OK)
+  {
+    stats->sum_square_codes =
+      ((uint64_t)(high & 0xFFFFU) << 32) | low;
+    result = FpgaPromax_ReadRegister(dev,
+                                     FPGA_PROMAX_REG_WAVE_HIGH,
+                                     &stats->high_count);
+  }
+  if (result == FPGA_PROMAX_OK)
+  {
+    result = FpgaPromax_ReadRegister(dev,
+                                     FPGA_PROMAX_REG_WAVE_RISING,
+                                     &stats->rising_count);
+  }
+  if (result == FPGA_PROMAX_OK)
+  {
+    result = FpgaPromax_ReadRegister(dev,
+                                     FPGA_PROMAX_REG_WAVE_PERIOD,
+                                     &stats->period_sum);
+  }
+  if (result == FPGA_PROMAX_OK)
+  {
+    result = FpgaPromax_ReadRegister(dev,
+                                     FPGA_PROMAX_REG_WAVE_SAMPLES,
+                                     &stats->sample_count);
+  }
+  if (result == FPGA_PROMAX_OK)
+  {
+    stats->generation = (uint8_t)(status >> 8);
+    stats->block_log2 = (uint8_t)((status >> 16) & 0x1FU);
+    stats->threshold_settled =
+      ((status & FPGA_PROMAX_WAVE_STATUS_SETTLED) != 0U) ? 1U : 0U;
+  }
+
+  if (opened_snapshot != 0U)
+  {
+    return FpgaPromax_EndSnapshotPreserveFailure(dev, result);
+  }
+  return result;
+}
+
+/* 把原始统计量换算为校准后的电压、频率和占空比。 */
+FpgaPromax_Result FpgaPromax_ComputeWaveMetrics(
+  const FpgaPromax_WaveStats *stats,
+  uint32_t sample_rate_hz,
+  float voltage_at_code_zero,
+  float volts_per_code,
+  FpgaPromax_WaveMetrics *metrics)
+{
+  double mean;
+  double mean_square;
+  double variance;
+  double rms_square;
+  double scale;
+  double offset;
+
+  if ((stats == NULL) || (metrics == NULL) ||
+      (stats->sample_count == 0U) || (sample_rate_hz == 0U) ||
+      !isfinite(voltage_at_code_zero) || !isfinite(volts_per_code) ||
+      (volts_per_code == 0.0f))
+  {
+    return FPGA_PROMAX_E_ARGUMENT;
+  }
+
+  memset(metrics, 0, sizeof(*metrics));
+  mean = (double)stats->sum_codes / (double)stats->sample_count;
+  mean_square =
+    (double)stats->sum_square_codes / (double)stats->sample_count;
+  variance = mean_square - mean * mean;
+  if (variance < 0.0)
+  {
+    variance = 0.0;
+  }
+
+  scale = (double)volts_per_code;
+  offset = (double)voltage_at_code_zero;
+  metrics->dc = (float)(offset + scale * mean);
+  metrics->ac_rms = (float)(fabs(scale) * sqrt(variance));
+  rms_square = offset * offset +
+               2.0 * offset * scale * mean +
+               scale * scale * mean_square;
+  if (rms_square < 0.0)
+  {
+    rms_square = 0.0;
+  }
+  metrics->rms = (float)sqrt(rms_square);
+  metrics->vpp =
+    (float)(fabs(scale) *
+            (double)((int32_t)stats->maximum_code -
+                     (int32_t)stats->minimum_code));
+  metrics->duty_percent =
+    100.0f * (float)stats->high_count / (float)stats->sample_count;
+
+  if ((stats->rising_count >= 2U) && (stats->period_sum != 0U))
+  {
+    metrics->frequency_hz =
+      (float)((double)sample_rate_hz *
+              (double)(stats->rising_count - 1U) /
+              (double)stats->period_sum);
+    metrics->frequency_valid = 1U;
+  }
+  return FPGA_PROMAX_OK;
+}
+
+/* 带通采样时把任意输入频率折叠到第一奈奎斯特区。 */
+uint32_t FpgaPromax_AliasFrequency(uint32_t frequency_hz,
+                                  uint32_t sample_rate_hz)
+{
+  uint32_t alias;
+
+  if (sample_rate_hz == 0U)
+  {
+    return 0U;
+  }
+  alias = frequency_hz % sample_rate_hz;
+  if (alias > (sample_rate_hz / 2U))
+  {
+    alias = sample_rate_hz - alias;
+  }
+  return alias;
+}
+
+/* 一次配置八路以内的并行选频功率测量。 */
+FpgaPromax_Result FpgaPromax_ConfigureToneBank(
+  FpgaPromax *dev,
+  const uint32_t *frequencies_hz,
+  size_t count,
+  uint32_t sample_rate_hz)
+{
+  FpgaPromax_Result result;
+  size_t channel;
+
+  if ((dev == NULL) || (frequencies_hz == NULL) ||
+      (count == 0U) || (count > FPGA_PROMAX_DDC_CHANNELS) ||
+      (sample_rate_hz == 0U))
+  {
+    return FPGA_PROMAX_E_ARGUMENT;
+  }
+  if (FpgaPromax_HasRealtime(dev) == 0U)
+  {
+    return FPGA_PROMAX_E_UNSUPPORTED;
+  }
+
+  for (channel = 0U; channel < count; channel++)
+  {
+    uint32_t alias;
+
+    alias = FpgaPromax_AliasFrequency(frequencies_hz[channel],
+                                     sample_rate_hz);
+    if (alias > (sample_rate_hz / 2U))
+    {
+      return FPGA_PROMAX_E_RANGE;
+    }
+  }
+
+  for (channel = 0U; channel < FPGA_PROMAX_DDC_CHANNELS; channel++)
+  {
+    uint32_t alias;
+
+    alias = (channel < count) ?
+            FpgaPromax_AliasFrequency(frequencies_hz[channel],
+                                     sample_rate_hz) :
+            0U;
+    result = FpgaPromax_SetDdcFrequency(dev,
+                                       (uint8_t)channel,
+                                       alias,
+                                       sample_rate_hz);
+    if (result != FPGA_PROMAX_OK)
+    {
+      return result;
+    }
+  }
+  return FPGA_PROMAX_OK;
+}
+
+/* 在一个冻结窗口内返回并行频点功率和最强通道。 */
+FpgaPromax_Result FpgaPromax_ReadToneBank(
+  FpgaPromax *dev,
+  size_t count,
+  uint64_t power[FPGA_PROMAX_DDC_CHANNELS],
+  uint8_t *strongest_channel,
+  uint32_t timeout_ms)
+{
+  FpgaPromax_Result result;
+  size_t channel;
+  uint8_t opened_snapshot;
+
+  if ((dev == NULL) || (power == NULL) || (strongest_channel == NULL) ||
+      (count == 0U) || (count > FPGA_PROMAX_DDC_CHANNELS) ||
+      (timeout_ms == 0U))
+  {
+    return FPGA_PROMAX_E_ARGUMENT;
+  }
+
+  result = FpgaPromax_WaitResults(dev,
+                                  FPGA_PROMAX_STATUS_POWER_VALID,
+                                  timeout_ms);
+  if (result != FPGA_PROMAX_OK)
+  {
+    return result;
+  }
+
+  opened_snapshot = (dev->snapshot_held == 0U) ? 1U : 0U;
+  if (opened_snapshot != 0U)
+  {
+    result = FpgaPromax_BeginResultSnapshot(dev);
+    if (result != FPGA_PROMAX_OK)
+    {
+      return result;
+    }
+  }
+
+  memset(power, 0, sizeof(uint64_t) * FPGA_PROMAX_DDC_CHANNELS);
+  *strongest_channel = 0U;
+  for (channel = 0U; channel < count; channel++)
+  {
+    result = FpgaPromax_GetBandPower(dev, (uint8_t)channel, &power[channel]);
+    if (result != FPGA_PROMAX_OK)
+    {
+      break;
+    }
+    if (power[channel] > power[*strongest_channel])
+    {
+      *strongest_channel = (uint8_t)channel;
+    }
+  }
+
+  if (opened_snapshot != 0U)
+  {
+    return FpgaPromax_EndSnapshotPreserveFailure(dev, result);
+  }
+  return result;
+}
+
+/* 用三个DDC通道并行测量普通单音AM的载波和一对边带。 */
+FpgaPromax_Result FpgaPromax_ConfigureAmMeasurement(
+  FpgaPromax *dev,
+  uint32_t carrier_hz,
+  uint32_t modulation_hz,
+  uint32_t sample_rate_hz)
+{
+  uint32_t frequencies[3];
+
+  if ((carrier_hz < modulation_hz) || (modulation_hz == 0U))
+  {
+    return FPGA_PROMAX_E_RANGE;
+  }
+  frequencies[0] = carrier_hz;
+  frequencies[1] = carrier_hz - modulation_hz;
+  frequencies[2] = carrier_hz + modulation_hz;
+  return FpgaPromax_ConfigureToneBank(dev,
+                                     frequencies,
+                                     3U,
+                                     sample_rate_hz);
+}
+
+/* 普通单音AM中每个边带幅度为m/2，故m=sqrt(2*(Pl+Pu)/Pc)。 */
+FpgaPromax_Result FpgaPromax_ReadAmEstimate(
+  FpgaPromax *dev,
+  FpgaPromax_AmEstimate *estimate,
+  uint32_t timeout_ms)
+{
+  FpgaPromax_Result result;
+  uint64_t power[FPGA_PROMAX_DDC_CHANNELS];
+  uint8_t strongest;
+
+  if ((dev == NULL) || (estimate == NULL))
+  {
+    return FPGA_PROMAX_E_ARGUMENT;
+  }
+  result = FpgaPromax_ReadToneBank(dev,
+                                  3U,
+                                  power,
+                                  &strongest,
+                                  timeout_ms);
+  (void)strongest;
+  if (result != FPGA_PROMAX_OK)
+  {
+    return result;
+  }
+  if (power[0] == 0U)
+  {
+    return FPGA_PROMAX_E_RANGE;
+  }
+
+  estimate->carrier_power = power[0];
+  estimate->lower_power = power[1];
+  estimate->upper_power = power[2];
+  estimate->modulation_depth =
+    (float)sqrt(2.0 *
+                ((double)power[1] + (double)power[2]) /
+                (double)power[0]);
+  return FPGA_PROMAX_OK;
+}
+
+
 const char *FpgaPromax_ResultString(FpgaPromax_Result result)
 {
   switch (result)

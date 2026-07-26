@@ -368,11 +368,21 @@ uint8_t ADC_Sample_VoltageReady(void)
 /* ================================================================ */
 
 /* 处理单帧完成或连续模式后半区完成。 */
+__weak void ADC_Sample_HalfReadyHook(void)
+{
+}
+
+__weak void ADC_Sample_FullReadyHook(void)
+{
+}
+
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
     if (hadc == NULL || hadc->Instance != ADC_APP_HAL_INSTANCE) {
         return;
     }
+
+    ADC_Sample_FullReadyHook();
 
     if (s_mode == ADC_MODE_ONESHOT) {
         __HAL_TIM_DISABLE(&htim3);
@@ -389,6 +399,8 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc)
     if (hadc == NULL || hadc->Instance != ADC_APP_HAL_INSTANCE) {
         return;
     }
+
+    ADC_Sample_HalfReadyHook();
 
     if (s_mode == ADC_MODE_CONTINUOUS) {
         SetModeBPending(ADC_HALF_FIRST);

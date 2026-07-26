@@ -27,4 +27,21 @@ update_compile_order -fileset sources_1
 update_compile_order -fileset sim_1
 launch_simulation -mode behavioral
 close_sim
+
+# Vivado 2018.3在testbench调用$fatal后仍可能让批处理进程返回0。
+# 因此必须在日志中看到测试末尾的唯一PASS标记，不能只相信进程退出码。
+set simulation_log [file join $project_dir \
+    "promax_sim.sim" "sim_1" "behav" "xsim" "simulate.log"]
+if {![file exists $simulation_log]} {
+    close_project
+    error "ProMax simulation log was not generated: $simulation_log"
+}
+set log_handle [open $simulation_log r]
+set log_text [read $log_handle]
+close $log_handle
+if {[string first "PROMAX_INTEGRATION_TEST_PASS" $log_text] < 0} {
+    close_project
+    error "ProMax simulation did not reach PASS; inspect: $simulation_log"
+}
 close_project
+puts "PROMAX_SIM_PASS"

@@ -17,6 +17,17 @@ module tb_ad9280_promax_core;
     localparam [6:0] REG_MF_COEFF      = 7'h49;
     localparam [6:0] REG_POWER_LO0     = 7'h50;
     localparam [6:0] REG_POWER_HI0     = 7'h58;
+    localparam [6:0] REG_WAVE_CONTROL  = 7'h68;
+    localparam [6:0] REG_WAVE_STATUS   = 7'h69;
+    localparam [6:0] REG_WAVE_MIN_MAX  = 7'h6A;
+    localparam [6:0] REG_WAVE_SUM_LO   = 7'h6B;
+    localparam [6:0] REG_WAVE_SUM_HI   = 7'h6C;
+    localparam [6:0] REG_WAVE_SQ_LO    = 7'h6D;
+    localparam [6:0] REG_WAVE_SQ_HI    = 7'h6E;
+    localparam [6:0] REG_WAVE_HIGH     = 7'h6F;
+    localparam [6:0] REG_WAVE_RISING   = 7'h70;
+    localparam [6:0] REG_WAVE_PERIOD   = 7'h71;
+    localparam [6:0] REG_WAVE_SAMPLES  = 7'h72;
 
     reg cfg_clk = 1'b0;
     reg adc_clk = 1'b0;
@@ -42,6 +53,13 @@ module tb_ad9280_promax_core;
     reg [31:0] generation_before;
     reg [63:0] power_channel0;
     reg [63:0] power_channel1;
+    reg [31:0] wave_status;
+    reg [31:0] wave_min_max;
+    reg [31:0] wave_sum_low;
+    reg [31:0] wave_sum_high;
+    reg [31:0] wave_square_low;
+    reg [31:0] wave_square_high;
+    reg [31:0] wave_count;
     reg [8*37-1:0] forced_power;
 
     always #10 cfg_clk = ~cfg_clk;
@@ -144,17 +162,17 @@ module tb_ad9280_promax_core;
         ReadReg(REG_ID, read_low);
         if (read_low != 32'h4258504D) $fatal(1, "DSP ID mismatch");
         ReadReg(REG_VERSION, read_low);
-        if (read_low != 32'h00010000) $fatal(1, "DSP version mismatch");
+        if (read_low != 32'h00010100) $fatal(1, "DSP version mismatch");
         ReadReg(REG_CAPABILITY, read_low);
-        if (read_low != 32'h09200408) $fatal(1, "DSP capability mismatch");
+        if (read_low != 32'h29200408) $fatal(1, "DSP capability mismatch");
         ReadReg(REG_SAMPLE_RATE, read_low);
         if (read_low != 32'd32000000) $fatal(1, "DSP sample rate mismatch");
         bus_addr = 7'h2F;
         #1;
         if (bus_select) $fatal(1, "DSP address overlaps legacy registers");
-        bus_addr = 7'h67;
+        bus_addr = REG_WAVE_SAMPLES;
         #1;
-        if (!bus_select) $fatal(1, "DSP final address not selected");
+        if (!bus_select) $fatal(1, "DSP wave-stat address not selected");
 
         /* 偏移二进制转换必须覆盖18位满量程且零点准确。 */
         adc_data = 8'd0;
@@ -234,6 +252,7 @@ module tb_ad9280_promax_core;
         WriteReg(REG_PHASE_INC0 + 1, 32'h40000000);
         WriteReg(REG_PHASE_OFFSET0 + 0, 32'd0);
         WriteReg(REG_PHASE_OFFSET0 + 1, 32'd0);
+        WriteReg(REG_WAVE_CONTROL, 32'h00000106);
         WriteReg(REG_CONTROL, 32'd3);
         sine_index = 3'd0;
         sine_enable = 1'b1;
@@ -245,6 +264,47 @@ module tb_ad9280_promax_core;
             timeout_count = timeout_count + 1;
         end
         if (timeout_count >= 20000) $fatal(1, "DSP power result timeout");
+
+        /* 第二个64点块应使用自动学习后的门限并给出完整波形统计。 */
+        timeout_count = 0;
+        ReadReg(REG_WAVE_STATUS, wave_status);
+        while (((wave_status & 32'h00000003) != 32'h00000003) &&
+               (timeout_count < 20000)) begin
+            @(posedge cfg_clk);
+            ReadReg(REG_WAVE_STATUS, wave_status);
+            timeout_count = timeout_count + 1;
+        end
+        if (timeout_count >= 20000) $fatal(1, "Wave-stat result timeout");
+        ReadReg(REG_WAVE_MIN_MAX, wave_min_max);
+        ReadReg(REG_WAVE_SUM_LO, wave_sum_low);
+        ReadReg(REG_WAVE_SUM_HI, wave_sum_high);
+        ReadReg(REG_WAVE_SQ_LO, wave_square_low);
+        ReadReg(REG_WAVE_SQ_HI, wave_square_high);
+        ReadReg(REG_WAVE_HIGH, wave_count);
+        if ($signed(wave_min_max[7:0]) != -8'sd100 ||
+            $signed(wave_min_max[15:8]) != 8'sd100 ||
+            $signed(wave_min_max[23:16]) != 8'sd0)
+            $fatal(1, "Wave-stat min/max/threshold mismatch: %h",
+                   wave_min_max);
+        if ({wave_sum_high[7:0], wave_sum_low} != 40'd0)
+            $fatal(1, "Wave-stat sum mismatch");
+        if ({wave_square_high[15:0], wave_square_low} != 48'd321312)
+            $fatal(1, "Wave-stat square sum mismatch: %h_%h",
+                   wave_square_high, wave_square_low);
+        if (wave_count != 32'd32)
+            $fatal(1, "Wave-stat high count mismatch: %0d", wave_count);
+        /* 窗口外的前一采样不可见，所以64点内可能只有7个块内上升沿。 */
+        ReadReg(REG_WAVE_RISING, wave_count);
+        if ((wave_count < 32'd7) || (wave_count > 32'd8))
+            $fatal(1, "Wave-stat rising count mismatch: %0d", wave_count);
+        ReadReg(REG_WAVE_PERIOD, read_low);
+        if (read_low != ((wave_count - 1'b1) << 3))
+            $fatal(1, "Wave-stat period mismatch: edges=%0d sum=%0d",
+                   wave_count, read_low);
+        ReadReg(REG_WAVE_SAMPLES, wave_count);
+        if (wave_count != 32'd64)
+            $fatal(1, "Wave-stat sample count mismatch: %0d", wave_count);
+
         WriteReg(REG_SNAPSHOT, 32'd1);
         ReadReg(REG_POWER_LO0 + 0, read_low);
         ReadReg(REG_POWER_HI0 + 0, read_high);

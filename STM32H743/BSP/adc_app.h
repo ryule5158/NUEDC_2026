@@ -107,6 +107,10 @@ void ADC_Sample_BufferLock(void);
 /* 解除连续模式电压缓冲区锁定。 */
 void ADC_Sample_BufferUnlock(void);
 
+/* Optional zero-copy DMA notifications used by high-rate applications. */
+void ADC_Sample_HalfReadyHook(void);
+void ADC_Sample_FullReadyHook(void);
+
 /* 返回并清除连续模式覆盖次数。 */
 uint8_t ADC_Sample_IsOverrun(void);
 

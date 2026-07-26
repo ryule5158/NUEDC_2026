@@ -42,10 +42,21 @@ module ad9280_promax_core #(
     localparam [6:0] REG_POWER_HI0      = 7'h58;
     localparam [6:0] REG_MF_SCORE0      = 7'h60;
     localparam [6:0] REG_MF_INDEX0      = 7'h64;
+    localparam [6:0] REG_WAVE_CONTROL   = 7'h68;
+    localparam [6:0] REG_WAVE_STATUS    = 7'h69;
+    localparam [6:0] REG_WAVE_MIN_MAX   = 7'h6A;
+    localparam [6:0] REG_WAVE_SUM_LO    = 7'h6B;
+    localparam [6:0] REG_WAVE_SUM_HI    = 7'h6C;
+    localparam [6:0] REG_WAVE_SQ_LO     = 7'h6D;
+    localparam [6:0] REG_WAVE_SQ_HI     = 7'h6E;
+    localparam [6:0] REG_WAVE_HIGH      = 7'h6F;
+    localparam [6:0] REG_WAVE_RISING    = 7'h70;
+    localparam [6:0] REG_WAVE_PERIOD    = 7'h71;
+    localparam [6:0] REG_WAVE_SAMPLES   = 7'h72;
 
     localparam [31:0] DEVICE_ID = 32'h4258504D; /* ASCII "BXPM"。 */
-    localparam [31:0] VERSION = 32'h00010000; /* ProMax协议版本1.0。 */
-    localparam [31:0] CAPABILITY = 32'h09200408; /* SPI、实时档、32/4/8。 */
+    localparam [31:0] VERSION = 32'h00010100; /* ProMax协议版本1.1。 */
+    localparam [31:0] CAPABILITY = 32'h29200408; /* 增加连续波形统计。 */
     localparam [31:0] SAMPLE_RATE_HZ = 32'd32000000; /* ADC有效采样率。 */
 
     /* 6字节总线直接维护DSP配置和结果快照。 */
@@ -56,6 +67,8 @@ module ad9280_promax_core #(
     reg score_snapshot_valid;
     reg [7:0] power_generation;
     reg [7:0] score_generation;
+    reg [4:0] wave_block_log2;
+    reg wave_clear;
     reg [DDC_CHANNELS*32-1:0] phase_inc_flat;
     reg [DDC_CHANNELS*32-1:0] phase_offset_flat;
     reg [9:0] mf_selector;
@@ -191,6 +204,21 @@ module ad9280_promax_core #(
     wire band_power_valid;
     wire [DDC_CHANNELS*POWER_WIDTH-1:0] band_power_flat;
 
+    wire wave_result_valid;
+    wire wave_threshold_settled;
+    wire [7:0] wave_generation;
+    wire signed [7:0] wave_min;
+    wire signed [7:0] wave_max;
+    wire signed [7:0] wave_threshold;
+    wire signed [39:0] wave_sum;
+    wire [47:0] wave_sum_square;
+    wire [31:0] wave_high_count;
+    wire [31:0] wave_rising_count;
+    wire [31:0] wave_period_sum;
+    wire [31:0] wave_sample_count;
+    wire signed [7:0] dsp_sample_code =
+        $signed(fifo_read_data[17:10]);
+
     dsp_promax_benchmark #(
         .DDC_CHANNELS(DDC_CHANNELS),
         .MF_BANKS(MF_BANKS),
@@ -224,7 +252,30 @@ module ad9280_promax_core #(
         .band_power_flat(band_power_flat)
     );
 
-    assign bus_select = (bus_addr >= REG_ID) && (bus_addr <= REG_MF_INDEX0 + 3);
+    dsp_stream_stats wave_stats (
+        .clk(cfg_clk),
+        .reset_n(reset_n),
+        .clear(soft_clear | wave_clear),
+        .hold(snapshot_hold),
+        .s_valid(dsp_sample_valid),
+        .s_data(dsp_sample_code),
+        .block_log2(wave_block_log2),
+        .result_valid(wave_result_valid),
+        .threshold_settled(wave_threshold_settled),
+        .generation(wave_generation),
+        .result_min(wave_min),
+        .result_max(wave_max),
+        .result_threshold(wave_threshold),
+        .result_sum(wave_sum),
+        .result_sum_square(wave_sum_square),
+        .result_high_count(wave_high_count),
+        .result_rising_count(wave_rising_count),
+        .result_period_sum(wave_period_sum),
+        .result_sample_count(wave_sample_count)
+    );
+
+    assign bus_select = (bus_addr >= REG_ID) &&
+                        (bus_addr <= REG_WAVE_SAMPLES);
 
     /* DSP寄存器读回，保留地址始终返回0。 */
     integer read_index;
@@ -236,7 +287,8 @@ module ad9280_promax_core #(
             REG_VERSION: bus_rdata = VERSION;
             REG_CAPABILITY: bus_rdata = CAPABILITY;
             REG_CONTROL: bus_rdata = {31'd0, run_enable};
-            REG_STATUS: bus_rdata = {25'd0, adc_ready_sync[1], fifo_empty,
+            REG_STATUS: bus_rdata = {24'd0, wave_result_valid,
+                                     adc_ready_sync[1], fifo_empty,
                                      fifo_full_sync[1], fifo_overflow_sync[1],
                                      score_snapshot_valid,
                                      power_snapshot_valid, run_enable};
@@ -250,6 +302,23 @@ module ad9280_promax_core #(
                                           fifo_full_sync[1], fifo_empty};
             REG_MF_SELECTOR: bus_rdata = {22'd0, mf_selector};
             REG_MF_COEFF: bus_rdata = {{14{mf_cfg_data[17]}}, mf_cfg_data};
+            REG_WAVE_CONTROL: bus_rdata = {27'd0, wave_block_log2};
+            REG_WAVE_STATUS: bus_rdata = {11'd0, wave_block_log2,
+                                           wave_generation, 6'd0,
+                                           wave_threshold_settled,
+                                           wave_result_valid};
+            REG_WAVE_MIN_MAX: bus_rdata = {8'd0, wave_threshold,
+                                            wave_max, wave_min};
+            REG_WAVE_SUM_LO: bus_rdata = wave_sum[31:0];
+            REG_WAVE_SUM_HI: bus_rdata = {{24{wave_sum[39]}},
+                                           wave_sum[39:32]};
+            REG_WAVE_SQ_LO: bus_rdata = wave_sum_square[31:0];
+            REG_WAVE_SQ_HI: bus_rdata = {16'd0,
+                                          wave_sum_square[47:32]};
+            REG_WAVE_HIGH: bus_rdata = wave_high_count;
+            REG_WAVE_RISING: bus_rdata = wave_rising_count;
+            REG_WAVE_PERIOD: bus_rdata = wave_period_sum;
+            REG_WAVE_SAMPLES: bus_rdata = wave_sample_count;
             default: begin
                 if ((bus_addr >= REG_PHASE_INC0) &&
                     (bus_addr < REG_PHASE_INC0 + DDC_CHANNELS)) begin
@@ -293,6 +362,8 @@ module ad9280_promax_core #(
             score_snapshot_valid <= 1'b0;
             power_generation <= 8'd0;
             score_generation <= 8'd0;
+            wave_block_log2 <= 5'd12;
+            wave_clear <= 1'b0;
             phase_inc_flat <= {(DDC_CHANNELS*32){1'b0}};
             phase_offset_flat <= {(DDC_CHANNELS*32){1'b0}};
             mf_selector <= 10'd0;
@@ -312,6 +383,7 @@ module ad9280_promax_core #(
         end else begin
             soft_clear <= 1'b0;
             mf_cfg_valid <= 1'b0;
+            wave_clear <= 1'b0;
 
             if (band_power_valid && !snapshot_hold) begin
                 for (channel_index = 0; channel_index < DDC_CHANNELS;
@@ -378,6 +450,16 @@ module ad9280_promax_core #(
                             mf_cfg_index <= mf_selector[4:0];
                             mf_cfg_data <= bus_wdata[17:0];
                             mf_cfg_valid <= 1'b1;
+                        end
+                        REG_WAVE_CONTROL: begin
+                            if (bus_wdata[4:0] < 5'd6)
+                                wave_block_log2 <= 5'd6;
+                            else if (bus_wdata[4:0] > 5'd25)
+                                wave_block_log2 <= 5'd25;
+                            else
+                                wave_block_log2 <= bus_wdata[4:0];
+                            if (bus_wdata[8])
+                                wave_clear <= 1'b1;
                         end
                         default: begin
                         end

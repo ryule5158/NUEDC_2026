@@ -19,6 +19,7 @@ Vivado/**/*.str
 *.pb
 *.wdb
 *.str
+output/LAST_PROGRAMMED.txt
 xsim.dir/
 sim_work/
 ps7/hdl/

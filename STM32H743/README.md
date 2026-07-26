@@ -33,9 +33,17 @@ AD9708 电压输出接口故意要求校准，避免将不同模块电位器的�
 
 ## FPGA ProMax 用法
 
-`Modules/fpga_promax.c/.h` 是最新版 BX71 DSP ProMax 的通用控制核心，`fpga_promax_link.c` 把它接到现有 SPI2 六字节链路。调用 `FPGA_ProMax_Init(&句柄)` 后可配置 8 路 DDC、装载 4 组 32 抽头模板，并读取 FPGA 产生的功率和匹配峰值；初始化不会自动启动数据面。
+`Modules/fpga_promax.c/.h` 是 BX71 DSP ProMax 的通用控制核心，`fpga_promax_link.c` 把它接到现有 SPI2 六字节链路。调用 `FPGA_ProMax_Init(&句柄)` 后可使用：
 
-当前 FPGA 实时档能力字为 `0x09200408`，不包含 UART、线级 CRC 或 FFT。`FpgaPromax_SetFft()` 等 FFT 接口会返回 `FPGA_PROMAX_E_UNSUPPORTED`，不能把它当作已实现的硬件 FFT。完整闭环代码、判据和预期值见上一级 `硬件测试指南.md`。
+- `FpgaPromax_LoadFirBank()`：配置 4 路并行 32 阶实时 FIR；
+- `FpgaPromax_LoadCorrelationTemplate()`：用相同硬件做相关/匹配检测；
+- `FpgaPromax_ConfigureToneBank()`：8 路 DDC 同时监测指定频率；
+- `FpgaPromax_SetWaveBlockLog2()` 与 `FpgaPromax_ReadWaveStats()`：连续测量波形；
+- `FpgaPromax_ConfigureAmMeasurement()`：并行测量 AM 载波和上下边带。
+
+配置时先停止，全部系数/频点写完后清零并启动；此后高速运算都在 FPGA 内连续进行，STM32 只在需要刷新 UI 或做判决时读一次快照。初始化不会自动启动数据面。
+
+当前 FPGA 实时档版本为 `1.1`，能力字为 `0x29200408`，不包含 UART、线级 CRC 或 FFT。`FpgaPromax_SetFft()` 等 FFT 接口会返回 `FPGA_PROMAX_E_UNSUPPORTED`，不能把它当作已实现的硬件 FFT。完整职责划分、调用顺序和题型覆盖见 FPGA 工程的 `DSP_PROMAX_CONTEST_GUIDE.md`。
 
 ProMax、AD9708 和 AD9280 共用 SPI2，裸机业务必须在主循环中串行调用；不要在中断中调用，也不要从多个任务并发访问。若以后加入 RTOS，应由业务层用同一把互斥锁保护整条 FPGA 链路。
 

@@ -34,6 +34,11 @@ static inline uint8_t FPGA_ProMaxMapAddress(uint8_t logical,
   {
     *physical = logical;
   }
+  else if ((logical >= FPGA_PROMAX_REG_WAVE_CONTROL) &&
+           (logical <= FPGA_PROMAX_REG_WAVE_SAMPLES))
+  {
+    *physical = (uint8_t)(0x68U + logical - FPGA_PROMAX_REG_WAVE_CONTROL);
+  }
   else
   {
     return 0U;
@@ -47,7 +52,8 @@ static inline uint8_t FPGA_ProMaxIsWritable(uint8_t logical)
   if ((logical == 0x03U) || (logical == 0x05U) ||
       ((logical >= 0x10U) && (logical <= 0x17U)) ||
       ((logical >= 0x20U) && (logical <= 0x27U)) ||
-      ((logical >= 0x40U) && (logical <= 0x41U)))
+      ((logical >= 0x40U) && (logical <= 0x41U)) ||
+      (logical == FPGA_PROMAX_REG_WAVE_CONTROL))
   {
     return 1U;
   }
@@ -82,6 +88,10 @@ static inline uint8_t FPGA_ProMaxVerifyWrite(uint8_t logical,
   else if (logical == FPGA_PROMAX_REG_MF_COEFF)
   {
     mask = 0x0003FFFFU;
+  }
+  else if (logical == FPGA_PROMAX_REG_WAVE_CONTROL)
+  {
+    mask = 0x0000001FU;
   }
   else
   {

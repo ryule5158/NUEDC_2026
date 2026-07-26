@@ -291,7 +291,7 @@ static uint32_t AD9910_FrequencyToTuningWord(uint32_t freq_hz)
  * Return   :       32位频率调谐字
  * Date     :       2026-06-26 V1
 ************************************************************/
-static uint32_t AD9910_FrequencyFineToTuningWord(float freq_hz)
+static uint32_t AD9910_FrequencyFineToTuningWord(double freq_hz)
 {
   double ftw_value; /* AD9910频率字浮点计算值 */
 
@@ -300,7 +300,7 @@ static uint32_t AD9910_FrequencyFineToTuningWord(float freq_hz)
     return 0U;
   }
 
-  ftw_value = ((double)freq_hz * 4294967296.0) / (double)AD9910_SYSCLK_HZ;
+  ftw_value = (freq_hz * 4294967296.0) / (double)AD9910_SYSCLK_HZ;
 
   if (ftw_value > 4294967295.0)
   {
@@ -968,6 +968,55 @@ AD9910_Status AD9910_SetPhaseOffsetWord(uint16_t phase_word)
   s_profile0[3] = (uint8_t)phase_word;
 
   return AD9910_WriteAllProfiles();
+}
+
+/************************************************************
+ * Function :       AD9910_UpdateSingleToneFast
+ * Comment  :       PLL快速通道，一次性更新Profile0中的ASF、POW和FTW
+ * Parameter:       freq_hz: 频率Hz; phase_word: 16位POW;
+ *                  amplitude: 14位ASF
+ * Return   :       AD9910_OK表示成功，其他值表示参数或通信错误
+ * Note     :       调用前须完成AD9910_Init且保持单频模式。与分别调用
+ *                  频率/相位/幅度接口相比，本函数只写一个Profile并
+ *                  产生一次IO_UPDATE，避免闭环周期被8个Profile拖慢。
+************************************************************/
+AD9910_Status AD9910_UpdateSingleToneFast(double freq_hz,
+                                           uint16_t phase_word,
+                                           uint16_t amplitude)
+{
+  AD9910_Status status;
+  uint32_t ftw;
+
+  if ((!isfinite(freq_hz)) || (freq_hz < 0.0f) ||
+      (freq_hz > (double)AD9910_MAX_OUTPUT_HZ) ||
+      (amplitude > AD9910_MAX_AMPLITUDE))
+  {
+    return AD9910_BAD_PARAM;
+  }
+
+  ftw = AD9910_FrequencyFineToTuningWord(freq_hz);
+  AD9910_StoreProfileAmplitude(amplitude);
+  s_profile0[2] = (uint8_t)(phase_word >> 8);
+  s_profile0[3] = (uint8_t)phase_word;
+  s_profile0[4] = (uint8_t)(ftw >> 24);
+  s_profile0[5] = (uint8_t)(ftw >> 16);
+  s_profile0[6] = (uint8_t)(ftw >> 8);
+  s_profile0[7] = (uint8_t)ftw;
+
+  /* PLL固定使用Profile0。这里只改变选通脚，不重写CFR，输出连续。 */
+  AD9910_PIN_WRITE(DRCTL, GPIO_PIN_RESET);
+  AD9910_PIN_WRITE(DRHOLD, GPIO_PIN_RESET);
+  AD9910_PIN_WRITE(OSK, GPIO_PIN_RESET);
+  AD9910_SetProfile(0U);
+
+  status = AD9910_WriteRegister(AD9910_REG_PROFILE0,
+                                s_profile0,
+                                sizeof(s_profile0));
+  if (status == AD9910_OK)
+  {
+    AD9910_PulseIoUpdate();
+  }
+  return status;
 }
 
 /************************************************************

@@ -1,9 +1,36 @@
-﻿$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Stop'
 
-# 使用Vivado 2018.3自带的完整MinGW工具链。
-$gcc = 'D:\Tools\Xilinx\Vivado\2018.3\msys64\mingw64\bin\gcc.exe'
-if (-not (Test-Path -LiteralPath $gcc)) {
-    throw 'Vivado MinGW C compiler was not found.'
+# 自动寻找任意盘符下Vivado 2018.3自带的MinGW，避免绑定开发机路径。
+$gccCandidates = @()
+if ($env:XILINX_VIVADO) {
+    $gccCandidates += (Join-Path $env:XILINX_VIVADO `
+        'msys64\mingw64\bin\gcc.exe')
+}
+$pathGcc = Get-Command gcc.exe -ErrorAction SilentlyContinue
+if ($pathGcc) {
+    $gccCandidates += $pathGcc.Source
+}
+foreach ($drive in Get-PSDrive -PSProvider FileSystem) {
+    foreach ($relativeRoot in @(
+        'Vivado\2018.3',
+        'Xilinx\Vivado\2018.3',
+        'Tools\Xilinx\Vivado\2018.3'
+    )) {
+        $gccCandidates += (Join-Path `
+            (Join-Path $drive.Root $relativeRoot) `
+            'msys64\mingw64\bin\gcc.exe')
+    }
+}
+
+$gcc = $null
+foreach ($candidate in $gccCandidates) {
+    if ($candidate -and (Test-Path -LiteralPath $candidate)) {
+        $gcc = (Resolve-Path -LiteralPath $candidate).Path
+        break
+    }
+}
+if (-not $gcc) {
+    throw 'Vivado 2018.3 MinGW gcc.exe was not found on PATH, XILINX_VIVADO, or common drive locations.'
 }
 
 # 生成物仅放入系统临时目录，并在测试后删除。
@@ -38,7 +65,7 @@ try {
         & $gcc -std=c11 -Wall -Wextra -Wpedantic -Werror `
             -finput-charset=UTF-8 `
             fpga_promax_host_test.c fpga_promax.c `
-            -o $testExe 2>&1 | ForEach-Object { Write-Output $_ }
+            -lm -o $testExe 2>&1 | ForEach-Object { Write-Output $_ }
         if ($LASTEXITCODE -ne 0) {
             throw "Host test compilation failed with exit code $LASTEXITCODE."
         }

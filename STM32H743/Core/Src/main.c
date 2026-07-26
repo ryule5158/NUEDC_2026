@@ -27,6 +27,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "pll_selftest_config.h"
+#include "pll_test_app.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,7 +65,11 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+#if PLL_SELFTEST_ENABLE
+  /* DMA buffers are explicitly cache-maintained by pll_test_app.c. */
+  SCB_EnableICache();
+  SCB_EnableDCache();
+#endif
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -86,12 +92,21 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_USART3_UART_Init();
+#if PLL_SELFTEST_ENABLE
+  MX_ADC2_Init();
+#endif
   MX_ADC1_Init();
   MX_SPI2_Init();
   MX_TIM3_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
+#if PLL_SELFTEST_ENABLE
+  MX_TIM6_Init();
+#endif
   /* USER CODE BEGIN 2 */
+#if PLL_SELFTEST_ENABLE
+  if (PllTest_Init() != HAL_OK) Error_Handler();
+#endif
   /* 通用库工程不自动启动设备，由具体题目按需调用APP层接口。 */
   /* USER CODE END 2 */
 
@@ -99,6 +114,9 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+#if PLL_SELFTEST_ENABLE
+    PllTest_Process();
+#endif
     
     /* USER CODE END WHILE */
 
