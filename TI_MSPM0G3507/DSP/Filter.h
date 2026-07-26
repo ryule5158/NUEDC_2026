@@ -43,7 +43,7 @@ extern float firStateF32[BLOCK_SIZE + 101 - 1];  /* 使用实际数值，对应 
  * @brief  对输入数据数组进行 FIR 低通滤波（101 阶）。
  * @param  input        输入采样数组，长度 = num_samples
  * @param  output       滤波后输出数组，长度 = num_samples
- * @param  num_samples  要处理的采样点数，必须是 BLOCK_SIZE 的整数倍
+ * @param  num_samples  要处理的采样点数，可包含不足 BLOCK_SIZE 的末块
  * @note   每次调用前会自动清零滤波器状态，保证独立调用之间无状态残留。
  *         如果需要连续流式滤波，请直接使用 arm_fir_f32 并自行管理状态。
  */
@@ -59,8 +59,7 @@ typedef enum {
     IIR_LPF = 0,   /* 低通   */
     IIR_HPF,       /* 高通   */
     IIR_BPF,       /* 带通(0dB 峰值增益) */
-    IIR_NOTCH,     /* 陷波(带阻，去某频点，如 50Hz 工频) */
-    IIR_PEAK       /* 峰化/陷落(参数均衡，gain_db 决定增益方向) */
+    IIR_NOTCH      /* 陷波(带阻，去某频点，如 50Hz 工频) */
 } IIR_Type_t;
 
 /* 单级双二阶 */
@@ -125,6 +124,13 @@ void IIR_ProcessBlock(IIR_Biquad_t *bq, const float *in, float *out, uint32_t le
 void IIR_CascadeInit(IIR_Cascade_t *c, IIR_Type_t type,
                      float fs, float fc, float Q, uint8_t num_stages);
 
+/**
+ * @brief  初始化峰值均衡级联，gain_db 正值提升、负值衰减。
+ * @param  num_stages  级数，范围为 1~IIR_MAX_STAGES。
+ */
+void IIR_CascadePeakInit(IIR_Cascade_t *c, float fs, float fc, float Q,
+                         float gain_db, uint8_t num_stages);
+
 /** @brief 级联单点滤波。 */
 float IIR_CascadeProcess(IIR_Cascade_t *c, float x);
 
@@ -164,8 +170,8 @@ void Filter_Median(const float *in, float *out, uint32_t len, uint32_t window);
  * @param  in      输入数组
  * @param  len     输入长度
  * @param  factor  抽取因子(>=2)，输出采样率 = 原采样率 / factor
- * @param  out     [out] 降采样结果，长度需 >= len/factor
- * @return 实际输出点数 = len / factor
+ * @param  out     [out] 降采样结果，长度需 >= (len+factor-1)/factor
+ * @return 实际输出点数 = (len+factor-1)/factor
  * @note   防混叠低通截止取 0.8*(新奈奎斯特)。若只需简单抽取可自行跳过本函数。
  */
 uint32_t Filter_Decimate(const float *in, uint32_t len, uint32_t factor, float *out);

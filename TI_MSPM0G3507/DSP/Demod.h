@@ -37,15 +37,12 @@ typedef enum {
     DEMOD_ERR_BUFFER_ALIAS
 } Demod_Status;
 
-/* 参数估计方式。
- * MEDIAN_MULTI_FRAME 需要跨帧历史状态；当前单帧 Analyze API 会明确返回
- * DEMOD_ERR_UNSUPPORTED，而不是静默退化成其它算法。 */
+/* 参数估计方式。所有枚举值均由单帧分析接口直接实现。 */
 typedef enum {
     DEMOD_EST_PEAK_RAW = 0,
     DEMOD_EST_PERCENTILE,
     DEMOD_EST_SINE_FIT,
-    DEMOD_EST_RMS,
-    DEMOD_EST_MEDIAN_MULTI_FRAME
+    DEMOD_EST_RMS
 } Demod_Estimator_t;
 
 /* FM 中心频率的来源。

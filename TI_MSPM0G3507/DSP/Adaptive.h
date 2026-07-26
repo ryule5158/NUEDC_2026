@@ -52,14 +52,15 @@ typedef struct {
  *           4) Optionally read back amplitude/phase for DDS reconstruction.
  */
 typedef struct {
-    float fs;           /* Sample rate (Hz) */
-    float freq;         /* Target frequency (Hz) */
-    float mu;           /* Step size (0 < mu < 1, typical 0.005~0.05) */
-    float w_cos;        /* Weight for cos reference */
-    float w_sin;        /* Weight for sin reference */
-    float delta;        /* Phase increment per sample = 2*pi*freq/fs */
-    float cosd, sind;   /* cos(delta), sin(delta) — rotation matrix coeffs */
-    float c, s;         /* cos(phase), sin(phase) — current reference, by rotation */
+    float fs;           /* 采样率，单位Hz。 */
+    float freq;         /* 目标频率，单位Hz。 */
+    float mu;           /* LMS步长，典型值0.005~0.05。 */
+    float w_cos;        /* 余弦参考权重。 */
+    float w_sin;        /* 正弦参考权重。 */
+    float delta;        /* 每点相位增量。 */
+    float cosd, sind;   /* 相位增量的余弦、正弦。 */
+    float c, s;         /* 当前正交参考。 */
+    uint32_t sample_count; /* 已处理样本数，用于周期性校正正交基。 */
 } Contest_LMS_SineSep_t;
 
 typedef struct {

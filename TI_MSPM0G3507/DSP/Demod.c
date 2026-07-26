@@ -789,11 +789,17 @@ static Demod_Status Demod_AnalyzeEnvelope(const float *env,
     if (begin >= end) return DEMOD_ERR_LENGTH;
     valid_ratio = (float)Demod_CountFinite(env, begin, end) / (float)(end - begin);
 
-    if ((cfg->estimator == DEMOD_EST_SINE_FIT) &&
-        (cfg->tone_hz > 0.0f) &&
-        (cfg->fs_hz > 0.0f) &&
-        (Demod_SineFit(env, begin, end, cfg->fs_hz, cfg->tone_hz,
-                       &carrier, &depth, &residual) == DEMOD_OK)) {
+    if (cfg->estimator == DEMOD_EST_SINE_FIT) {
+        if ((cfg->tone_hz <= 0.0f) || (cfg->fs_hz <= 0.0f)) {
+            result->status = DEMOD_ERR_BAD_CONFIG;
+            return result->status;
+        }
+        st = Demod_SineFit(env, begin, end, cfg->fs_hz, cfg->tone_hz,
+                           &carrier, &depth, &residual);
+        if (st != DEMOD_OK) {
+            result->status = st;
+            return st;
+        }
         lo = carrier - depth;
         hi = carrier + depth;
     } else if (cfg->estimator == DEMOD_EST_PEAK_RAW) {
@@ -812,6 +818,11 @@ static Demod_Status Demod_AnalyzeEnvelope(const float *env,
         st = Demod_PercentileExact(env, begin, end, 0.99f, &hi);
         if (st != DEMOD_OK) return st;
         carrier = 0.5f * (hi + lo);
+    } else if (cfg->estimator == DEMOD_EST_RMS) {
+        carrier = Demod_Mean(env, begin, end);
+        depth = 1.41421356237f * Demod_RmsAround(env, begin, end, carrier);
+        lo = carrier - depth;
+        hi = carrier + depth;
     } else {
         result->status = DEMOD_ERR_UNSUPPORTED;
         return DEMOD_ERR_UNSUPPORTED;
@@ -1214,11 +1225,17 @@ Demod_Status Demod_FM_AnalyzeFreq(const float *freq_hz,
         }
     }
 
-    if ((cfg->estimator == DEMOD_EST_SINE_FIT) &&
-        (cfg->mod_tone_hz > 0.0f) &&
-        (cfg->fs_hz > 0.0f) &&
-        (Demod_SineFit(freq_hz, begin, end, cfg->fs_hz, cfg->mod_tone_hz,
-                       &center, &amp, &residual) == DEMOD_OK)) {
+    if (cfg->estimator == DEMOD_EST_SINE_FIT) {
+        if ((cfg->mod_tone_hz <= 0.0f) || (cfg->fs_hz <= 0.0f)) {
+            result->status = DEMOD_ERR_BAD_CONFIG;
+            return result->status;
+        }
+        st = Demod_SineFit(freq_hz, begin, end, cfg->fs_hz,
+                           cfg->mod_tone_hz, &center, &amp, &residual);
+        if (st != DEMOD_OK) {
+            result->status = st;
+            return st;
+        }
         flo = center - amp;
         fhi = center + amp;
     } else if (cfg->estimator == DEMOD_EST_PEAK_RAW) {

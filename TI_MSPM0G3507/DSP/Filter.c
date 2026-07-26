@@ -40,7 +40,7 @@ float firStateF32[BLOCK_SIZE + 101 - 1] = {0};
   * @brief  对输入数据数组进行FIR低通滤波（101阶）。
   * @param  input  输入采样数组，长度 = num_samples
   * @param  output 滤波后输出数组，长度 = num_samples
-  * @param  num_samples 要处理的采样点数，必须是BLOCK_SIZE的整数倍
+  * @param  num_samples 要处理的采样点数，可包含不足BLOCK_SIZE的末块
   * @note   每次调用前会自动清零滤波器状态，保证独立调用之间无状态残留。
   *         如果需要连续流式滤波，请直接使用arm_fir_f32并自行管理状态。
   */
@@ -57,10 +57,15 @@ void arm_fir_f32_lp(float *input, float *output, uint32_t num_samples)
 
     arm_fir_init_f32(&S, LP1, (float *)LP1_Resource, firStateF32, BLOCK_SIZE);
 
-    /* 按BLOCK_SIZE分块处理全部样本 */
+    /* 按BLOCK_SIZE分块处理，末块不足时只处理实际样本。 */
     for (i = 0; i < num_samples; i += BLOCK_SIZE)
     {
-        arm_fir_f32(&S, input + i, output + i, BLOCK_SIZE);
+        uint32_t block_length = num_samples - i;
+
+        if (block_length > BLOCK_SIZE) {
+            block_length = BLOCK_SIZE;
+        }
+        arm_fir_f32(&S, input + i, output + i, block_length);
     }
 }
 
@@ -71,6 +76,17 @@ void arm_fir_f32_lp(float *input, float *output, uint32_t num_samples)
 
 #define IIR_2PI   6.28318530717958647692f
 
+/* 将双二阶设置为直通，保证无效配置也具有确定输出。 */
+static void IIR_SetBypass(IIR_Biquad_t *bq)
+{
+    bq->b0 = 1.0f;
+    bq->b1 = 0.0f;
+    bq->b2 = 0.0f;
+    bq->a1 = 0.0f;
+    bq->a2 = 0.0f;
+    IIR_Reset(bq);
+}
+
 void IIR_Reset(IIR_Biquad_t *bq)
 {
     if (bq == NULL) return;
@@ -80,7 +96,11 @@ void IIR_Reset(IIR_Biquad_t *bq)
 
 void IIR_Design(IIR_Biquad_t *bq, IIR_Type_t type, float fs, float fc, float Q)
 {
-    if (bq == NULL || fs <= 0.0f) return;
+    if (bq == NULL) return;
+    if (fs <= 0.0f) {
+        IIR_SetBypass(bq);
+        return;
+    }
 
     /* 截止频率限幅到 (0, fs/2) 开区间，防止 tan/cos 异常 */
     if (fc <= 0.0f)        fc = 1.0f;
@@ -146,7 +166,11 @@ void IIR_Design(IIR_Biquad_t *bq, IIR_Type_t type, float fs, float fc, float Q)
 
 void IIR_DesignPeak(IIR_Biquad_t *bq, float fs, float fc, float Q, float gain_db)
 {
-    if (bq == NULL || fs <= 0.0f) return;
+    if (bq == NULL) return;
+    if (fs <= 0.0f) {
+        IIR_SetBypass(bq);
+        return;
+    }
 
     if (fc <= 0.0f)        fc = 1.0f;
     if (fc >= 0.5f * fs)   fc = 0.499f * fs;
@@ -194,16 +218,26 @@ void IIR_CascadeInit(IIR_Cascade_t *c, IIR_Type_t type,
 
     c->num_stages = num_stages;
     for (uint8_t i = 0; i < num_stages; i++) {
-        if (type == IIR_PEAK) {
-            IIR_DesignPeak(&c->stage[i], fs, fc, Q, 0.0f);
-        } else {
-            IIR_Design(&c->stage[i], type, fs, fc, Q);
-        }
+        IIR_Design(&c->stage[i], type, fs, fc, Q);
+    }
+}
+
+void IIR_CascadePeakInit(IIR_Cascade_t *c, float fs, float fc, float Q,
+                         float gain_db, uint8_t num_stages)
+{
+    if (c == NULL) return;
+    if (num_stages < 1u) num_stages = 1u;
+    if (num_stages > IIR_MAX_STAGES) num_stages = IIR_MAX_STAGES;
+
+    c->num_stages = num_stages;
+    for (uint8_t i = 0; i < num_stages; i++) {
+        IIR_DesignPeak(&c->stage[i], fs, fc, Q, gain_db);
     }
 }
 
 float IIR_CascadeProcess(IIR_Cascade_t *c, float x)
 {
+    if (c == NULL) return x;
     float y = x;
     for (uint8_t i = 0; i < c->num_stages; i++) {
         y = IIR_Process(&c->stage[i], y);

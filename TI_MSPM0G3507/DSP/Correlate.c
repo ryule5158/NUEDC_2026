@@ -9,7 +9,6 @@ void Corr_Cross(const float *x, const float *y, uint32_t len,
                 int32_t max_lag, float *out)
 {
     if (x == NULL || y == NULL || out == NULL || len == 0u || max_lag <= 0) return;
-
     const float inv = 1.0f / (float)len;
     for (int32_t m = -max_lag; m <= max_lag; m++) {
         /* 有效区间 n ∈ [max(0,m), min(len, len+m)) */
@@ -28,6 +27,28 @@ float Corr_TimeDelay(const float *x, const float *y, uint32_t len,
 {
     if (delay_sec) *delay_sec = 0.0f;
     if (x == NULL || y == NULL || len == 0u || max_lag <= 0 || fs <= 0.0f) return 0.0f;
+    if (max_lag >= (int32_t)len) max_lag = (int32_t)len - 1;
+
+    float mean_x = 0.0f;
+    float mean_y = 0.0f;
+    for (uint32_t index = 0U; index < len; index++) {
+        if (!isfinite(x[index]) || !isfinite(y[index])) return 0.0f;
+        mean_x += x[index];
+        mean_y += y[index];
+    }
+    mean_x /= (float)len;
+    mean_y /= (float)len;
+
+    float energy_x = 0.0f;
+    float energy_y = 0.0f;
+    for (uint32_t index = 0U; index < len; index++) {
+        float centered_x = x[index] - mean_x;
+        float centered_y = y[index] - mean_y;
+
+        energy_x += centered_x * centered_x;
+        energy_y += centered_y * centered_y;
+    }
+    if ((energy_x <= 1.0e-20f) || (energy_y <= 1.0e-20f)) return 0.0f;
 
     /* 不缓存整条相关序列：边算边找峰 + 记录峰两侧值用于插值 */
     float prev_acc = 0.0f;     /* 上一滞后(m-1)的相关值 */
@@ -40,7 +61,7 @@ float Corr_TimeDelay(const float *x, const float *y, uint32_t len,
         int32_t n1 = (m < 0) ? ((int32_t)len + m) : (int32_t)len;
         float acc = 0.0f;
         for (int32_t n = n0; n < n1; n++) {
-            acc += x[n] * y[n - m];
+            acc += (x[n] - mean_x) * (y[n - m] - mean_y);
         }
         acc *= inv;
 
@@ -61,12 +82,13 @@ float Corr_TimeDelay(const float *x, const float *y, uint32_t len,
     /* 抛物线插值细化峰位置 */
     float delta = 0.0f;
     float denom = best_a - 2.0f * best_b + best_c;
-    if (fabsf(denom) > 1e-12f) {
+    if ((best_lag > -max_lag) && (best_lag < max_lag) &&
+        (fabsf(denom) > 1e-12f)) {
         delta = 0.5f * (best_a - best_c) / denom;
         if (delta > 0.5f)  delta = 0.5f;
         if (delta < -0.5f) delta = -0.5f;
     }
-    float lag = (float)best_lag + delta;
+    float lag = -((float)best_lag + delta);
     if (delay_sec) *delay_sec = lag / fs;
     return lag;
 }
@@ -87,11 +109,14 @@ void Corr_Auto(const float *x, uint32_t len, uint32_t max_lag, float *out)
 }
 
 /* 内部：计算单个滞后的自相关值 */
-static float Corr_AutoAt(const float *x, uint32_t len, uint32_t lag)
+static float Corr_AutoAt(const float *x,
+                         uint32_t len,
+                         uint32_t lag,
+                         float mean)
 {
     float acc = 0.0f;
     for (uint32_t n = lag; n < len; n++) {
-        acc += x[n] * x[n - lag];
+        acc += (x[n] - mean) * (x[n - lag] - mean);
     }
     return acc / (float)len;
 }
@@ -106,20 +131,33 @@ float Corr_Pitch(const float *x, uint32_t len, float fs, float fmin, float fmax)
     if (lag_hi >= len) lag_hi = len - 1u;
     if (lag_hi <= lag_lo) return 0.0f;
 
+    float mean = 0.0f;
+    float energy = 0.0f;
+    for (uint32_t index = 0U; index < len; index++) {
+        mean += x[index];
+    }
+    mean /= (float)len;
+    for (uint32_t index = 0U; index < len; index++) {
+        float centered = x[index] - mean;
+        energy += centered * centered;
+    }
+    if (energy <= 1.0e-20f) return 0.0f;
+
     /* 在 [lag_lo, lag_hi] 找自相关最大峰(排除 lag0) */
     float best = -1e30f;
     uint32_t best_lag = lag_lo;
     for (uint32_t lag = lag_lo; lag <= lag_hi; lag++) {
-        float r = Corr_AutoAt(x, len, lag);
+        float r = Corr_AutoAt(x, len, lag, mean);
         if (r > best) { best = r; best_lag = lag; }
     }
+    if (best <= 0.0f) return 0.0f;
 
     /* 抛物线插值 */
     float lag = (float)best_lag;
     if (best_lag > lag_lo && best_lag < lag_hi) {
-        float a = Corr_AutoAt(x, len, best_lag - 1u);
+        float a = Corr_AutoAt(x, len, best_lag - 1u, mean);
         float b = best;
-        float c = Corr_AutoAt(x, len, best_lag + 1u);
+        float c = Corr_AutoAt(x, len, best_lag + 1u, mean);
         float denom = a - 2.0f * b + c;
         if (fabsf(denom) > 1e-12f) {
             float delta = 0.5f * (a - c) / denom;

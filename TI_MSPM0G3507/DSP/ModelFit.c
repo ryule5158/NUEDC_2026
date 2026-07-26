@@ -151,7 +151,7 @@ int ModelFit_FitSecondOrder(const float *freq_hz,
     model->d1 = (float)sol[3];
     model->d2 = (float)sol[4];
     model->norm_hz = norm_hz;
-    model->type = 0u;
+    model->type = MODEL_FILTER_SECOND_ORDER;
 
     double err2 = 0.0;
     uint32_t used = 0u;

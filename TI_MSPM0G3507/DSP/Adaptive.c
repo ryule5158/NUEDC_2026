@@ -6,7 +6,7 @@
 #include <math.h>
 #include <stddef.h>
 
-#define CC_2PI 6.28318530717958647692f
+#define CC_2PI 6.28318530717958647692f /* 两倍圆周率。 */
 
 void Contest_StatsInit(Contest_OnlineStats_t *s)
 {
@@ -182,6 +182,7 @@ int Contest_LMS_SineSepInit(Contest_LMS_SineSep_t *lms, float fs,
     lms->sind  = sinf(lms->delta);
     lms->c     = 1.0f;   /* cos(0) */
     lms->s     = 0.0f;   /* sin(0) */
+    lms->sample_count = 0U;
     return 0;
 }
 
@@ -216,6 +217,20 @@ float Contest_LMS_SineSepProcess(Contest_LMS_SineSep_t *lms, float mixture,
     lms->c = c_new;
     lms->s = s_new;
 
+    /* 浮点旋转会缓慢漂移，每 32 点恢复单位正交基。 */
+    lms->sample_count++;
+    if ((lms->sample_count & 31U) == 0U) {
+        float norm = sqrtf(lms->c * lms->c + lms->s * lms->s);
+
+        if (norm > 1.0e-12f) {
+            lms->c /= norm;
+            lms->s /= norm;
+        } else {
+            lms->c = 1.0f;
+            lms->s = 0.0f;
+        }
+    }
+
     if (err_out) *err_out = e;
     return y;
 }
@@ -244,6 +259,7 @@ void Contest_LMS_SineSepReset(Contest_LMS_SineSep_t *lms)
     lms->w_sin = 0.0f;
     lms->c     = 1.0f;
     lms->s     = 0.0f;
+    lms->sample_count = 0U;
 }
 
 int Contest_NotchInit(Contest_Notch_t *n, float fs, float freq, float radius)

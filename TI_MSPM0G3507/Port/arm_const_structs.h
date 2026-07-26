@@ -12,9 +12,6 @@ extern const arm_cfft_instance_f32 arm_cfft_sR_f32_len64;
 extern const arm_cfft_instance_f32 arm_cfft_sR_f32_len128;
 extern const arm_cfft_instance_f32 arm_cfft_sR_f32_len256;
 extern const arm_cfft_instance_f32 arm_cfft_sR_f32_len512;
-extern const arm_cfft_instance_f32 arm_cfft_sR_f32_len1024;
-extern const arm_cfft_instance_f32 arm_cfft_sR_f32_len2048;
-extern const arm_cfft_instance_f32 arm_cfft_sR_f32_len4096;
 
 #ifdef __cplusplus
 }

@@ -82,18 +82,23 @@ void Measure_TimeStats(const float *data, uint32_t len,
         return;
     }
 
-    float sum = 0.0f, sumsq = 0.0f;
+    float mean = 0.0f;
+    float m2 = 0.0f;
     float vmin = 0.0f, vmax = 0.0f;
     uint32_t count = 0u;
     for (uint32_t i = 0; i < len; i++) {
         float v = data[i];
         if (!Measure_IsFinite(v)) continue;
         if (count == 0u) vmin = vmax = v;
-        sum   += v;
-        sumsq += v * v;
+        count++;
+        {
+            float delta = v - mean;
+
+            mean += delta / (float)count;
+            m2 += delta * (v - mean);
+        }
         if (v > vmax) vmax = v;
         if (v < vmin) vmin = v;
-        count++;
     }
     if (count == 0u) {
         if (dc) *dc = 0.0f;
@@ -103,10 +108,10 @@ void Measure_TimeStats(const float *data, uint32_t len,
         return;
     }
 
-    float mean    = sum / (float)count;
-    float meansq  = sumsq / (float)count;
-    float ac_var  = meansq - mean * mean;       /* 方差 = E[x²]-E[x]² */
-    if (ac_var < 0.0f) ac_var = 0.0f;           /* 数值误差兜底 */
+    float ac_var = m2 / (float)count;
+    if (ac_var < 0.0f) ac_var = 0.0f; /* 浮点舍入兜底。 */
+    float meansq = ac_var + mean * mean;
+    if (meansq < 0.0f) meansq = 0.0f;
 
     if (dc)    *dc    = mean;
     if (rms)   *rms   = sqrtf(meansq);
@@ -164,11 +169,12 @@ uint32_t Measure_FindPeak(const float *mag, uint32_t n, float fs,
 
     /* 从 bin1 起找最大峰，跳过直流 bin0 */
     uint32_t k_max = 1u;
-    int found = Measure_IsFinite(mag[1]);
+    int found = Measure_IsFinite(mag[1]) && (mag[1] > 0.0f);
     float v_max = found ? mag[1] : 0.0f;
     uint32_t half = n / 2u;
     for (uint32_t k = 2u; k < half; k++) {
-        if (Measure_IsFinite(mag[k]) && (!found || mag[k] > v_max)) {
+        if (Measure_IsFinite(mag[k]) && (mag[k] > 0.0f) &&
+            (!found || mag[k] > v_max)) {
             v_max = mag[k]; k_max = k; found = 1;
         }
     }

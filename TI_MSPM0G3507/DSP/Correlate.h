@@ -37,6 +37,7 @@ void Corr_Cross(const float *x, const float *y, uint32_t len,
  * @param  fs         采样率 (Hz)
  * @param  delay_sec  [out,可空] 时延(秒)，正值表示 y 滞后于 x
  * @return 峰值滞后(采样，带小数)。
+ * @note   内部会分别去除两路直流偏置，ADC中点电压不会掩盖相关峰。
  */
 float Corr_TimeDelay(const float *x, const float *y, uint32_t len,
                      int32_t max_lag, float fs, float *delay_sec);
