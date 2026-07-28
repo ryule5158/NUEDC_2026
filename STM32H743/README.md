@@ -5,7 +5,7 @@ Keil 工程入口为 `MDK-ARM/STM32H743.uvprojx`，CubeMX 工程入口为 `STM32
 命令行强制全量构建：
 
 ```powershell
-cd D:\NUEDC\fpga\集成工程\STM32H743
+Set-Location .\STM32H743
 powershell -ExecutionPolicy Bypass -File .\build_keil.ps1
 ```
 
@@ -43,7 +43,7 @@ AD9708 电压输出接口故意要求校准，避免将不同模块电位器的�
 
 配置时先停止，全部系数/频点写完后清零并启动；此后高速运算都在 FPGA 内连续进行，STM32 只在需要刷新 UI 或做判决时读一次快照。初始化不会自动启动数据面。
 
-当前 FPGA 实时档版本为 `1.1`，能力字为 `0x29200408`，不包含 UART、线级 CRC 或 FFT。`FpgaPromax_SetFft()` 等 FFT 接口会返回 `FPGA_PROMAX_E_UNSUPPORTED`，不能把它当作已实现的硬件 FFT。完整职责划分、调用顺序和题型覆盖见 FPGA 工程的 `DSP_PROMAX_CONTEST_GUIDE.md`。
+当前 FPGA 实时档版本为 `1.1`，能力字为 `0x29200408`，包含实时数据面和连续波形统计，不包含 UART、线级 CRC 或 FFT。`FpgaPromax_SetFft()` 等 FFT 接口会返回 `FPGA_PROMAX_E_UNSUPPORTED`，不能把它当作已实现的硬件 FFT。完整职责划分、调用顺序和题型覆盖见 FPGA 工程的 `DSP_PROMAX_CONTEST_GUIDE.md`。
 
 ProMax、AD9708 和 AD9280 共用 SPI2，裸机业务必须在主循环中串行调用；不要在中断中调用，也不要从多个任务并发访问。若以后加入 RTOS，应由业务层用同一把互斥锁保护整条 FPGA 链路。
 

@@ -21,6 +21,12 @@ module ad9708_wave_core #(
     input  wire [7:0]                 offset_cfg,
     input  wire [7:0]                 offset_fraction_cfg,
     input  wire                       phase_reset_toggle,
+    input  wire [1:0]                 mod_mode_cfg,
+    input  wire [31:0]                mod_freq_word_cfg,
+    input  wire [15:0]                am_carrier_gain_cfg,
+    input  wire [15:0]                am_sideband_gain_cfg,
+    input  wire [31:0]                fm_deviation_word_cfg,
+    input  wire [31:0]                mod_phase_offset_cfg,
 
     input  wire                       sweep_enable_cfg,
     input  wire [1:0]                 sweep_mode_cfg,
@@ -51,6 +57,9 @@ module ad9708_wave_core #(
     localparam MODE_SAW    = 3'd2; /* 锯齿波。 */
     localparam MODE_TRI    = 3'd3; /* 三角波。 */
     localparam MODE_SQUARE = 3'd4; /* 方波。 */
+    localparam MOD_OFF     = 2'd0;
+    localparam MOD_AM      = 2'd1;
+    localparam MOD_FM      = 2'd2;
 
     /* 线性扫频模式编码。 */
     localparam SWEEP_BIDIR  = 2'd0; /* 往返扫频。 */
@@ -59,6 +68,80 @@ module ad9708_wave_core #(
     localparam SWEEP_MANUAL = 2'd3; /* 手动方向扫频。 */
 
     localparam RAM_DEPTH = (1 << RAM_ADDR_WIDTH); /* 波形RAM深度。 */
+
+    /* 1/4周期Q1.15正弦表；象限折叠后只需65个常量。 */
+    function [15:0] sine_quarter_q15;
+        input [6:0] index;
+        begin
+            case (index)
+                7'd0: sine_quarter_q15 = 16'd0;
+                7'd1: sine_quarter_q15 = 16'd804;
+                7'd2: sine_quarter_q15 = 16'd1608;
+                7'd3: sine_quarter_q15 = 16'd2410;
+                7'd4: sine_quarter_q15 = 16'd3212;
+                7'd5: sine_quarter_q15 = 16'd4011;
+                7'd6: sine_quarter_q15 = 16'd4808;
+                7'd7: sine_quarter_q15 = 16'd5602;
+                7'd8: sine_quarter_q15 = 16'd6393;
+                7'd9: sine_quarter_q15 = 16'd7179;
+                7'd10: sine_quarter_q15 = 16'd7962;
+                7'd11: sine_quarter_q15 = 16'd8739;
+                7'd12: sine_quarter_q15 = 16'd9512;
+                7'd13: sine_quarter_q15 = 16'd10278;
+                7'd14: sine_quarter_q15 = 16'd11039;
+                7'd15: sine_quarter_q15 = 16'd11793;
+                7'd16: sine_quarter_q15 = 16'd12539;
+                7'd17: sine_quarter_q15 = 16'd13279;
+                7'd18: sine_quarter_q15 = 16'd14010;
+                7'd19: sine_quarter_q15 = 16'd14732;
+                7'd20: sine_quarter_q15 = 16'd15446;
+                7'd21: sine_quarter_q15 = 16'd16151;
+                7'd22: sine_quarter_q15 = 16'd16846;
+                7'd23: sine_quarter_q15 = 16'd17530;
+                7'd24: sine_quarter_q15 = 16'd18204;
+                7'd25: sine_quarter_q15 = 16'd18868;
+                7'd26: sine_quarter_q15 = 16'd19519;
+                7'd27: sine_quarter_q15 = 16'd20159;
+                7'd28: sine_quarter_q15 = 16'd20787;
+                7'd29: sine_quarter_q15 = 16'd21403;
+                7'd30: sine_quarter_q15 = 16'd22005;
+                7'd31: sine_quarter_q15 = 16'd22594;
+                7'd32: sine_quarter_q15 = 16'd23170;
+                7'd33: sine_quarter_q15 = 16'd23731;
+                7'd34: sine_quarter_q15 = 16'd24279;
+                7'd35: sine_quarter_q15 = 16'd24811;
+                7'd36: sine_quarter_q15 = 16'd25329;
+                7'd37: sine_quarter_q15 = 16'd25832;
+                7'd38: sine_quarter_q15 = 16'd26319;
+                7'd39: sine_quarter_q15 = 16'd26790;
+                7'd40: sine_quarter_q15 = 16'd27245;
+                7'd41: sine_quarter_q15 = 16'd27683;
+                7'd42: sine_quarter_q15 = 16'd28105;
+                7'd43: sine_quarter_q15 = 16'd28510;
+                7'd44: sine_quarter_q15 = 16'd28898;
+                7'd45: sine_quarter_q15 = 16'd29268;
+                7'd46: sine_quarter_q15 = 16'd29621;
+                7'd47: sine_quarter_q15 = 16'd29956;
+                7'd48: sine_quarter_q15 = 16'd30273;
+                7'd49: sine_quarter_q15 = 16'd30571;
+                7'd50: sine_quarter_q15 = 16'd30852;
+                7'd51: sine_quarter_q15 = 16'd31113;
+                7'd52: sine_quarter_q15 = 16'd31356;
+                7'd53: sine_quarter_q15 = 16'd31580;
+                7'd54: sine_quarter_q15 = 16'd31785;
+                7'd55: sine_quarter_q15 = 16'd31971;
+                7'd56: sine_quarter_q15 = 16'd32137;
+                7'd57: sine_quarter_q15 = 16'd32285;
+                7'd58: sine_quarter_q15 = 16'd32412;
+                7'd59: sine_quarter_q15 = 16'd32521;
+                7'd60: sine_quarter_q15 = 16'd32609;
+                7'd61: sine_quarter_q15 = 16'd32678;
+                7'd62: sine_quarter_q15 = 16'd32728;
+                7'd63: sine_quarter_q15 = 16'd32757;
+                default: sine_quarter_q15 = 16'd32767;
+            endcase
+        end
+    endfunction
 
     /* STM32写、DAC时钟读的双时钟波形RAM。 */
     (* ram_style = "block" *) reg [7:0] wave_ram [0:RAM_DEPTH-1];
@@ -76,6 +159,12 @@ module ad9708_wave_core #(
     reg [7:0] amplitude_fraction_dac;
     reg [7:0] offset_dac;
     reg [7:0] offset_fraction_dac;
+    reg [1:0] mod_mode_dac;
+    reg [31:0] mod_freq_word_dac;
+    reg [15:0] am_carrier_gain_dac;
+    reg [15:0] am_sideband_gain_dac;
+    reg [31:0] fm_deviation_word_dac;
+    reg [31:0] mod_phase_offset_dac;
     reg sweep_enable_dac;
     reg [1:0] sweep_mode_dac;
     reg sweep_hold_dac;
@@ -92,8 +181,22 @@ module ad9708_wave_core #(
 
     /* DDS相位、扫频驻留和当前原始采样。 */
     reg [31:0] phase_acc;
+    reg [31:0] mod_phase_acc;
     reg [31:0] sweep_dwell_count;
     reg [7:0] selected_sample;
+
+    /*
+     * AM采用两级乘法流水线：
+     * factor = carrier_gain + sideband_gain*sin(mod_phase)；
+     * output = 128 + (carrier-128)*factor。
+     * 两个增益之和不超过32767，因此100%调制度也不会数字削顶。
+     */
+    reg signed [8:0] am_carrier_stage1;
+    (* use_dsp = "yes" *) reg signed [33:0] am_side_product_stage1;
+    reg signed [8:0] am_carrier_stage2;
+    reg signed [17:0] am_factor_stage2;
+    (* use_dsp = "yes" *) reg signed [27:0] am_product_stage3;
+    reg [7:0] am_sample_stage4;
 
     /* RAM寻址与Q8.8幅度换算流水寄存器。 */
     reg [42:0] ram_phase_product_reg;
@@ -116,6 +219,38 @@ module ad9708_wave_core #(
     wire [7:0] tri_sample = phase_acc[31] ?
                             ~phase_acc[30:23] : phase_acc[30:23];
     wire [7:0] square_sample = phase_acc[31] ? 8'hFF : 8'h00;
+
+    wire [31:0] mod_phase_lookup =
+        mod_phase_acc + mod_phase_offset_dac;
+    wire [1:0] mod_quadrant = mod_phase_lookup[31:30];
+    wire [6:0] mod_quarter_index =
+        ((mod_quadrant == 2'd1) || (mod_quadrant == 2'd3)) ?
+        (7'd64 - {1'b0, mod_phase_lookup[29:24]}) :
+        {1'b0, mod_phase_lookup[29:24]};
+    wire [15:0] mod_sine_magnitude =
+        sine_quarter_q15(mod_quarter_index);
+    wire signed [16:0] mod_sine_q15 =
+        mod_quadrant[1] ? -$signed({1'b0, mod_sine_magnitude}) :
+                          $signed({1'b0, mod_sine_magnitude});
+    wire signed [34:0] am_side_scaled =
+        am_side_product_stage1 >>> 15;
+    wire signed [35:0] am_factor_sum =
+        $signed({20'd0, am_carrier_gain_dac}) + am_side_scaled;
+    wire signed [28:0] am_scaled_center = am_product_stage3 >>> 15;
+    wire signed [29:0] am_code_unclamped =
+        am_scaled_center + 30'sd128;
+
+    /* FM直接调制每个125 MHz DAC周期的相位增量。 */
+    wire signed [49:0] fm_product =
+        $signed({1'b0, fm_deviation_word_dac}) * mod_sine_q15;
+    wire signed [34:0] fm_delta_word = fm_product >>> 15;
+    wire signed [34:0] fm_sum_word =
+        $signed({3'b000, current_freq_word}) + fm_delta_word;
+    wire [31:0] phase_step_word =
+        (mod_mode_dac != MOD_FM) ? current_freq_word :
+        (fm_sum_word < 0) ? 32'd0 :
+        (fm_sum_word > 35'h0FFFFFFFF) ? 32'hFFFFFFFF :
+        fm_sum_word[31:0];
 
     /* Q8.8幅度A对应端点[offset-A, offset+A-1]。 */
     wire [15:0] amplitude_q = {amplitude_dac, amplitude_fraction_dac};
@@ -203,6 +338,12 @@ module ad9708_wave_core #(
             amplitude_fraction_dac <= 8'd0;
             offset_dac <= DAC_MID_CODE;
             offset_fraction_dac <= 8'd0;
+            mod_mode_dac <= MOD_OFF;
+            mod_freq_word_dac <= 32'd0;
+            am_carrier_gain_dac <= 16'd32767;
+            am_sideband_gain_dac <= 16'd0;
+            fm_deviation_word_dac <= 32'd0;
+            mod_phase_offset_dac <= 32'd0;
             sweep_enable_dac <= 1'b0;
             sweep_mode_dac <= SWEEP_BIDIR;
             sweep_hold_dac <= 1'b0;
@@ -238,6 +379,13 @@ module ad9708_wave_core #(
                 end
                 offset_dac <= offset_cfg;
                 offset_fraction_dac <= offset_fraction_cfg;
+                mod_mode_dac <= (mod_mode_cfg <= MOD_FM) ?
+                                mod_mode_cfg : MOD_OFF;
+                mod_freq_word_dac <= mod_freq_word_cfg;
+                am_carrier_gain_dac <= am_carrier_gain_cfg;
+                am_sideband_gain_dac <= am_sideband_gain_cfg;
+                fm_deviation_word_dac <= fm_deviation_word_cfg;
+                mod_phase_offset_dac <= mod_phase_offset_cfg;
                 sweep_enable_dac <= sweep_enable_cfg;
                 sweep_mode_dac <= sweep_mode_cfg;
                 sweep_hold_dac <= sweep_hold_cfg;
@@ -255,11 +403,18 @@ module ad9708_wave_core #(
     always @(posedge dac_clk or negedge reset_n) begin
         if (!reset_n) begin
             phase_acc <= 32'd0;
+            mod_phase_acc <= 32'd0;
             phase_debug <= 32'd0;
             ram_phase_product_reg <= 43'd0;
             ram_rd_addr <= {RAM_ADDR_WIDTH{1'b0}};
             ram_sample <= DAC_MID_CODE;
             raw_sample_reg <= DAC_MID_CODE;
+            am_carrier_stage1 <= 9'sd0;
+            am_side_product_stage1 <= 34'sd0;
+            am_carrier_stage2 <= 9'sd0;
+            am_factor_stage2 <= 18'sd32767;
+            am_product_stage3 <= 28'sd0;
+            am_sample_stage4 <= DAC_MID_CODE;
             scaled_product_reg <= 25'd0;
             scaled_low_q_reg <= 17'sd0;
             divided_product_q_reg <= 17'd0;
@@ -277,7 +432,29 @@ module ad9708_wave_core #(
             ram_phase_product_reg <= phase_acc * ram_points_dac;
             ram_rd_addr <= ram_phase_product_reg[41:32];
             ram_sample <= wave_ram[ram_rd_addr];
-            raw_sample_reg <= selected_sample;
+
+            am_carrier_stage1 <=
+                $signed({1'b0, selected_sample}) - 9'sd128;
+            am_side_product_stage1 <=
+                $signed({1'b0, am_sideband_gain_dac}) * mod_sine_q15;
+            am_carrier_stage2 <= am_carrier_stage1;
+            if (am_factor_sum < 0) begin
+                am_factor_stage2 <= 18'sd0;
+            end else if (am_factor_sum > 36'sd32767) begin
+                am_factor_stage2 <= 18'sd32767;
+            end else begin
+                am_factor_stage2 <= am_factor_sum[17:0];
+            end
+            am_product_stage3 <= am_carrier_stage2 * am_factor_stage2;
+            if (am_code_unclamped < 0) begin
+                am_sample_stage4 <= 8'd0;
+            end else if (am_code_unclamped > 30'sd255) begin
+                am_sample_stage4 <= 8'd255;
+            end else begin
+                am_sample_stage4 <= am_code_unclamped[7:0];
+            end
+            raw_sample_reg <= (mod_mode_dac == MOD_AM) ?
+                              am_sample_stage4 : selected_sample;
             scaled_product_reg <= raw_sample_reg * amplitude_span_q;
             scaled_low_q_reg <= scaled_low_q;
             divided_product_q_reg <= division_quotient;
@@ -371,8 +548,12 @@ module ad9708_wave_core #(
 
             if (phase_reset_req) begin
                 phase_acc <= phase_offset_dac;
+                mod_phase_acc <= 32'd0;
             end else if (enable_dac) begin
-                phase_acc <= phase_acc + current_freq_word;
+                phase_acc <= phase_acc + phase_step_word;
+                if (mod_mode_dac != MOD_OFF) begin
+                    mod_phase_acc <= mod_phase_acc + mod_freq_word_dac;
+                end
             end
             phase_debug <= phase_acc;
 

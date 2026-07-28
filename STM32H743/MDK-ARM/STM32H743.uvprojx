@@ -805,6 +805,26 @@
               <FilePath>..\BSP\adc_app.h</FilePath>
             </File>
             <File>
+              <FileName>adc_dual_capture.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\adc_dual_capture.c</FilePath>
+            </File>
+            <File>
+              <FileName>adc_dual_capture.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\BSP\adc_dual_capture.h</FilePath>
+            </File>
+            <File>
+              <FileName>fpga_boot_restore.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\fpga_boot_restore.c</FilePath>
+            </File>
+            <File>
+              <FileName>fpga_boot_restore.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\BSP\fpga_boot_restore.h</FilePath>
+            </File>
+            <File>
               <FileName>pll_test_app.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\BSP\pll_test_app.c</FilePath>

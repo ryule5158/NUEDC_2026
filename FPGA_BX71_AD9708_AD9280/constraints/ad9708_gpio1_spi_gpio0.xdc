@@ -94,9 +94,9 @@ set_false_path -to [get_pins -hier -regexp \
 set_false_path -to [get_pins -hier -regexp \
     {.*dsp_core/(fifo_clear_toggle_adc_reg\[0\]|fifo_overflow_sync_reg\[0\]|fifo_full_sync_reg\[0\]|fifo_write_busy_sync_reg\[0\]|adc_ready_sync_reg\[0\])/D}]
 
-# STM32 SPI link directly on BX71-V4 P2 pins 31 through 35.
-# P2-31/L10P=SCK, P2-32/L10N=MOSI, P2-33/L12P=MISO,
-# P2-34/L12N=CS, and optional P2-35/L11P=IRQ.
+# STM32 SPI link on BX71-V4 P2; MOSI uses spare L19 because J19 did not follow PI3 in boundary-scan tests.
+# P2-31/K19=SCK, P2-37/L19=MOSI, P2-33/K17=MISO,
+# P2-34/K18=CS, and optional P2-35/L16=IRQ.
 set_property IOSTANDARD LVCMOS33 [get_ports stm32_spi_sck]
 set_property IOSTANDARD LVCMOS33 [get_ports stm32_spi_mosi]
 set_property IOSTANDARD LVCMOS33 [get_ports stm32_spi_miso]
@@ -106,7 +106,7 @@ set_property PULLDOWN true [get_ports {stm32_spi_sck stm32_spi_mosi}]
 set_property PULLUP true [get_ports stm32_spi_cs_n]
 
 set_property PACKAGE_PIN K19 [get_ports stm32_spi_sck]
-set_property PACKAGE_PIN J19 [get_ports stm32_spi_mosi]
+set_property PACKAGE_PIN L19 [get_ports stm32_spi_mosi]
 set_property PACKAGE_PIN K17 [get_ports stm32_spi_miso]
 set_property PACKAGE_PIN K18 [get_ports stm32_spi_cs_n]
 set_property PACKAGE_PIN L16 [get_ports stm32_irq]

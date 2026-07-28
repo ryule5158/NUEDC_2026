@@ -46,6 +46,14 @@ typedef enum
   AD9708_MODE_SQUARE         /* 使用硬件DDS输出50%占空比方波。 */
 } AD9708_ModeTypeDef;
 
+/* FPGA-side real-time modulation. Requires firmware protocol 0x00020004. */
+typedef enum
+{
+  AD9708_MODULATION_OFF = 0U,
+  AD9708_MODULATION_AM,
+  AD9708_MODULATION_FM
+} AD9708_ModulationModeTypeDef;
+
 /* FPGA硬件扫频运行模式。 */
 typedef enum
 {
@@ -113,6 +121,15 @@ typedef struct
   uint32_t device_id;              /* FPGA固件设备标识。 */
   uint32_t firmware_version;       /* FPGA固件协议版本。 */
   AD9708_StatusTypeDef status;     /* 最近一次底层操作状态。 */
+  /* Protocol 0x00020004 hardware-modulation state. */
+  uint8_t modulation_supported;
+  AD9708_ModulationModeTypeDef modulation_mode;
+  float modulation_hz;
+  float am_depth;
+  float fm_deviation_hz;
+  float modulation_phase_deg;
+  uint32_t modulation_freq_word;
+  uint32_t modulation_phase_word;
 } AD9708_DataTypeDef;
 
 /* 初始化并核验STM32、FPGA和AD9708完整链路。 */
@@ -145,6 +162,33 @@ AD9708_StatusTypeDef AD9708_SetFrequencyWord(uint32_t freq_word);
 /* 设置32位DDS相位偏移字。 */
 AD9708_StatusTypeDef AD9708_SetPhaseOffsetWord(uint32_t phase_word);
 
+/*
+ * PLL/servo fast path. Frequency and phase are written in one SPI session,
+ * without the configuration-time readback overhead. Each FPGA write still
+ * returns and validates the link ACK. When enable is zero, output_hz is
+ * ignored and the DDS frequency word is forced to zero.
+ */
+AD9708_StatusTypeDef AD9708_UpdateDdsFast(float output_hz,
+                                          uint32_t phase_word,
+                                          uint8_t enable);
+
+/*
+ * Configure FPGA-rate modulation. Parameters are staged and committed
+ * atomically, so the DAC never sees a mixture of old and new settings.
+ * AM depth is 0..1. FM deviation is the peak deviation in Hz.
+ */
+AD9708_StatusTypeDef AD9708_ConfigureAm(float modulation_hz,
+                                        float depth,
+                                        uint32_t modulation_phase_word);
+AD9708_StatusTypeDef AD9708_ConfigureFm(float modulation_hz,
+                                        float deviation_hz,
+                                        uint32_t modulation_phase_word);
+AD9708_StatusTypeDef AD9708_DisableModulation(void);
+
+/* Fast phase-only correction for locking the modulation envelope/instant. */
+AD9708_StatusTypeDef AD9708_UpdateModulationPhaseFast(
+    uint32_t modulation_phase_word);
+
 /* 设置统一数字幅度和中心偏置，超范围部分由FPGA饱和。 */
 AD9708_StatusTypeDef AD9708_SetLevel(uint8_t amplitude, uint8_t offset);
 
@@ -158,6 +202,14 @@ AD9708_StatusTypeDef AD9708_OutputConstant(uint8_t code);
 /* 向FPGA写入2~1024点任意波，写入后保持输出停止。 */
 AD9708_StatusTypeDef AD9708_LoadWave(const uint8_t *samples,
                                      uint16_t points);
+
+/*
+ * Generate and load a full-scale sine or SINC table without enabling output.
+ * This is intended for the once-per-boot preparation phase; runtime frequency
+ * and phase changes should use AD9708_UpdateDdsFast().
+ */
+AD9708_StatusTypeDef AD9708_LoadGeneratedWave(AD9708_WaveformTypeDef wave,
+                                              uint16_t points);
 
 /* 配置硬件线性扫频，dwell_cycles以125MHz DAC周期为单位。 */
 AD9708_StatusTypeDef AD9708_ConfigureFrequencySweep(

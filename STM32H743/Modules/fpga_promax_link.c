@@ -244,3 +244,38 @@ FpgaPromax_Result FPGA_ProMax_Init(FpgaPromax *dev)
                          NULL);
   return result;
 }
+/*
+ * Perform one raw 7-bit physical-register read for link/image diagnostics.
+ * Keep the Begin/End pair here so callers cannot leave SPI2 in the FPGA link
+ * configuration after an error.
+ */
+FpgaPromax_Result FPGA_ProMax_ReadPhysicalRegister(uint8_t physical_address,
+                                                   uint32_t *value)
+{
+  FPGA_LinkStatusTypeDef begin_status;
+  FPGA_LinkStatusTypeDef read_status;
+  FPGA_LinkStatusTypeDef end_status;
+
+  if ((value == NULL) || (physical_address > 0x7FU) ||
+      (s_promax_physical_link.cfg.hspi == NULL))
+  {
+    return FPGA_PROMAX_E_ARGUMENT;
+  }
+
+  *value = 0U;
+  begin_status = FPGA_Link_Begin(&s_promax_physical_link);
+  if (begin_status != FPGA_LINK_OK)
+  {
+    return FPGA_PROMAX_E_TRANSPORT;
+  }
+
+  read_status = FPGA_Link_ReadReg(&s_promax_physical_link,
+                                  physical_address,
+                                  value);
+  end_status = FPGA_Link_End(&s_promax_physical_link);
+  if ((read_status != FPGA_LINK_OK) || (end_status != FPGA_LINK_OK))
+  {
+    return FPGA_PROMAX_E_TRANSPORT;
+  }
+  return FPGA_PROMAX_OK;
+}

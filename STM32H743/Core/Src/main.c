@@ -27,8 +27,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "fpga_boot_restore.h"
 #include "pll_selftest_config.h"
 #include "pll_test_app.h"
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,15 +48,41 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+static FpgaBootRestore_Config s_fpga_boot_config;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+static void App_FpgaBootLog(void *user, const char *message);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+/*
+ * 启动恢复日志走 USART1(PA9/PA10)。回调只同步使用 message，
+ * 因此恢复模块可以安全复用自己的格式化缓冲区。
+ */
+static void App_FpgaBootLog(void *user, const char *message)
+{
+  size_t length;
+
+  (void)user;
+  if (message == NULL)
+  {
+    return;
+  }
+
+  length = strlen(message);
+  if (length > 0xFFFFU)
+  {
+    length = 0xFFFFU;
+  }
+  (void)HAL_UART_Transmit(&huart1,
+                          (const uint8_t *)message,
+                          (uint16_t)length,
+                          30U);
+}
 /* USER CODE END 0 */
 
 /**
@@ -104,16 +132,32 @@ int main(void)
   MX_TIM6_Init();
 #endif
   /* USER CODE BEGIN 2 */
+  /*
+   * FPGA 的 QSPI 只恢复 bitstream；FIR、DDC 和运行寄存器仍会掉电丢失。
+   * 这里只启动非阻塞状态机，待 QSPI 配置稳定后自动执行完整恢复序列。
+   */
+  FpgaBootRestore_GetDefaultConfig(&s_fpga_boot_config);
+  s_fpga_boot_config.log = App_FpgaBootLog;
+  if (FpgaBootRestore_Start(&s_fpga_boot_config) != FPGA_PROMAX_OK)
+  {
+    Error_Handler();
+  }
+  /* 首次大批量 SPI 下发必须在 ADC DMA 启动前完成，避免制造采集溢出。 */
+  if (FpgaBootRestore_WaitReady(
+        0U, FPGA_BOOT_POST_READY_GUARD_MS) != FPGA_PROMAX_OK)
+  {
+    Error_Handler();
+  }
 #if PLL_SELFTEST_ENABLE
   if (PllTest_Init() != HAL_OK) Error_Handler();
 #endif
-  /* 通用库工程不自动启动设备，由具体题目按需调用APP层接口。 */
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    FpgaBootRestore_Process();
 #if PLL_SELFTEST_ENABLE
     PllTest_Process();
 #endif

@@ -43,9 +43,14 @@ module ad9708_spi_top(
     localparam REG_SWEEP_STATUS     = 7'h12; /* 扫频状态。 */
     localparam REG_CURRENT_FREQ     = 7'h13; /* 当前频率控制字。 */
     localparam REG_FIRMWARE_VERSION = 7'h14; /* 固件协议版本。 */
+    localparam REG_MOD_CONTROL      = 7'h15; /* 0=关闭，1=AM，2=FM。 */
+    localparam REG_MOD_FREQ_WORD    = 7'h16; /* 调制DDS频率字。 */
+    localparam REG_AM_GAINS         = 7'h17; /* {边带增益,载波增益} Q1.15。 */
+    localparam REG_FM_DEVIATION     = 7'h18; /* FM峰值频偏字。 */
+    localparam REG_MOD_PHASE_OFFSET = 7'h19; /* 调制DDS相位偏移。 */
 
     localparam [31:0] DEVICE_ID = 32'hAD970802; /* AD9708逻辑标识。 */
-    localparam [31:0] FIRMWARE_VERSION = 32'h00020003; /* 固件版本。 */
+    localparam [31:0] FIRMWARE_VERSION = 32'h00020004; /* 增加硬件AM/FM。 */
 
     /* STM32可读写的DAC基础配置寄存器。 */
     reg enable_reg;
@@ -58,6 +63,12 @@ module ad9708_spi_top(
     reg [7:0] amplitude_fraction_reg;
     reg [7:0] offset_reg;
     reg [7:0] offset_fraction_reg;
+    reg [1:0] mod_mode_reg;
+    reg [31:0] mod_freq_word_reg;
+    reg [15:0] am_carrier_gain_reg;
+    reg [15:0] am_sideband_gain_reg;
+    reg [31:0] fm_deviation_word_reg;
+    reg [31:0] mod_phase_offset_reg;
 
     /* STM32可读写的硬件扫频配置寄存器。 */
     reg sweep_enable_reg;
@@ -226,6 +237,12 @@ module ad9708_spi_top(
         .offset_cfg(offset_reg),
         .offset_fraction_cfg(offset_fraction_reg),
         .phase_reset_toggle(phase_reset_toggle),
+        .mod_mode_cfg(mod_mode_reg),
+        .mod_freq_word_cfg(mod_freq_word_reg),
+        .am_carrier_gain_cfg(am_carrier_gain_reg),
+        .am_sideband_gain_cfg(am_sideband_gain_reg),
+        .fm_deviation_word_cfg(fm_deviation_word_reg),
+        .mod_phase_offset_cfg(mod_phase_offset_reg),
         .sweep_enable_cfg(sweep_enable_reg),
         .sweep_mode_cfg(sweep_mode_reg),
         .sweep_hold_cfg(sweep_hold_reg),
@@ -328,6 +345,12 @@ module ad9708_spi_top(
                                            sweep_running_sync[1]};
             REG_CURRENT_FREQ: spi_rdata = current_freq_sync;
             REG_FIRMWARE_VERSION: spi_rdata = FIRMWARE_VERSION;
+            REG_MOD_CONTROL: spi_rdata = {30'd0, mod_mode_reg};
+            REG_MOD_FREQ_WORD: spi_rdata = mod_freq_word_reg;
+            REG_AM_GAINS: spi_rdata = {am_sideband_gain_reg,
+                                       am_carrier_gain_reg};
+            REG_FM_DEVIATION: spi_rdata = fm_deviation_word_reg;
+            REG_MOD_PHASE_OFFSET: spi_rdata = mod_phase_offset_reg;
             default: spi_rdata = 32'd0;
         endcase
         end
@@ -346,6 +369,12 @@ module ad9708_spi_top(
             amplitude_fraction_reg <= 8'd0;
             offset_reg <= 8'd128;
             offset_fraction_reg <= 8'd0;
+            mod_mode_reg <= 2'd0;
+            mod_freq_word_reg <= 32'd0;
+            am_carrier_gain_reg <= 16'd32767;
+            am_sideband_gain_reg <= 16'd0;
+            fm_deviation_word_reg <= 32'd0;
+            mod_phase_offset_reg <= 32'd0;
             sweep_enable_reg <= 1'b0;
             sweep_mode_reg <= 2'd0;
             sweep_hold_reg <= 1'b0;
@@ -415,6 +444,32 @@ module ad9708_spi_top(
                         amplitude_fraction_reg <= spi_wdata[31:24];
                         offset_reg <= spi_wdata[7:0];
                         offset_fraction_reg <= spi_wdata[23:16];
+                        cfg_commit_toggle <= ~cfg_commit_toggle;
+                    end
+
+                    /*
+                     * 参数寄存器先暂存；最后写MOD_CONTROL时才一次性提交，
+                     * 避免DAC域看到新旧AM/FM参数混合的中间状态。
+                     */
+                    REG_MOD_FREQ_WORD: begin
+                        mod_freq_word_reg <= spi_wdata;
+                    end
+
+                    REG_AM_GAINS: begin
+                        am_carrier_gain_reg <= spi_wdata[15:0];
+                        am_sideband_gain_reg <= spi_wdata[31:16];
+                    end
+
+                    REG_FM_DEVIATION: begin
+                        fm_deviation_word_reg <= spi_wdata;
+                    end
+
+                    REG_MOD_PHASE_OFFSET: begin
+                        mod_phase_offset_reg <= spi_wdata;
+                    end
+
+                    REG_MOD_CONTROL: begin
+                        mod_mode_reg <= spi_wdata[1:0];
                         cfg_commit_toggle <= ~cfg_commit_toggle;
                     end
 

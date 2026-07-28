@@ -1,6 +1,6 @@
 # BX71 高速 AD/DA 通用工程
 
-本工程在 BX71-V4（Zynq-7020）上同时实现 AD9708 波形发生和 AD9280 高速采集。它不包含 2024 C 题的 SD/SM、调幅、时延或 AD9910 同步逻辑。
+本工程在 BX71-V4（Zynq-7020）上同时实现 AD9708 波形发生和 AD9280 高速采集。AD9708 数据面现已包含 125 MSPS 硬件 AM/FM；它仍不包含 2024 C 题专用的 SD/SM、时延或 AD9910 同步逻辑。
 
 ## 已实现功能
 
@@ -11,7 +11,19 @@
 - STM32 接口：SPI 模式 0、MSB first、6 字节寄存器帧，固定 ACK 为 `0xA5 0x5A`。
 - 时钟：由 BX71 本地 50 MHz 时钟生成 DAC 125 MHz 和 ADC 32 MHz，不需要 AD9910 `SYNC_CLK`。
 
-AD9708 通用协议固件版本为 `0x00020003`，设备标识为 `0xAD970802`。ADC 寄存器区使用 `0x20`～`0x2E`。
+实验 RTL 的 AD9708 协议版本为 `0x00020004`，设备标识为 `0xAD970802`；STM32 驱动仍兼容无硬件调制的 `0x00020003`。当前交付目录中的稳定 `.bit/.bin` 仍是此前实测的 `0x00020003` 镜像，`0x00020004` 全量构建和板上验证已暂停，详见 `../STM32H743/EXPERIMENTAL_AMFM_WIP.md`。ADC 寄存器区使用 `0x20`～`0x2E`。
+
+### AD9708 硬件调制寄存器
+
+| 地址 | 作用 |
+|---:|---|
+| `0x15` | 调制控制：`0=关闭`、`1=AM`、`2=FM`；最后写入并原子提交全部调制参数 |
+| `0x16` | 调制 NCO 的 32 位频率字 |
+| `0x17` | `{AM 调制增益, AM 载波增益}`，两个字段均为无符号 Q1.15 |
+| `0x18` | FM 峰值频偏对应的 32 位频率字 |
+| `0x19` | 调制 NCO 的 32 位相位偏移字 |
+
+AM 使用归一化的 `A/(1+m)·(1+m·sin)`，因此 100% 调制度仍不会数字削顶；FM 每个 125 MHz DAC 周期直接调制载波相位增量。参数寄存器先暂存，写 `0x15` 时一次性跨时钟域提交，避免半套新旧参数混合。
 
 ## DSP ProMax 寄存器
 
@@ -33,8 +45,8 @@ NCO 只在 FIFO 输出有效样本时推进，因此相位增量按实际 ADC �
 
 ## 最终验证（2026-07-23）
 
-- Vivado 2018.3 含 PS7 全量构建成功，路由后全局建立/保持余量为 `+0.342/+0.021 ns`；DAC 为 `+1.632/+2.158 ns`，ADC 为 `+1.008/+1.518 ns`。
-- 顶层实际使用 `33,526 LUT`、`31,069 FF`、`1 RAMB36`、`163 DSP48E1`，其中 ProMax 实时数据面保留 `160 DSP48E1`。
+- 稳定 `0x00020003` 镜像已完成 Vivado 2018.3 PS7 全量构建，路由后全局建立/保持余量为 `+0.404/+0.023 ns`；DAC 为 `+1.632/+2.158 ns`，ADC 为 `+1.008/+1.518 ns`。
+- 稳定镜像顶层实际使用 `34,086 LUT`、`31,587 FF`、`1 RAMB36`、`163 DSP48E1`，其中 ProMax 实时数据面保留 `160 DSP48E1`。
 - AD9280采集、AD9708幅度/偏置及ProMax集成三项自检均通过；ProMax定向CDC报告没有Critical，完整证据见 `output/verification/`。
 - `BOOT_PS7.bin` 已重新打包，可按下文步骤写入 QSPI；静态验证和数字仿真不替代最终板上模拟链路实测。
 
@@ -70,21 +82,21 @@ JTAG 临时调试应下载最终的 `output/BX71_V4_U3_tail_AD9708_PS7.bit`。�
 
 | STM32H743 | BX71 P2 | 作用 |
 |---|---:|---|
-| PI1 / SPI2_SCK | 31 | SPI 时钟 |
-| PI3 / SPI2_MOSI | 32 | STM32 写 FPGA |
-| PI2 / SPI2_MISO | 33 | FPGA 返回数据 |
-| PE8 / FPGA_CS | 34 | 低有效片选 |
-| PH9 / FPGA_IRQ | 35 | 可选DAC PLL锁定指示 |
+| PI1 / SPI2_SCK | 31（K19） | SPI 时钟 |
+| PB15 / SPI2_MOSI | 37（L19） | STM32 写 FPGA |
+| PI2 / SPI2_MISO | 33（K17） | FPGA 返回数据 |
+| PE8 / FPGA_CS | 34（K18） | 低有效片选 |
+| PH9 / FPGA_IRQ | 35（L16） | 可选DAC PLL锁定指示 |
 | GND | 30 或 12 | 共地 |
 
 TI LP-MSPM0G3507 也可独立控制同一接口：
 
 | MSPM0G3507 | LaunchPad位置 | BX71 P2 | 作用 |
 |---|---|---:|---|
-| PA12 / SPI0_SCLK | BoosterPack 32 | 31 | SPI 时钟 |
-| PA14 / SPI0_PICO | 板底 J28-7 | 32 | TI 写 FPGA |
-| PA13 / SPI0_POCI | BoosterPack 31 | 33 | FPGA 返回数据 |
-| PA15 / GPIO | BoosterPack 30 | 34 | 低有效软件片选 |
+| PA12 / SPI0_SCLK | BoosterPack 32 | 31（K19） | SPI 时钟 |
+| PA14 / SPI0_PICO | 板底 J28-7 | 37（L19） | TI 写 FPGA |
+| PA13 / SPI0_POCI | BoosterPack 31 | 33（K17） | FPGA 返回数据 |
+| PA15 / GPIO | BoosterPack 30 | 34（K18） | 低有效软件片选 |
 | GND | 任一 GND | 30 或 12 | 共地 |
 
 STM32 与 TI 板不能同时连接并驱动这组 SPI。TI SPI0 使用模式0、8位、MSB优先、1 MHz。J28 位于 LaunchPad 板底且没有信号丝印，PA14 必须按排针缺口和 1 脚方向定位。

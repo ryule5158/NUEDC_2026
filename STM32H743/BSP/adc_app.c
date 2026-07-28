@@ -1,6 +1,7 @@
 /* STM32H743片上ADC1、TIM3和DMA单帧/连续采样驱动。 */
 
 #include "adc_app.h"
+#include "adc_dual_capture.h"
 #include "adc.h"
 #include "tim.h"
 #include <stddef.h>
@@ -378,6 +379,9 @@ __weak void ADC_Sample_FullReadyHook(void)
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
+    /* The simultaneous driver owns ADC1 multimode callbacks while active. */
+    if (ADC_DualCapture_OnFullCompleteIsr(hadc) != 0U) return;
+
     if (hadc == NULL || hadc->Instance != ADC_APP_HAL_INSTANCE) {
         return;
     }
@@ -396,6 +400,9 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 /* 处理DMA前半区完成，单帧模式主动忽略该通知。 */
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc)
 {
+    /* One callback means 1024 time-aligned PC4/PC5 sample pairs are ready. */
+    if (ADC_DualCapture_OnHalfCompleteIsr(hadc) != 0U) return;
+
     if (hadc == NULL || hadc->Instance != ADC_APP_HAL_INSTANCE) {
         return;
     }
@@ -410,6 +417,8 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc)
 /* 处理本驱动ADC的HAL错误回调。 */
 void HAL_ADC_ErrorCallback(ADC_HandleTypeDef *hadc)
 {
+    if (ADC_DualCapture_OnAdcErrorIsr(hadc) != 0U) return;
+
     if (hadc == NULL || hadc->Instance != ADC_APP_HAL_INSTANCE) {
         return;
     }
@@ -422,6 +431,8 @@ void HAL_ADC_ErrorCallback(ADC_HandleTypeDef *hadc)
 /* 处理本驱动DMA通道的HAL错误回调。 */
 void HAL_DMA_ErrorCallback(DMA_HandleTypeDef *hdma)
 {
+    if (ADC_DualCapture_OnDmaErrorIsr(hdma) != 0U) return;
+
     if ((hdma == NULL) || (ADC_APP_HAL_HANDLE.DMA_Handle != hdma)) {
         return;
     }

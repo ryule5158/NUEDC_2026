@@ -147,7 +147,7 @@ uint32_t count = Measure_ExtractPeriod(adc_voltage,
 ## 验证
 
 ```powershell
-cd D:\NUEDC\fpga\集成工程\STM32H743
+Set-Location .\STM32H743
 powershell -ExecutionPolicy Bypass -File .\tests\run_measure_thd_host_test.ps1
 powershell -ExecutionPolicy Bypass -File .\build_keil.ps1
 ```

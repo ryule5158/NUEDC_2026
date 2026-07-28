@@ -130,7 +130,6 @@ FpgaPromax_Result FpgaPromax_Init(FpgaPromax *dev,
                                   uint32_t timeout_ms)
 {
   FpgaPromax_Result result;
-  uint32_t device_id;
 
   if ((dev == NULL) || (transport == NULL) || (timeout_ms == 0U))
   {
@@ -144,13 +143,13 @@ FpgaPromax_Result FpgaPromax_Init(FpgaPromax *dev,
   dev->next_sequence = 1U;
   dev->last_protocol_status = 0xFFU;
 
-  device_id = 0U;
-  result = FpgaPromax_Ping(dev, &device_id);
+  dev->device_id = 0U;
+  result = FpgaPromax_Ping(dev, &dev->device_id);
   if (result != FPGA_PROMAX_OK)
   {
     return result;
   }
-  if (device_id != FPGA_PROMAX_EXPECTED_ID)
+  if (dev->device_id != FPGA_PROMAX_EXPECTED_ID)
   {
     return FPGA_PROMAX_E_WRONG_DEVICE;
   }

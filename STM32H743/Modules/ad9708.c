@@ -1,6 +1,16 @@
 #include "ad9708.h"
 #include "arm_math.h"
 
+/* Protocol 0x00020004 atomic hardware-modulation register block. */
+#define AD9708_REG_MOD_CONTROL         0x15U
+#define AD9708_REG_MOD_FREQ_WORD       0x16U
+#define AD9708_REG_AM_GAINS            0x17U
+#define AD9708_REG_FM_DEVIATION        0x18U
+#define AD9708_REG_MOD_PHASE_OFFSET    0x19U
+#define AD9708_FIRMWARE_VERSION_MOD    0x00020004UL
+#define AD9708_MOD_REGISTER_MASK       0x00000003UL
+#define AD9708_Q15_UNITY               32767UL
+
 #define AD9708_REG_CONTROL             0x00U /* 输出控制寄存器地址。 */
 #define AD9708_REG_MODE                0x01U /* 波形模式寄存器地址。 */
 #define AD9708_REG_FREQ_WORD           0x02U /* DDS频率字寄存器地址。 */
@@ -126,10 +136,13 @@ AD9708_StatusTypeDef AD9708_Init(SPI_HandleTypeDef *hspi)
     return AD9708_Return(status);
   }
   s_ad9708_data.firmware_version = value;
-  if (value != AD9708_FIRMWARE_VERSION)
+  if ((value != AD9708_FIRMWARE_VERSION) &&
+      (value != AD9708_FIRMWARE_VERSION_MOD))
   {
     return AD9708_Return(AD9708_ERROR_DEVICE);
   }
+  s_ad9708_data.modulation_supported =
+      (value == AD9708_FIRMWARE_VERSION_MOD) ? 1U : 0U;
 
   status = AD9708_ReadReg(AD9708_REG_DAC_CLK_HZ, &value);
   if ((status != AD9708_OK) || (value != AD9708_DAC_CLK_HZ))
@@ -208,6 +221,42 @@ AD9708_StatusTypeDef AD9708_Reset(void)
                                 0U,
                                 0xFFFFFFFFUL);
   }
+  if ((status == AD9708_OK) &&
+      (s_ad9708_data.modulation_supported != 0U))
+  {
+    status = AD9708_WriteVerify(AD9708_REG_MOD_FREQ_WORD,
+                                0U,
+                                0xFFFFFFFFUL);
+  }
+  if ((status == AD9708_OK) &&
+      (s_ad9708_data.modulation_supported != 0U))
+  {
+    status = AD9708_WriteVerify(AD9708_REG_AM_GAINS,
+                                AD9708_Q15_UNITY,
+                                0xFFFFFFFFUL);
+  }
+  if ((status == AD9708_OK) &&
+      (s_ad9708_data.modulation_supported != 0U))
+  {
+    status = AD9708_WriteVerify(AD9708_REG_FM_DEVIATION,
+                                0U,
+                                0xFFFFFFFFUL);
+  }
+  if ((status == AD9708_OK) &&
+      (s_ad9708_data.modulation_supported != 0U))
+  {
+    status = AD9708_WriteVerify(AD9708_REG_MOD_PHASE_OFFSET,
+                                0U,
+                                0xFFFFFFFFUL);
+  }
+  if ((status == AD9708_OK) &&
+      (s_ad9708_data.modulation_supported != 0U))
+  {
+    /* MOD_CONTROL is deliberately last: it commits all staged fields. */
+    status = AD9708_WriteVerify(AD9708_REG_MOD_CONTROL,
+                                AD9708_MODULATION_OFF,
+                                AD9708_MOD_REGISTER_MASK);
+  }
   if (status == AD9708_OK)
   {
     status = AD9708_WriteVerify(AD9708_REG_RAM_POINTS,
@@ -248,6 +297,13 @@ AD9708_StatusTypeDef AD9708_Reset(void)
     s_ad9708_data.phase_deg = 0.0f;
     s_ad9708_data.freq_word = 0U;
     s_ad9708_data.phase_word = 0U;
+    s_ad9708_data.modulation_mode = AD9708_MODULATION_OFF;
+    s_ad9708_data.modulation_hz = 0.0f;
+    s_ad9708_data.am_depth = 0.0f;
+    s_ad9708_data.fm_deviation_hz = 0.0f;
+    s_ad9708_data.modulation_phase_deg = 0.0f;
+    s_ad9708_data.modulation_freq_word = 0U;
+    s_ad9708_data.modulation_phase_word = 0U;
     s_ad9708_data.sweep_low_hz = 0.0f;
     s_ad9708_data.sweep_high_hz = 0.0f;
     s_ad9708_data.sweep_step_hz = 0.0f;
@@ -523,6 +579,317 @@ AD9708_StatusTypeDef AD9708_SetPhaseOffsetWord(uint32_t phase_word)
     s_ad9708_data.phase_word = phase_word;
     s_ad9708_data.phase_deg =
         (float)(((double)phase_word * 360.0) / 4294967296.0);
+  }
+  return AD9708_Return(status);
+}
+
+/************************************************************
+ * Function :       AD9708_UpdateDdsFast
+ * Comment  :       PLL fast path: update only changed DDS registers in one
+ *                  SPI session. Link ACK is checked for every write, while
+ *                  slow readback verification remains in the setup APIs.
+ * Parameter:       output_hz: target frequency when enabled;
+ *                  phase_word: 32-bit phase offset;
+ *                  enable: zero disables output and forces the FTW to zero.
+ * Return   :       AD9708 status
+************************************************************/
+AD9708_StatusTypeDef AD9708_UpdateDdsFast(float output_hz,
+                                          uint32_t phase_word,
+                                          uint8_t enable)
+{
+  AD9708_StatusTypeDef status;
+  uint32_t freq_word;
+  uint8_t target_enable;
+  uint8_t write_frequency;
+  uint8_t write_phase;
+  uint8_t write_enable;
+
+  status = AD9708_RequireInit();
+  if (status != AD9708_OK)
+  {
+    return AD9708_Return(status);
+  }
+
+  target_enable = (enable != 0U) ? 1U : 0U;
+  if (target_enable != 0U)
+  {
+    if (AD9708_FrequencyValid(output_hz) == 0U)
+    {
+      return AD9708_Return(AD9708_ERROR_PARAM);
+    }
+    freq_word = AD9708_HzToFreqWord(output_hz);
+  }
+  else
+  {
+    freq_word = 0U;
+  }
+
+  write_frequency = (freq_word != s_ad9708_data.freq_word) ? 1U : 0U;
+  write_phase = (phase_word != s_ad9708_data.phase_word) ? 1U : 0U;
+  write_enable = (target_enable != s_ad9708_data.enabled) ? 1U : 0U;
+  if ((write_frequency == 0U) &&
+      (write_phase == 0U) &&
+      (write_enable == 0U))
+  {
+    return AD9708_Return(AD9708_OK);
+  }
+
+  status = AD9708_FromLink(FPGA_Link_Begin(&s_ad9708_link));
+  if (status != AD9708_OK)
+  {
+    return AD9708_Return(status);
+  }
+  if (write_frequency != 0U)
+  {
+    status = AD9708_WriteReg(AD9708_REG_FREQ_WORD, freq_word);
+  }
+  if ((status == AD9708_OK) && (write_phase != 0U))
+  {
+    status = AD9708_WriteReg(AD9708_REG_PHASE_OFFSET, phase_word);
+  }
+  if ((status == AD9708_OK) && (write_enable != 0U))
+  {
+    status = AD9708_WriteReg(
+        AD9708_REG_CONTROL,
+        (target_enable != 0U) ? AD9708_CONTROL_ENABLE : 0U);
+  }
+  status = AD9708_EndSession(status);
+
+  if (status == AD9708_OK)
+  {
+    s_ad9708_data.freq_word = freq_word;
+    s_ad9708_data.output_hz =
+        (target_enable != 0U) ? AD9708_FreqWordToHz(freq_word) : 0.0f;
+    if (s_ad9708_data.sweep_running == 0U)
+    {
+      s_ad9708_data.current_hz = s_ad9708_data.output_hz;
+    }
+    s_ad9708_data.phase_word = phase_word;
+    s_ad9708_data.phase_deg =
+        (float)(((double)phase_word * 360.0) / 4294967296.0);
+    s_ad9708_data.enabled = target_enable;
+  }
+  return AD9708_Return(status);
+}
+
+/*
+ * Stage every hardware-modulation field and write MOD_CONTROL last. The FPGA
+ * uses that final write as one atomic cfg-clock to DAC-clock commit event.
+ */
+static AD9708_StatusTypeDef AD9708_ConfigureModulationInternal(
+    AD9708_ModulationModeTypeDef mode,
+    float modulation_hz,
+    float parameter,
+    uint32_t modulation_phase_word)
+{
+  AD9708_StatusTypeDef status;
+  uint32_t modulation_word = 0U;
+  uint32_t deviation_word = 0U;
+  uint32_t carrier_gain = AD9708_Q15_UNITY;
+  uint32_t side_gain = 0U;
+  uint32_t packed_gains;
+
+  status = AD9708_RequireInit();
+  if (status != AD9708_OK)
+  {
+    return AD9708_Return(status);
+  }
+  if (mode > AD9708_MODULATION_FM)
+  {
+    return AD9708_Return(AD9708_ERROR_PARAM);
+  }
+  if (s_ad9708_data.modulation_supported == 0U)
+  {
+    /* Disabling is a harmless no-op on the legacy 0x00020003 bitstream. */
+    if (mode == AD9708_MODULATION_OFF)
+    {
+      s_ad9708_data.modulation_mode = AD9708_MODULATION_OFF;
+      return AD9708_Return(AD9708_OK);
+    }
+    return AD9708_Return(AD9708_ERROR_DEVICE);
+  }
+
+  if (mode != AD9708_MODULATION_OFF)
+  {
+    if (!(modulation_hz > 0.0f) ||
+        (modulation_hz > AD9708_MAX_OUTPUT_HZ))
+    {
+      return AD9708_Return(AD9708_ERROR_PARAM);
+    }
+    modulation_word = AD9708_HzToFreqWord(modulation_hz);
+    if (modulation_word == 0U)
+    {
+      return AD9708_Return(AD9708_ERROR_PARAM);
+    }
+  }
+
+  if (mode == AD9708_MODULATION_AM)
+  {
+    if (!(parameter >= 0.0f) || !(parameter <= 1.0f))
+    {
+      return AD9708_Return(AD9708_ERROR_PARAM);
+    }
+    if ((s_ad9708_data.output_hz > 0.0f) &&
+        ((modulation_hz >= s_ad9708_data.output_hz) ||
+         ((s_ad9708_data.output_hz + modulation_hz) >
+          AD9708_MAX_OUTPUT_HZ)))
+    {
+      return AD9708_Return(AD9708_ERROR_PARAM);
+    }
+
+    /*
+     * Normalize A*(1+m*sin) by 1+m. This preserves the requested modulation
+     * depth while guaranteeing carrier_gain+side_gain <= Q1.15 full scale.
+     */
+    carrier_gain = (uint32_t)
+        ((32767.0 / (1.0 + (double)parameter)) + 0.5);
+    side_gain = (uint32_t)
+        (((double)carrier_gain * (double)parameter) + 0.5);
+    if ((carrier_gain + side_gain) > AD9708_Q15_UNITY)
+    {
+      side_gain = AD9708_Q15_UNITY - carrier_gain;
+    }
+  }
+  else if (mode == AD9708_MODULATION_FM)
+  {
+    if (!(parameter > 0.0f) || (parameter > AD9708_MAX_OUTPUT_HZ))
+    {
+      return AD9708_Return(AD9708_ERROR_PARAM);
+    }
+    if ((s_ad9708_data.output_hz > 0.0f) &&
+        ((parameter >= s_ad9708_data.output_hz) ||
+         ((s_ad9708_data.output_hz + parameter) >
+          AD9708_MAX_OUTPUT_HZ)))
+    {
+      return AD9708_Return(AD9708_ERROR_PARAM);
+    }
+    deviation_word = AD9708_HzToFreqWord(parameter);
+    if (deviation_word == 0U)
+    {
+      return AD9708_Return(AD9708_ERROR_PARAM);
+    }
+  }
+
+  packed_gains = (side_gain << 16) | carrier_gain;
+  status = AD9708_FromLink(FPGA_Link_Begin(&s_ad9708_link));
+  if (status != AD9708_OK)
+  {
+    return AD9708_Return(status);
+  }
+  status = AD9708_WriteVerify(AD9708_REG_MOD_FREQ_WORD,
+                              modulation_word,
+                              0xFFFFFFFFUL);
+  if (status == AD9708_OK)
+  {
+    status = AD9708_WriteVerify(AD9708_REG_AM_GAINS,
+                                packed_gains,
+                                0xFFFFFFFFUL);
+  }
+  if (status == AD9708_OK)
+  {
+    status = AD9708_WriteVerify(AD9708_REG_FM_DEVIATION,
+                                deviation_word,
+                                0xFFFFFFFFUL);
+  }
+  if (status == AD9708_OK)
+  {
+    status = AD9708_WriteVerify(AD9708_REG_MOD_PHASE_OFFSET,
+                                modulation_phase_word,
+                                0xFFFFFFFFUL);
+  }
+  if (status == AD9708_OK)
+  {
+    status = AD9708_WriteVerify(AD9708_REG_MOD_CONTROL,
+                                (uint32_t)mode,
+                                AD9708_MOD_REGISTER_MASK);
+  }
+  status = AD9708_EndSession(status);
+
+  if (status == AD9708_OK)
+  {
+    s_ad9708_data.modulation_mode = mode;
+    s_ad9708_data.modulation_freq_word = modulation_word;
+    s_ad9708_data.modulation_hz =
+        (mode == AD9708_MODULATION_OFF) ?
+        0.0f : AD9708_FreqWordToHz(modulation_word);
+    s_ad9708_data.am_depth =
+        (mode == AD9708_MODULATION_AM) ? parameter : 0.0f;
+    s_ad9708_data.fm_deviation_hz =
+        (mode == AD9708_MODULATION_FM) ?
+        AD9708_FreqWordToHz(deviation_word) : 0.0f;
+    s_ad9708_data.modulation_phase_word = modulation_phase_word;
+    s_ad9708_data.modulation_phase_deg =
+        (float)(((double)modulation_phase_word * 360.0) / 4294967296.0);
+  }
+  return AD9708_Return(status);
+}
+
+AD9708_StatusTypeDef AD9708_ConfigureAm(float modulation_hz,
+                                        float depth,
+                                        uint32_t modulation_phase_word)
+{
+  return AD9708_ConfigureModulationInternal(AD9708_MODULATION_AM,
+                                            modulation_hz,
+                                            depth,
+                                            modulation_phase_word);
+}
+
+AD9708_StatusTypeDef AD9708_ConfigureFm(float modulation_hz,
+                                        float deviation_hz,
+                                        uint32_t modulation_phase_word)
+{
+  return AD9708_ConfigureModulationInternal(AD9708_MODULATION_FM,
+                                            modulation_hz,
+                                            deviation_hz,
+                                            modulation_phase_word);
+}
+
+AD9708_StatusTypeDef AD9708_DisableModulation(void)
+{
+  return AD9708_ConfigureModulationInternal(AD9708_MODULATION_OFF,
+                                            0.0f,
+                                            0.0f,
+                                            0U);
+}
+
+AD9708_StatusTypeDef AD9708_UpdateModulationPhaseFast(
+    uint32_t modulation_phase_word)
+{
+  AD9708_StatusTypeDef status;
+
+  status = AD9708_RequireInit();
+  if (status != AD9708_OK)
+  {
+    return AD9708_Return(status);
+  }
+  if ((s_ad9708_data.modulation_supported == 0U) ||
+      (s_ad9708_data.modulation_mode == AD9708_MODULATION_OFF))
+  {
+    return AD9708_Return(AD9708_ERROR_DEVICE);
+  }
+  if (modulation_phase_word == s_ad9708_data.modulation_phase_word)
+  {
+    return AD9708_Return(AD9708_OK);
+  }
+
+  status = AD9708_FromLink(FPGA_Link_Begin(&s_ad9708_link));
+  if (status != AD9708_OK)
+  {
+    return AD9708_Return(status);
+  }
+  status = AD9708_WriteReg(AD9708_REG_MOD_PHASE_OFFSET,
+                           modulation_phase_word);
+  if (status == AD9708_OK)
+  {
+    status = AD9708_WriteReg(AD9708_REG_MOD_CONTROL,
+                             (uint32_t)s_ad9708_data.modulation_mode);
+  }
+  status = AD9708_EndSession(status);
+  if (status == AD9708_OK)
+  {
+    s_ad9708_data.modulation_phase_word = modulation_phase_word;
+    s_ad9708_data.modulation_phase_deg =
+        (float)(((double)modulation_phase_word * 360.0) / 4294967296.0);
   }
   return AD9708_Return(status);
 }
@@ -1517,6 +1884,30 @@ static AD9708_StatusTypeDef AD9708_InternalGenerateWave(
   return AD9708_OK;
 }
 
+/************************************************************
+ * Function :       AD9708_LoadGeneratedWave
+ * Comment  :       Generate and load a RAM waveform during boot preparation.
+ *                  Output remains disabled after AD9708_LoadWave().
+ * Parameter:       wave: sine or SINC; points: 2..1024.
+ * Return   :       AD9708 status
+************************************************************/
+AD9708_StatusTypeDef AD9708_LoadGeneratedWave(AD9708_WaveformTypeDef wave,
+                                              uint16_t points)
+{
+  AD9708_StatusTypeDef status;
+
+  status = AD9708_RequireInit();
+  if (status != AD9708_OK)
+  {
+    return AD9708_Return(status);
+  }
+  status = AD9708_InternalGenerateWave(wave, points);
+  if (status == AD9708_OK)
+  {
+    status = AD9708_LoadWave(s_ad9708_wave_table, points);
+  }
+  return AD9708_Return(status);
+}
 /************************************************************
  * Function :       AD9708_InternalPhaseIndexToWord
  * Comment  :       将波表采样点索引转换为32位DDS相位字

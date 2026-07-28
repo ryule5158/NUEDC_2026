@@ -9,7 +9,11 @@ extern "C" {
 #include <stdint.h>
 
 #define ADC_APP_MAX_SAMPLE_COUNT 4096U /* 每通道最大采样点数。 */
-#define ADC_APP_CHANNEL_COUNT       2U /* ADC1规则序列通道数。 */
+#define ADC_APP_CHANNEL_COUNT       2U /*
+ * Legacy compatibility driver: ADC1 sequential scan + TIM3. It cannot measure
+ * PC4/PC5 phase because the two conversions occur at different instants.
+ * Use adc_dual_capture.h for true ADC1+ADC2 simultaneous paired sampling.
+ */
 
 /*
  * 当前PC4、PC5由同一个ADC1规则序列依次转换，并非同时采样。

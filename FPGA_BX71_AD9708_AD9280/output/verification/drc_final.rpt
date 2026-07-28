@@ -1,14 +1,14 @@
 Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
-| Date         : Thu Jul 23 22:19:34 2026
-| Host         : FYH2005 running 64-bit major release  (build 9200)
-| Command      : report_drc -file C:/Users/21274/AppData/Local/Temp/NF/Vivado/BX71_AD9708_AD9280_PS7/BX71_AD9708_AD9280_PS7.runs/impl_1/ad9708_ps7_drc_final.rpt
+| Date         : Mon Jul 27 13:17:53 2026
+| Host         : LAPTOP-9SJO8I4N running 64-bit major release  (build 9200)
+| Command      : report_drc -file C:/Users/LENOVO/Desktop/2023C/FPGA_BX71_AD9708_AD9280/Vivado/BX71_AD9708_AD9280_PS7/BX71_AD9708_AD9280_PS7.runs/impl_1/ad9708_ps7_drc_final.rpt
 | Design       : ad9708_zynq_top
 | Device       : xc7z020clg400-2
 | Speed File   : -2
 | Design State : Fully Routed
------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Report DRC
 

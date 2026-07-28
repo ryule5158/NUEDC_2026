@@ -186,6 +186,7 @@ typedef struct
   uint8_t next_sequence;            /* 下一请求序号。 */
   uint8_t last_protocol_status;     /* 最近一次FPGA协议状态。 */
   int32_t last_transport_status;    /* 最近一次底层传输状态。 */
+  uint32_t device_id;               /* 最近一次初始化实际读到的设备标识。 */
   uint32_t version;                 /* 已读取的FPGA固件版本。 */
   uint32_t capability;              /* 已读取的FPGA能力位。 */
   uint8_t snapshot_held;            /* 软件记录的快照冻结状态。 */

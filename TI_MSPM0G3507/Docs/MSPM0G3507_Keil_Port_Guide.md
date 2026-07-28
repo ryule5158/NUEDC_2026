@@ -2,9 +2,7 @@
 
 ## 1. 工程与环境
 
-工程根目录：
-
-`D:\NUEDC\fpga\集成工程\TI_MSPM0G3507`
+工程根目录为仓库下的 `TI_MSPM0G3507/`。
 
 使用 Keil uVision 5.38、ARMClang 6.23、TI MSPM0G1X0X/G3X0X DFP 1.3.1。环境检查脚本是 `setup_keil_mspm0_env.ps1`，全量构建脚本是 `build_keil.ps1`。
 
@@ -27,7 +25,7 @@ TI工程编译共享的 AD9708/AD9280 源码，但不会编译 STM32 专用
 句柄。正式LCR采样改用片上ADC后，ADS8363的旧兼容源码仍可编译，但
 SysConfig不再分配其GPIO，不能与PB17电流输入同时启用。
 
-ProMax 通用核心不依赖 STM32 HAL、FPU、DMA 或动态内存。TI 适配层把本地9字节逻辑事务映射到现有6字节SPI寄存器，并对稳定配置做写后读回校验。当前FPGA能力字为 `0x09200408`，只开放SPI实时DDC/匹配滤波；UART、线级CRC和FFT能力位保持清零。工程默认不调用 `FPGA_ProMax_Init(&句柄)`，使用者应在实际业务明确需要时初始化，并在主循环串行访问共享SPI0。
+ProMax 通用核心不依赖 STM32 HAL、FPU、DMA 或动态内存。TI 适配层把本地9字节逻辑事务映射到现有6字节SPI寄存器，并对稳定配置做写后读回校验。当前FPGA能力字为 `0x29200408`，开放SPI实时DDC/匹配滤波和连续波形统计；UART、线级CRC和FFT能力位保持清零。工程默认不调用 `FPGA_ProMax_Init(&句柄)`，使用者应在实际业务明确需要时初始化，并在主循环串行访问共享SPI0。
 
 ## 3. 系统引脚
 
@@ -118,4 +116,4 @@ MSPM0G3507 Cortex-M0+没有DWT。兼容层以1 ms SysTick计数和当前递减�
 powershell -ExecutionPolicy Bypass -File .\build_keil.ps1
 ```
 
-必须得到 `0 Error(s), 0 Warning(s)`。生成的 `.hex` 用 XDS110/UniFlash 烧入 MSPM0G3507。数字编译、协议和资源验证不能替代模拟实测；接线、波形、ADC码值及故障定位按 `D:\NUEDC\fpga\集成工程\硬件测试指南.md` 执行。
+必须得到 `0 Error(s), 0 Warning(s)`。生成的 `.hex` 用 XDS110/UniFlash 烧入 MSPM0G3507。数字编译、协议和资源验证不能替代模拟实测；接线、波形、ADC码值及故障定位按仓库根目录的 `硬件测试指南.md` 执行。

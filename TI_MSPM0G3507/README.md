@@ -28,7 +28,7 @@ BX71 的 SPI0 使用 PA15 GPIO 软件片选。Motorola 4-wire、Mode 0、1 MHz
 命令行强制全量构建：
 
 ```powershell
-cd D:\NUEDC\fpga\集成工程\TI_MSPM0G3507
+Set-Location .\TI_MSPM0G3507
 powershell -ExecutionPolicy Bypass -File .\build_keil.ps1
 ```
 
@@ -63,7 +63,7 @@ powershell -ExecutionPolicy Bypass -File .\build_keil.ps1
 | MSPM0G3507 | MSP-LITO位置 | BX71 P2 | 作用 |
 |---|---|---:|---|
 | PA12 / SPI0_SCLK | J1-30 | 31 | SPI时钟 |
-| PA14 / SPI0_PICO | J1-32 | 32 | MOSI |
+| PA14 / SPI0_PICO | J1-32 | 37（L19） | MOSI |
 | PA13 / SPI0_POCI | J1-31 | 33 | MISO |
 | PA15 / GPIO | J2-32 | 34 | 低有效软件片选 |
 | GND | 任一GND | 30 或 12 | 共地 |
@@ -76,7 +76,7 @@ AD9708/AD9280及ProMax源码保存在本工程自己的 `Modules/`，TI工程不
 
 `fpga_promax.c/.h` 是从最新版 BX71 DSP ProMax 合并的纯 C 控制核心；TI 适配层为 `Port/fpga_promax_link_ti.c`。调用方按需定义 `FpgaPromax` 句柄并执行 `FPGA_ProMax_Init(&句柄)`，随后可配置 8 路 DDC、装载 4 组 32 抽头匹配模板、启停/清理数据面，并读取 FPGA 生成的功率、匹配峰值和样本位置。初始化只校验设备标识、版本和能力，不会自动启动计算。
 
-TI 与 FPGA 仍使用同一套四线、1 MHz、6 字节寄存器链路。适配层在本地生成并校验通用 9 字节逻辑帧，再映射到 FPGA 物理寄存器；稳定配置写入后会按硬件有效位读回确认。当前整合 bitstream 的能力字为 `0x09200408`：支持 SPI 和实时 DDC/匹配滤波，不支持 ProMax UART、线级 CRC 或 FFT profile，因此 FFT 高层接口会明确返回“不支持”。
+TI 与 FPGA 仍使用同一套四线、1 MHz、6 字节寄存器链路。适配层在本地生成并校验通用 9 字节逻辑帧，再映射到 FPGA 物理寄存器；稳定配置写入后会按硬件有效位读回确认。当前整合 bitstream 的能力字为 `0x29200408`：支持 SPI、实时 DDC/匹配滤波和连续波形统计，不支持 ProMax UART、线级 CRC 或 FFT profile，因此 FFT 高层接口会明确返回“不支持”。
 
 ProMax 不应在中断中调用，也不能与 AD9708/AD9280 驱动并发访问 SPI0；本裸机工程应在主循环中串行调用。TI 只传配置和压缩结果，不搬运 32 MSPS 原始流。
 
