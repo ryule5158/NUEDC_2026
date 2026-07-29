@@ -31,8 +31,8 @@ void Sin_Simulation(){
 
 //void FFT_Start() {
 //	for (int i = 0; i < FFT_length; i++) {
-//        FFT_Buffer[2*i] = FFT_input[i];   // ʵ��
-//        FFT_Buffer[2*i+1] = 0.0f;      // �鲿
+//        FFT_Buffer[2*i] = FFT_input[i];   // 实部
+//        FFT_Buffer[2*i+1] = 0.0f;         // 虚部
 //    }
 //	
 //    arm_cfft_f32(&arm_cfft_sR_f32_len4096, FFT_Buffer, 0, 1);

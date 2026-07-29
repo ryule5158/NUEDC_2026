@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 HAL_StatusTypeDef GContest_Init(void);
-void GContest_Process(void);
+void GContest_Process(uint8_t waveform_cycles);
 const PeriodicAnalyzer_Result *GContest_GetLastResult(void);
 const float *GContest_GetLastSamples(void);
 uint32_t GContest_GetFrameNumber(void);

@@ -59,8 +59,8 @@ AD9280_StatusTypeDef AD9280_AppSetVoltageCalibration(
 /* 将一个8位原始采样码换算为校准后的模块输入电压。 */
 float AD9280_AppCodeToVoltage(uint8_t code);
 
-/* 获取应用层4096点原始采样缓存，只读使用。 */
-const uint8_t *AD9280_AppGetSamples(void);
+/* 获取应用层4096点 signed Q8.8 采样缓存，只读使用。 */
+const AD9280_SampleTypeDef *AD9280_AppGetSamples(void);
 
 /* 获取应用层缓存中的有效采样点数。 */
 uint16_t AD9280_AppGetSampleCount(void);

@@ -1,33 +1,33 @@
 Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
-| Date         : Mon Jul 27 13:18:01 2026
-| Host         : LAPTOP-9SJO8I4N running 64-bit major release  (build 9200)
-| Command      : report_cdc -details -from [get_clocks clk_50m] -to [get_clocks clk32] -file C:/Users/LENOVO/Desktop/2023C/FPGA_BX71_AD9708_AD9280/Vivado/BX71_AD9708_AD9280_PS7/BX71_AD9708_AD9280_PS7.runs/impl_1/ad9708_ps7_cdc_cfg_to_adc.rpt
-| Design       : ad9708_zynq_top
+| Date         : Wed Jul 29 14:15:38 2026
+| Host         : FYH2005 running 64-bit major release  (build 9200)
+| Command      : report_cdc -details -from [get_clocks clk_50m] -to [get_clocks clk32] -file C:/Users/21274/AppData/Local/Temp/NF/Vivado/BX71_AD9708_AD9280_PS7/BX71_AD9708_AD9280_PS7.runs/impl_1/ad9708_ps7_cdc_cfg_to_adc.rpt
+| Design       : g_analyzer_zynq_top
 | Device       : 7z020-clg400
 | Speed File   : -2  PRODUCTION 1.11 2014-09-11
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 CDC Report
 
 ID     Severity  Count  Description
 -----  --------  -----  ------------------------------------------------------
-CDC-3  Info          4  1-bit synchronized with ASYNC_REG property
+CDC-2  Warning       1  1-bit synchronized with missing ASYNC_REG property
+CDC-3  Info          2  1-bit synchronized with ASYNC_REG property
 CDC-5  Warning       4  Multi-bit synchronized with missing ASYNC_REG property
 
 Source Clock: clk_50m
 Destination Clock: clk32
-CDC Type: Safely Timed
+CDC Type: User Ignored
 
-Row  ID     Severity  Description                                             Depth  Exception   Source (From)                                                                                                                Destination (To)
----  -----  --------  ------------------------------------------------------  -----  ----------  ---------------------------------------------------------------------------------------------------------------------------  ------------------------------------------------------------------------------------------------------------------------------------------
-  1  CDC-3  Info      1-bit synchronized with ASYNC_REG property                  2  False Path  ad9708_logic/adc_capture/abort_toggle_cfg_reg/C                                                                              ad9708_logic/adc_capture/abort_toggle_sync_reg[0]/D
-  2  CDC-5  Warning   Multi-bit synchronized with missing ASYNC_REG property      2  False Path  ad9708_logic/adc_capture/decimation_cfg_reg[15:0]/C                                                                          ad9708_logic/adc_capture/decimation_meta_reg[15:0]/D
-  3  CDC-5  Warning   Multi-bit synchronized with missing ASYNC_REG property      2  False Path  ad9708_logic/adc_capture/sample_count_cfg_reg[12:0]/C                                                                        ad9708_logic/adc_capture/sample_count_meta_reg[12:0]/D
-  4  CDC-3  Info      1-bit synchronized with ASYNC_REG property                  2  False Path  ad9708_logic/adc_capture/start_toggle_cfg_reg/C                                                                              ad9708_logic/adc_capture/start_toggle_sync_reg[0]/D
-  5  CDC-5  Warning   Multi-bit synchronized with missing ASYNC_REG property      2  False Path  ad9708_logic/adc_capture/trigger_mode_cfg_reg[1:0]/C                                                                         ad9708_logic/adc_capture/trigger_mode_meta_reg[1:0]/D
-  6  CDC-5  Warning   Multi-bit synchronized with missing ASYNC_REG property      2  False Path  ad9708_logic/adc_capture/trigger_threshold_cfg_reg[7:0]/C                                                                    ad9708_logic/adc_capture/trigger_threshold_meta_reg[7:0]/D
-  7  CDC-3  Info      1-bit synchronized with ASYNC_REG property                  2  False Path  ad9708_logic/dsp_core/adc_async_fifo/gnuram_async_fifo.xpm_fifo_base_inst/xpm_fifo_rst_inst/gen_rst_ic.fifo_rd_rst_ic_reg/C  ad9708_logic/dsp_core/adc_async_fifo/gnuram_async_fifo.xpm_fifo_base_inst/xpm_fifo_rst_inst/gen_rst_ic.rrst_wr_inst/syncstages_ff_reg[0]/D
-  8  CDC-3  Info      1-bit synchronized with ASYNC_REG property                  2  False Path  ad9708_logic/dsp_core/fifo_clear_toggle_cfg_reg/C                                                                            ad9708_logic/dsp_core/fifo_clear_toggle_adc_reg[0]/D
+Row  ID     Severity  Description                                             Depth  Exception   Source (From)                                         Destination (To)
+---  -----  --------  ------------------------------------------------------  -----  ----------  ----------------------------------------------------  -----------------------------------------------------
+  1  CDC-3  Info      1-bit synchronized with ASYNC_REG property                  2  False Path  g_logic/adc_capture/abort_toggle_cfg_reg/C            g_logic/adc_capture/abort_toggle_sync_reg[0]/D
+  2  CDC-5  Warning   Multi-bit synchronized with missing ASYNC_REG property      2  False Path  g_logic/adc_capture/decimation_cfg_reg[15:0]/C        g_logic/adc_capture/decimation_meta_reg[15:0]/D
+  3  CDC-2  Warning   1-bit synchronized with missing ASYNC_REG property          2  False Path  g_logic/adc_capture/filter_enable_cfg_reg/C           g_logic/adc_capture/filter_enable_meta_reg/D
+  4  CDC-5  Warning   Multi-bit synchronized with missing ASYNC_REG property      2  False Path  g_logic/adc_capture/sample_count_cfg_reg[12:0]/C      g_logic/adc_capture/sample_count_meta_reg[12:0]/D
+  5  CDC-3  Info      1-bit synchronized with ASYNC_REG property                  2  False Path  g_logic/adc_capture/start_toggle_cfg_reg/C            g_logic/adc_capture/start_toggle_sync_reg[0]/D
+  6  CDC-5  Warning   Multi-bit synchronized with missing ASYNC_REG property      2  False Path  g_logic/adc_capture/trigger_mode_cfg_reg[1:0]/C       g_logic/adc_capture/trigger_mode_meta_reg[1:0]/D
+  7  CDC-5  Warning   Multi-bit synchronized with missing ASYNC_REG property      2  False Path  g_logic/adc_capture/trigger_threshold_cfg_reg[7:0]/C  g_logic/adc_capture/trigger_threshold_meta_reg[7:0]/D
 

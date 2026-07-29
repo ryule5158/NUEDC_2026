@@ -7,11 +7,16 @@
 
 #define PA_PI                    3.14159265358979323846f
 #define PA_TWO_PI                (2.0f * PA_PI)
-#define PA_MAX_PEAKS             12U
+#define PA_MAX_PEAKS             PERIODIC_ANALYZER_MAX_SPECTRUM_COMPONENTS
 #define PA_PEAK_EXCLUSION_BINS   8U
 #define PA_HARMONIC_TOL_BINS     2.25f
+#define PA_BAND_EDGE_TOL_BINS    0.05f
 #define PA_VPP_GRID_POINTS       2048U
 #define PA_SOLVER_MAX_ORDER      (1U + 2U * PERIODIC_ANALYZER_MAX_COMPONENTS)
+#define PA_REFINE_STAGES         4U
+#define PA_REFINE_MAX_SHIFTS     8U
+#define PA_PI_D                  3.14159265358979323846264338327950288
+#define PA_TWO_PI_D              (2.0 * PA_PI_D)
 
 typedef struct {
     uint32_t bin;
@@ -123,8 +128,8 @@ static uint8_t PA_CollectPeaks(const PeriodicAnalyzer_Config *config,
     uint8_t selected_count = 0U;
     const float fs = config->sample_rate_hz;
     const float df = fs / (float)n;
-    uint32_t min_bin = (uint32_t)ceilf(config->min_frequency_hz / df);
-    uint32_t max_bin = (uint32_t)floorf(config->max_frequency_hz / df);
+    uint32_t min_bin = (uint32_t)floorf(config->min_frequency_hz / df);
+    uint32_t max_bin = (uint32_t)ceilf(config->max_frequency_hz / df);
     float global_max = 0.0f;
 
     if (min_bin < 2U) min_bin = 2U;
@@ -136,26 +141,51 @@ static uint8_t PA_CollectPeaks(const PeriodicAnalyzer_Config *config,
      */
     for (uint32_t k = min_bin; k <= max_bin; ++k) {
         const float v = FFT_normalized_output[k];
+        PA_Peak interpolated;
         uint8_t pos;
         if (!isfinite(v) ||
             (v < FFT_normalized_output[k - 1U]) ||
             (v <= FFT_normalized_output[k + 1U])) {
             continue;
         }
-        if (v > global_max) global_max = v;
+
+        PA_InterpPeak(FFT_normalized_output, n, k, fs, &interpolated);
+        if ((interpolated.frequency_hz <
+             config->min_frequency_hz -
+             PA_BAND_EDGE_TOL_BINS * df) ||
+            (interpolated.frequency_hz >
+             config->max_frequency_hz +
+             PA_BAND_EDGE_TOL_BINS * df)) {
+            continue;
+        }
+        /*
+         * A tone exactly on a configured band edge can interpolate a few Hz
+         * outside the range. Keep that edge tone and report the legal edge.
+         */
+        if (interpolated.frequency_hz < config->min_frequency_hz) {
+            interpolated.frequency_hz = config->min_frequency_hz;
+        }
+        if (interpolated.frequency_hz > config->max_frequency_hz) {
+            interpolated.frequency_hz = config->max_frequency_hz;
+        }
+        if (interpolated.amplitude_adc_v > global_max) {
+            global_max = interpolated.amplitude_adc_v;
+        }
 
         pos = local_count;
         if (pos > (uint8_t)(PA_MAX_PEAKS * 3U - 1U)) {
             pos = (uint8_t)(PA_MAX_PEAKS * 3U - 1U);
         }
-        while ((pos > 0U) && (local[pos - 1U].amplitude_adc_v < v)) {
+        while ((pos > 0U) &&
+               (local[pos - 1U].amplitude_adc_v <
+                interpolated.amplitude_adc_v)) {
             if (pos < (uint8_t)(PA_MAX_PEAKS * 3U)) {
                 local[pos] = local[pos - 1U];
             }
             --pos;
         }
         if (pos < (uint8_t)(PA_MAX_PEAKS * 3U)) {
-            PA_InterpPeak(FFT_normalized_output, n, k, fs, &local[pos]);
+            local[pos] = interpolated;
             if (local_count < (uint8_t)(PA_MAX_PEAKS * 3U)) local_count++;
         }
     }
@@ -416,54 +446,284 @@ static int PA_FitComponents(const float *data,
                             float fs,
                             const uint16_t *orders,
                             uint8_t component_count,
-                            float f0,
+                            double f0,
                             double solution[PA_SOLVER_MAX_ORDER],
-                            float *residual_rms)
+                            double *sse)
 {
     double normal[PA_SOLVER_MAX_ORDER][PA_SOLVER_MAX_ORDER + 1U] = {{0.0}};
+    double x_transpose_y[PA_SOLVER_MAX_ORDER] = {0.0};
+    double oscillator_sin[PERIODIC_ANALYZER_MAX_COMPONENTS] = {0.0};
+    double oscillator_cos[PERIODIC_ANALYZER_MAX_COMPONENTS] = {0.0};
+    double step_sin[PERIODIC_ANALYZER_MAX_COMPONENTS] = {0.0};
+    double step_cos[PERIODIC_ANALYZER_MAX_COMPONENTS] = {0.0};
+    double row[PA_SOLVER_MAX_ORDER];
+    double y_energy = 0.0;
     const uint32_t model_order = 1U + 2U * component_count;
 
+    for (uint8_t c = 0U; c < component_count; ++c) {
+        const double omega =
+            PA_TWO_PI_D * (double)orders[c] * f0 / (double)fs;
+        oscillator_sin[c] = 0.0;
+        oscillator_cos[c] = 1.0;
+        step_sin[c] = sin(omega);
+        step_cos[c] = cos(omega);
+    }
+
     for (uint32_t sample = 0U; sample < n; ++sample) {
-        double row[PA_SOLVER_MAX_ORDER] = {0.0};
+        const double y = (double)data[sample];
         row[0] = 1.0;
         for (uint8_t c = 0U; c < component_count; ++c) {
-            const double phase =
-                2.0 * (double)PA_PI *
-                (double)((float)orders[c] * f0) *
-                (double)sample / (double)fs;
-            row[1U + 2U * c] = sin(phase);
-            row[2U + 2U * c] = cos(phase);
+            row[1U + 2U * c] = oscillator_sin[c];
+            row[2U + 2U * c] = oscillator_cos[c];
         }
         for (uint32_t r = 0U; r < model_order; ++r) {
-            for (uint32_t c = 0U; c < model_order; ++c) {
+            for (uint32_t c = r; c < model_order; ++c) {
                 normal[r][c] += row[r] * row[c];
             }
-            normal[r][model_order] += row[r] * (double)data[sample];
+            x_transpose_y[r] += row[r] * y;
+        }
+        y_energy += y * y;
+        for (uint8_t c = 0U; c < component_count; ++c) {
+            const double next_sin =
+                oscillator_sin[c] * step_cos[c] +
+                oscillator_cos[c] * step_sin[c];
+            const double next_cos =
+                oscillator_cos[c] * step_cos[c] -
+                oscillator_sin[c] * step_sin[c];
+            oscillator_sin[c] = next_sin;
+            oscillator_cos[c] = next_cos;
         }
     }
 
+    for (uint32_t r = 0U; r < model_order; ++r) {
+        for (uint32_t c = 0U; c < r; ++c) {
+            normal[r][c] = normal[c][r];
+        }
+        normal[r][model_order] = x_transpose_y[r];
+    }
     if (PA_Solve(normal, model_order, solution) != 0) return -1;
 
-    if (residual_rms != NULL) {
-        double sum_sq = 0.0;
-        for (uint32_t sample = 0U; sample < n; ++sample) {
-            double estimate = solution[0];
-            for (uint8_t c = 0U; c < component_count; ++c) {
-                const double phase =
-                    2.0 * (double)PA_PI *
-                    (double)((float)orders[c] * f0) *
-                    (double)sample / (double)fs;
-                estimate += solution[1U + 2U * c] * sin(phase) +
-                            solution[2U + 2U * c] * cos(phase);
-            }
-            {
-                const double error = (double)data[sample] - estimate;
-                sum_sq += error * error;
-            }
+    if (sse != NULL) {
+        double projected_energy = 0.0;
+        double value;
+        for (uint32_t r = 0U; r < model_order; ++r) {
+            projected_energy += solution[r] * x_transpose_y[r];
         }
-        *residual_rms = (float)sqrt(sum_sq / (double)n);
+        value = y_energy - projected_energy;
+        if ((value < 0.0) &&
+            (value > -1e-12 * (1.0 + y_energy))) {
+            value = 0.0;
+        }
+        if (!(value >= 0.0) || !isfinite(value)) return -1;
+        *sse = value;
     }
     return 0;
+}
+
+static double PA_ComputeResidualSse(
+    const float *data,
+    uint32_t n,
+    float fs,
+    const uint16_t *orders,
+    uint8_t component_count,
+    double f0,
+    const double solution[PA_SOLVER_MAX_ORDER])
+{
+    double oscillator_sin[PERIODIC_ANALYZER_MAX_COMPONENTS] = {0.0};
+    double oscillator_cos[PERIODIC_ANALYZER_MAX_COMPONENTS] = {0.0};
+    double step_sin[PERIODIC_ANALYZER_MAX_COMPONENTS] = {0.0};
+    double step_cos[PERIODIC_ANALYZER_MAX_COMPONENTS] = {0.0};
+    double sum_sq = 0.0;
+
+    for (uint8_t c = 0U; c < component_count; ++c) {
+        const double omega =
+            PA_TWO_PI_D * (double)orders[c] * f0 / (double)fs;
+        oscillator_cos[c] = 1.0;
+        step_sin[c] = sin(omega);
+        step_cos[c] = cos(omega);
+    }
+
+    for (uint32_t sample = 0U; sample < n; ++sample) {
+        double estimate = solution[0];
+        for (uint8_t c = 0U; c < component_count; ++c) {
+            estimate += solution[1U + 2U * c] * oscillator_sin[c] +
+                        solution[2U + 2U * c] * oscillator_cos[c];
+        }
+        {
+            const double error = (double)data[sample] - estimate;
+            sum_sq += error * error;
+        }
+        for (uint8_t c = 0U; c < component_count; ++c) {
+            const double next_sin =
+                oscillator_sin[c] * step_cos[c] +
+                oscillator_cos[c] * step_sin[c];
+            const double next_cos =
+                oscillator_cos[c] * step_cos[c] -
+                oscillator_sin[c] * step_sin[c];
+            oscillator_sin[c] = next_sin;
+            oscillator_cos[c] = next_cos;
+        }
+    }
+    return sum_sq;
+}
+
+static int PA_FitCost(const float *data,
+                      uint32_t n,
+                      float fs,
+                      const uint16_t *orders,
+                      uint8_t component_count,
+                      double f0,
+                      double *cost)
+{
+    double trial_solution[PA_SOLVER_MAX_ORDER] = {0.0};
+    return PA_FitComponents(data, n, fs, orders, component_count,
+                            f0, trial_solution, cost);
+}
+
+static double PA_RefineFundamentalStep(const float *data,
+                                       uint32_t n,
+                                       float fs,
+                                       const uint16_t *orders,
+                                       uint8_t component_count,
+                                       double center_hz,
+                                       double step_hz,
+                                       double min_hz,
+                                       double max_hz)
+{
+    double left_hz;
+    double right_hz;
+    double left_cost = 0.0;
+    double center_cost;
+    double right_cost = 0.0;
+    uint8_t left_valid;
+    uint8_t right_valid;
+
+    if (!(step_hz > 0.0) || !(max_hz >= min_hz)) return center_hz;
+    if (center_hz < min_hz) center_hz = min_hz;
+    if (center_hz > max_hz) center_hz = max_hz;
+    if (PA_FitCost(data, n, fs, orders, component_count,
+                   center_hz, &center_cost) != 0) {
+        return center_hz;
+    }
+
+    left_hz = center_hz - step_hz;
+    if (left_hz < min_hz) left_hz = min_hz;
+    right_hz = center_hz + step_hz;
+    if (right_hz > max_hz) right_hz = max_hz;
+    left_valid = (left_hz < center_hz) ? 1U : 0U;
+    right_valid = (right_hz > center_hz) ? 1U : 0U;
+    if ((left_valid != 0U) &&
+        (PA_FitCost(data, n, fs, orders, component_count,
+                    left_hz, &left_cost) != 0)) {
+        left_valid = 0U;
+    }
+    if ((right_valid != 0U) &&
+        (PA_FitCost(data, n, fs, orders, component_count,
+                    right_hz, &right_cost) != 0)) {
+        right_valid = 0U;
+    }
+
+    for (uint8_t shift = 0U;
+         shift < PA_REFINE_MAX_SHIFTS;
+         ++shift) {
+        if ((left_valid != 0U) &&
+            (left_cost < center_cost) &&
+            ((right_valid == 0U) || (left_cost <= right_cost))) {
+            right_hz = center_hz;
+            right_cost = center_cost;
+            right_valid = 1U;
+            center_hz = left_hz;
+            center_cost = left_cost;
+            left_hz = center_hz - step_hz;
+            if (left_hz < min_hz) left_hz = min_hz;
+            left_valid = (left_hz < center_hz) ? 1U : 0U;
+            if ((left_valid != 0U) &&
+                (PA_FitCost(data, n, fs, orders, component_count,
+                            left_hz, &left_cost) != 0)) {
+                left_valid = 0U;
+            }
+        } else if ((right_valid != 0U) &&
+                   (right_cost < center_cost)) {
+            left_hz = center_hz;
+            left_cost = center_cost;
+            left_valid = 1U;
+            center_hz = right_hz;
+            center_cost = right_cost;
+            right_hz = center_hz + step_hz;
+            if (right_hz > max_hz) right_hz = max_hz;
+            right_valid = (right_hz > center_hz) ? 1U : 0U;
+            if ((right_valid != 0U) &&
+                (PA_FitCost(data, n, fs, orders, component_count,
+                            right_hz, &right_cost) != 0)) {
+                right_valid = 0U;
+            }
+        } else {
+            break;
+        }
+    }
+
+    if ((left_valid != 0U) && (right_valid != 0U) &&
+        (center_cost <= left_cost) &&
+        (center_cost <= right_cost)) {
+        const double slope_left =
+            (center_cost - left_cost) / (center_hz - left_hz);
+        const double slope_right =
+            (right_cost - center_cost) / (right_hz - center_hz);
+        const double curvature =
+            (slope_right - slope_left) / (right_hz - left_hz);
+        if (curvature > 0.0) {
+            const double linear =
+                slope_left - curvature * (left_hz + center_hz);
+            const double vertex = -linear / (2.0 * curvature);
+            if ((vertex >= left_hz) && (vertex <= right_hz) &&
+                isfinite(vertex)) {
+                return vertex;
+            }
+        }
+    }
+    return center_hz;
+}
+
+static float PA_RefineFundamental(const float *data,
+                                  uint32_t n,
+                                  const PeriodicAnalyzer_Config *config,
+                                  const uint16_t *orders,
+                                  uint8_t component_count,
+                                  float initial_hz)
+{
+    const double bin_width =
+        (double)config->sample_rate_hz / (double)n;
+    double min_hz = (double)config->min_frequency_hz;
+    double max_hz = (double)config->max_frequency_hz;
+    double refined = (double)initial_hz;
+    double step_hz = bin_width / 8.0;
+
+    for (uint8_t c = 0U; c < component_count; ++c) {
+        const double band_limit =
+            (double)config->max_frequency_hz / (double)orders[c];
+        const double nyquist_limit =
+            (0.5 * (double)config->sample_rate_hz -
+             0.5 * bin_width) / (double)orders[c];
+        if (band_limit < max_hz) max_hz = band_limit;
+        if (nyquist_limit < max_hz) max_hz = nyquist_limit;
+    }
+    if (!(max_hz >= min_hz)) return initial_hz;
+    if (refined < min_hz) refined = min_hz;
+    if (refined > max_hz) refined = max_hz;
+
+    for (uint8_t stage = 0U; stage < PA_REFINE_STAGES; ++stage) {
+        refined = PA_RefineFundamentalStep(data,
+                                           n,
+                                           config->sample_rate_hz,
+                                           orders,
+                                           component_count,
+                                           refined,
+                                           step_hz,
+                                           min_hz,
+                                           max_hz);
+        step_hz *= 0.25;
+    }
+    return (float)refined;
 }
 
 void PeriodicAnalyzer_GetDefaultConfig(PeriodicAnalyzer_Config *config)
@@ -529,6 +789,24 @@ PeriodicAnalyzer_Status PeriodicAnalyzer_Analyze(
     peak_count = PA_CollectPeaks(config, length, peaks);
     if (peak_count == 0U) return PERIODIC_ANALYZER_E_NO_SIGNAL;
 
+    /*
+     * Keep every significant spectral peak found in the configured band.
+     * This list is independent of the smaller harmonic reconstruction model
+     * used to calculate f0, RMS and Vpp.
+     */
+    result->spectrum_component_count = peak_count;
+    for (uint8_t i = 0U; i < peak_count; ++i) {
+        float amp_corr;
+        PA_InterpolateCalibration(config,
+                                  peaks[i].frequency_hz,
+                                  &amp_corr,
+                                  NULL);
+        result->spectrum[i].frequency_hz = peaks[i].frequency_hz;
+        result->spectrum[i].peak_amplitude_v =
+            peaks[i].amplitude_adc_v *
+            config->input_volts_per_adc_volt * amp_corr;
+    }
+
     component_count = PA_SelectHarmonicModel(
         peaks,
         peak_count,
@@ -542,18 +820,41 @@ PeriodicAnalyzer_Status PeriodicAnalyzer_Analyze(
         return PERIODIC_ANALYZER_E_NO_SIGNAL;
     }
 
+    f0 = PA_RefineFundamental(s_centered,
+                              length,
+                              config,
+                              orders,
+                              component_count,
+                              f0);
+
     if (PA_FitComponents(s_centered,
                          length,
                          config->sample_rate_hz,
                          orders,
                          component_count,
-                         f0,
+                         (double)f0,
                          solution,
-                         &result->residual_rms_v) != 0) {
+                         NULL) != 0) {
         result->status = PERIODIC_ANALYZER_E_MODEL;
         return result->status;
     }
-    result->residual_rms_v *= config->input_volts_per_adc_volt;
+    {
+        const double residual_sse = PA_ComputeResidualSse(
+            s_centered,
+            length,
+            config->sample_rate_hz,
+            orders,
+            component_count,
+            (double)f0,
+            solution);
+        if (!(residual_sse >= 0.0) || !isfinite(residual_sse)) {
+            result->status = PERIODIC_ANALYZER_E_MODEL;
+            return result->status;
+        }
+        result->residual_rms_v =
+            (float)sqrt(residual_sse / (double)length) *
+            config->input_volts_per_adc_volt;
+    }
 
     result->component_count = component_count;
     result->fundamental_hz = f0;
@@ -579,6 +880,53 @@ PeriodicAnalyzer_Status PeriodicAnalyzer_Analyze(
         rms_sq += 0.5f *
             result->component[c].peak_amplitude_v *
             result->component[c].peak_amplitude_v;
+    }
+
+    /*
+     * Preserve every significant 10..500 kHz peak for spectrum output.
+     * Where a peak belongs to the joint harmonic model, replace the FFT
+     * estimate with the more accurate least-squares result.
+     */
+    for (uint8_t c = 0U; c < component_count; ++c) {
+        uint8_t nearest = 0U;
+        float nearest_error = 1e30f;
+        for (uint8_t i = 0U;
+             i < result->spectrum_component_count;
+             ++i) {
+            const float error = PA_AbsF(
+                result->spectrum[i].frequency_hz -
+                result->component[c].frequency_hz);
+            if (error < nearest_error) {
+                nearest_error = error;
+                nearest = i;
+            }
+        }
+        if ((result->spectrum_component_count != 0U) &&
+            (nearest_error <=
+             PA_HARMONIC_TOL_BINS *
+             config->sample_rate_hz / (float)length)) {
+            result->spectrum[nearest].harmonic_order =
+                result->component[c].harmonic_order;
+            result->spectrum[nearest].frequency_hz =
+                result->component[c].frequency_hz;
+            result->spectrum[nearest].peak_amplitude_v =
+                result->component[c].peak_amplitude_v;
+        }
+    }
+    for (uint8_t i = 0U;
+         i < result->spectrum_component_count;
+         ++i) {
+        for (uint8_t j = (uint8_t)(i + 1U);
+             j < result->spectrum_component_count;
+             ++j) {
+            if (result->spectrum[j].frequency_hz <
+                result->spectrum[i].frequency_hz) {
+                const PeriodicAnalyzer_SpectrumComponent temporary =
+                    result->spectrum[i];
+                result->spectrum[i] = result->spectrum[j];
+                result->spectrum[j] = temporary;
+            }
+        }
     }
     result->true_rms_v = sqrtf(rms_sq);
 

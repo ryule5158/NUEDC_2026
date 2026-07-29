@@ -1,14 +1,14 @@
 Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
-| Date         : Wed Jul 29 09:14:05 2026
-| Host         : LAPTOP-9SJO8I4N running 64-bit major release  (build 9200)
-| Command      : report_drc -file C:/Users/LENOVO/Desktop/NUEDC_2026/FPGA_BX71_AD9708_AD9280/Vivado/BX71_G_ANALYZER_PL/BX71_G_ANALYZER_PL.runs/impl_1/g_analyzer_drc_final.rpt
+| Date         : Wed Jul 29 13:46:11 2026
+| Host         : FYH2005 running 64-bit major release  (build 9200)
+| Command      : report_drc -file C:/Users/21274/AppData/Local/Temp/NF/Vivado/BX71_G_ANALYZER_PL/BX71_G_ANALYZER_PL.runs/impl_1/g_analyzer_drc_final.rpt
 | Design       : g_analyzer_top
 | Device       : xc7z020clg400-2
 | Speed File   : -2
 | Design State : Fully Routed
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Report DRC
 

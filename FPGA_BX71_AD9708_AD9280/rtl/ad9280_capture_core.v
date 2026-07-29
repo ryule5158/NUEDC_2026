@@ -35,10 +35,10 @@ module ad9280_capture_core(
     localparam REG_FILTER          = 7'h2F; /* bit0: enable G-mode CIC3/R16 anti-alias decimator. */
 
     localparam [31:0] DEVICE_ID       = 32'hAD928001; /* AD9280采集单元标识。 */
-    localparam [31:0] FIRMWARE_VERSION = 32'h00010001; /* 当前采集协议版本。 */
     localparam [31:0] SAMPLE_CLK_HZ    = 32'd32000000; /* AD9280采样时钟。 */
     localparam [12:0] BUFFER_DEPTH     = 13'd4096; /* FPGA采样缓存深度。 */
-    localparam [31:0] G_CAPTURE_VERSION = 32'h00010002;
+    /* v1.3: READ_DATA, MIN/MAX, SUM and LATEST use signed Q8.8 samples. */
+    localparam [31:0] G_CAPTURE_VERSION = 32'h00010003;
 
     localparam [1:0] TRIGGER_IMMEDIATE = 2'd0; /* 立即开始采集。 */
     localparam [1:0] TRIGGER_RISING    = 2'd1; /* 阈值上升沿触发。 */
@@ -53,7 +53,7 @@ module ad9280_capture_core(
     reg [11:0] read_addr_cfg;
     reg start_toggle_cfg;
     reg abort_toggle_cfg;
-    reg [7:0] ram_read_data;
+    reg signed [15:0] ram_read_data;
     reg capture_valid_cfg;
     reg filter_enable_cfg;
 
@@ -85,10 +85,10 @@ module ad9280_capture_core(
     reg completion_toggle_adc;
     reg [12:0] captured_count_adc;
     reg [31:0] overrange_count_adc;
-    reg [31:0] sample_sum_adc;
-    reg [7:0] sample_min_adc;
-    reg [7:0] sample_max_adc;
-    reg [7:0] latest_sample_adc;
+    reg signed [31:0] sample_sum_adc;
+    reg signed [15:0] sample_min_adc;
+    reg signed [15:0] sample_max_adc;
+    reg signed [15:0] latest_sample_adc;
     reg [7:0] previous_sample_adc;
     reg [11:0] write_addr_adc;
     reg [15:0] decimation_count_adc;
@@ -96,7 +96,7 @@ module ad9280_capture_core(
     /* 块RAM写端口流水寄存器。 */
     reg ram_write_enable_adc;
     reg [11:0] ram_write_addr_adc;
-    reg [7:0] ram_write_data_adc;
+    reg signed [15:0] ram_write_data_adc;
 
     /* 返回配置时钟域前的两级状态同步寄存器。 */
     (* ASYNC_REG = "TRUE" *) reg [1:0] busy_sync;
@@ -107,22 +107,30 @@ module ad9280_capture_core(
     reg [12:0] captured_count_sync;
     reg [31:0] overrange_count_meta;
     reg [31:0] overrange_count_sync;
-    reg [31:0] sample_sum_meta;
-    reg [31:0] sample_sum_sync;
-    reg [7:0] sample_min_meta;
-    reg [7:0] sample_min_sync;
-    reg [7:0] sample_max_meta;
-    reg [7:0] sample_max_sync;
-    reg [7:0] latest_sample_meta;
-    reg [7:0] latest_sample_sync;
+    reg signed [31:0] sample_sum_meta;
+    reg signed [31:0] sample_sum_sync;
+    reg signed [15:0] sample_min_meta;
+    reg signed [15:0] sample_min_sync;
+    reg signed [15:0] sample_max_meta;
+    reg signed [15:0] sample_max_sync;
+    reg signed [15:0] latest_sample_meta;
+    reg signed [15:0] latest_sample_sync;
 
-    /* 4096×8位双时钟采样缓存，综合为FPGA块RAM。 */
-    (* ram_style = "block" *) reg [7:0] sample_ram [0:4095];
+    /* 4096×16位双时钟Q8.8采样缓存，综合为FPGA块RAM。 */
+    /*
+     * Every buffered sample uses signed two's-complement Q8.8 in both CIC
+     * and raw-bypass modes.
+     */
+    (* ram_style = "block" *) reg signed [15:0] sample_ram [0:4095];
 
     wire cic_output_valid;
-    wire [7:0] cic_output_code;
+    wire signed [15:0] cic_output_q8_8;
     wire raw_store_sample;
-    wire [7:0] stored_sample;
+    wire signed [8:0] centered_adc_sample =
+        $signed({1'b0, adc_data}) - 9'sd128;
+    wire signed [15:0] raw_sample_q8_8 =
+        {centered_adc_sample[7:0], 8'h00};
+    wire signed [15:0] stored_sample;
     /* 跨时钟控制事件和采集状态组合条件。 */
     wire start_event = start_toggle_sync[1] ^ start_toggle_seen;
     wire abort_event = abort_toggle_sync[1] ^ abort_toggle_seen;
@@ -137,7 +145,7 @@ module ad9280_capture_core(
     wire store_sample = filter_enable_latched ?
                         cic_output_valid : raw_store_sample;
     assign stored_sample = filter_enable_latched ?
-                           cic_output_code : adc_data;
+                           cic_output_q8_8 : raw_sample_q8_8;
     wire capture_done_cfg = capture_valid_cfg &&
                             (completion_toggle_sync[2] == start_toggle_cfg);
     wire capture_busy_cfg = capture_valid_cfg && !capture_done_cfg;
@@ -152,7 +160,7 @@ module ad9280_capture_core(
         .input_valid(capture_window && filter_enable_latched),
         .input_code(adc_data),
         .output_valid(cic_output_valid),
-        .output_code(cic_output_code)
+        .output_sample_q8_8(cic_output_q8_8)
     );
 
 
@@ -284,14 +292,14 @@ module ad9280_capture_core(
             completion_toggle_adc <= 1'b0;
             captured_count_adc <= 13'd0;
             overrange_count_adc <= 32'd0;
-            sample_sum_adc <= 32'd0;
-            sample_min_adc <= 8'hFF;
-            sample_max_adc <= 8'h00;
-            latest_sample_adc <= 8'd128;
+            sample_sum_adc <= 32'sd0;
+            sample_min_adc <= 16'sh7FFF;
+            sample_max_adc <= 16'sh8000;
+            latest_sample_adc <= 16'sd0;
             previous_sample_adc <= 8'd128;
             decimation_count_adc <= 16'd0;
         end else begin
-            latest_sample_adc <= adc_data;
+            latest_sample_adc <= raw_sample_q8_8;
             previous_sample_adc <= adc_data;
 
             if (!adc_ready) begin
@@ -321,9 +329,9 @@ module ad9280_capture_core(
                 overrange_adc <= 1'b0;
                 captured_count_adc <= 13'd0;
                 overrange_count_adc <= 32'd0;
-                sample_sum_adc <= 32'd0;
-                sample_min_adc <= 8'hFF;
-                sample_max_adc <= 8'h00;
+                sample_sum_adc <= 32'sd0;
+                sample_min_adc <= 16'sh7FFF;
+                sample_max_adc <= 16'sh8000;
                 decimation_count_adc <= 16'd0;
                 previous_sample_adc <= adc_data;
             end else if (busy_adc) begin
@@ -337,15 +345,18 @@ module ad9280_capture_core(
                 end
 
                 if (store_sample) begin
-                    sample_sum_adc <= sample_sum_adc + stored_sample;
+                    sample_sum_adc <= sample_sum_adc +
+                        {{16{stored_sample[15]}}, stored_sample};
                     if (captured_count_adc == 13'd0) begin
                         sample_min_adc <= stored_sample;
                         sample_max_adc <= stored_sample;
                     end else begin
-                        if (stored_sample < sample_min_adc) begin
+                        if ($signed(stored_sample) <
+                            $signed(sample_min_adc)) begin
                             sample_min_adc <= stored_sample;
                         end
-                        if (stored_sample > sample_max_adc) begin
+                        if ($signed(stored_sample) >
+                            $signed(sample_max_adc)) begin
                             sample_max_adc <= stored_sample;
                         end
                     end
@@ -373,7 +384,7 @@ module ad9280_capture_core(
         if (!reset_n || !adc_ready) begin
             ram_write_enable_adc <= 1'b0;
             ram_write_addr_adc <= 12'd0;
-            ram_write_data_adc <= 8'd128;
+            ram_write_data_adc <= 16'sd0;
             write_addr_adc <= 12'd0;
         end else begin
             ram_write_enable_adc <= store_sample;
@@ -407,14 +418,14 @@ module ad9280_capture_core(
             captured_count_sync <= 13'd0;
             overrange_count_meta <= 32'd0;
             overrange_count_sync <= 32'd0;
-            sample_sum_meta <= 32'd0;
-            sample_sum_sync <= 32'd0;
-            sample_min_meta <= 8'hFF;
-            sample_min_sync <= 8'hFF;
-            sample_max_meta <= 8'h00;
-            sample_max_sync <= 8'h00;
-            latest_sample_meta <= 8'd128;
-            latest_sample_sync <= 8'd128;
+            sample_sum_meta <= 32'sd0;
+            sample_sum_sync <= 32'sd0;
+            sample_min_meta <= 16'sh7FFF;
+            sample_min_sync <= 16'sh7FFF;
+            sample_max_meta <= 16'sh8000;
+            sample_max_sync <= 16'sh8000;
+            latest_sample_meta <= 16'sd0;
+            latest_sample_sync <= 16'sd0;
         end else begin
             busy_sync <= {busy_sync[0], busy_adc};
             triggered_sync <= {triggered_sync[0], triggered_adc};
@@ -459,7 +470,13 @@ module ad9280_capture_core(
             REG_READ_ADDR:
                 bus_rdata = {20'd0, read_addr_cfg};
             REG_READ_DATA:
-                bus_rdata = {12'd0, read_addr_cfg, ram_read_data};
+                /*
+                 * Protocol v1.3 sample word:
+                 * [31:28] reserved, [27:16] address tag,
+                 * [15:0] signed two's-complement Q8.8 sample.
+                 * The SPI slave transmits this 32-bit word MSB first.
+                 */
+                bus_rdata = {4'd0, read_addr_cfg, ram_read_data};
             REG_CAPTURED_COUNT:
                 bus_rdata = {19'd0, captured_count_sync};
             REG_OVERRANGE_COUNT:
@@ -471,11 +488,12 @@ module ad9280_capture_core(
             REG_FIRMWARE_VERSION:
                 bus_rdata = G_CAPTURE_VERSION;
             REG_MIN_MAX:
-                bus_rdata = {16'd0, sample_max_sync, sample_min_sync};
+                bus_rdata = {sample_max_sync, sample_min_sync};
             REG_SUM:
                 bus_rdata = sample_sum_sync;
             REG_LATEST:
-                bus_rdata = {24'd0, latest_sample_sync};
+                bus_rdata = {{16{latest_sample_sync[15]}},
+                             latest_sample_sync};
             REG_FILTER:
                 bus_rdata = {31'd0, filter_enable_cfg};
             default:

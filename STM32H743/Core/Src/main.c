@@ -1,96 +1,89 @@
 #include "main.h"
-#include "adc.h"
-#include "dma.h"
 #include "spi.h"
-#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
-#include "g_contest_config.h"
 #include "g_contest_app.h"
-#include "fpga_boot_restore.h"
-#include "pll_selftest_config.h"
-#include "pll_test_app.h"
-#include <string.h>
-
-#if !G_CONTEST_ENABLE
-static FpgaBootRestore_Config s_fpga_boot_config;
-
-static void App_FpgaBootLog(void *user, const char *message)
-{
-  size_t length;
-
-  (void)user;
-  if (message == NULL) return;
-  length = strlen(message);
-  if (length > 0xFFFFU) length = 0xFFFFU;
-  (void)HAL_UART_Transmit(&huart1,
-                          (const uint8_t *)message,
-                          (uint16_t)length,
-                          30U);
-}
-#endif
+#include "g_contest_cli.h"
+#include "g_tjc_ui.h"
 
 void SystemClock_Config(void);
 
 int main(void)
 {
-#if PLL_SELFTEST_ENABLE || G_CONTEST_ENABLE
   SCB_EnableICache();
   SCB_EnableDCache();
-#endif
 
   HAL_Init();
   SystemClock_Config();
 
   MX_GPIO_Init();
-#if G_CONTEST_ENABLE
-  MX_SPI2_Init();
-  MX_USART1_UART_Init();
-  if (GContest_Init() != HAL_OK) Error_Handler();
-#else
-  MX_DMA_Init();
-  MX_USART3_UART_Init();
   MX_SPI2_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
-#if PLL_SELFTEST_ENABLE
-  MX_ADC2_Init();
-#endif
-  MX_ADC1_Init();
-  MX_TIM3_Init();
-#if PLL_SELFTEST_ENABLE
-  MX_TIM6_Init();
-#endif
 
-  FpgaBootRestore_GetDefaultConfig(&s_fpga_boot_config);
-  s_fpga_boot_config.log = App_FpgaBootLog;
-  if (FpgaBootRestore_Start(&s_fpga_boot_config) != FPGA_PROMAX_OK)
+  if (GContest_Init() != HAL_OK)
   {
     Error_Handler();
   }
-  if (FpgaBootRestore_WaitReady(
-        0U, FPGA_BOOT_POST_READY_GUARD_MS) != FPGA_PROMAX_OK)
+  if (GContestCli_Init() != HAL_OK)
   {
     Error_Handler();
   }
-#if PLL_SELFTEST_ENABLE
-  if (PllTest_Init() != HAL_OK) Error_Handler();
-#endif
-#endif
+  if (G_TjcUi_Init() != HAL_OK)
+  {
+    Error_Handler();
+  }
 
   while (1)
   {
-#if G_CONTEST_ENABLE
-    GContest_Process();
-#else
-    FpgaBootRestore_Process();
-#if PLL_SELFTEST_ENABLE
-    PllTest_Process();
-#endif
-#endif
+    G_TjcUiMode display_mode;
+    uint8_t waveform_cycles = 1U;
+    uint8_t measurement_requested = 0U;
+
+    GContestCli_Poll();
+    if (G_TjcUi_TakeRequest(&display_mode) != 0U)
+    {
+      waveform_cycles =
+          (display_mode == G_TJC_MODE_WAVE_3T) ? 3U : 1U;
+      measurement_requested = 1U;
+    }
+    else if (GContestCli_TakeMeasurementRequest(&waveform_cycles) != 0U)
+    {
+      display_mode = (waveform_cycles == 3U) ?
+                     G_TJC_MODE_WAVE_3T :
+                     G_TJC_MODE_WAVE_1T;
+      measurement_requested = 1U;
+    }
+
+    if (measurement_requested != 0U)
+    {
+      const uint32_t previous_frame = GContest_GetFrameNumber();
+      const PeriodicAnalyzer_Result *result;
+
+      (void)G_TjcUi_ShowAcquiring(display_mode);
+      GContest_Process(waveform_cycles);
+      result = GContest_GetLastResult();
+      if ((GContest_GetFrameNumber() != previous_frame) &&
+          (result != NULL) &&
+          (result->valid != 0U) &&
+          (result->status == PERIODIC_ANALYZER_OK))
+      {
+        (void)G_TjcUi_Publish(result, display_mode);
+      }
+      else if ((result != NULL) &&
+               (result->status == PERIODIC_ANALYZER_E_NO_SIGNAL))
+      {
+        (void)G_TjcUi_ShowError("NO SIGNAL");
+      }
+      else
+      {
+        (void)G_TjcUi_ShowError("MEASURE ERROR");
+      }
+    }
   }
 }
+
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};

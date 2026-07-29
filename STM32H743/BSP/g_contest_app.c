@@ -1,7 +1,7 @@
 #include "g_contest_app.h"
 
-#include "ad9280_app.h"
 #include "g_contest_config.h"
+#include "signal_adc.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -11,132 +11,232 @@ static PeriodicAnalyzer_Result s_result;
 static uint32_t s_frame_number;
 static uint32_t s_last_latency_ms;
 
-/*
- * Combined correction for the six-pole 650 kHz analog filter and the FPGA
- * CIC3/R16 filter. These are theoretical start values; overwrite them with a
- * swept-sine calibration before final judging.
- */
-static void GContest_LoadInitialCalibration(void)
+static void GContest_PrintCaptureDiagnostic(SignalAdc_Status status)
 {
-    static const PeriodicAnalyzer_CalPoint cal[] = {
-        { 10000.0f, 1.000108895f,   5.911151f},
-        { 50000.0f, 1.002717459f,  29.569450f},
-        {100000.0f, 1.010959620f,  59.226000f},
-        {200000.0f, 1.045251831f, 119.165300f},
-        {300000.0f, 1.107128190f, 180.653500f},
-        {400000.0f, 1.205277606f, 244.997800f},
-        {500000.0f, 1.374052884f, 314.892400f}
-    };
+    const SignalAdc_Info *info = SignalAdc_GetInfo();
+    const SignalAdc_Diagnostic *diagnostic =
+        SignalAdc_GetDiagnostic();
 
-    s_analyzer_config.cal_count =
-        (uint8_t)(sizeof(cal) / sizeof(cal[0]));
-    memcpy(s_analyzer_config.cal, cal, sizeof(cal));
+    printf("[G] capture failed code=%d name=%s native=%lu stage=%s\r\n",
+           (int)status,
+           SignalAdc_StatusName(status),
+           (diagnostic != NULL) ?
+               (unsigned long)diagnostic->native_status : 0UL,
+           (diagnostic != NULL) ?
+               SignalAdc_StageName(diagnostic->stage) : "UNKNOWN");
+    if ((info != NULL) && (diagnostic != NULL)) {
+        printf("[G] adc=%s device=0x%08lX fw=0x%08lX "
+               "physical_clk=%luHz ready=%u busy=%u done=%u "
+               "captured=%lu read=%lu\r\n",
+               info->name,
+               (unsigned long)diagnostic->device_id,
+               (unsigned long)diagnostic->firmware_version,
+               (unsigned long)info->physical_sample_clock_hz,
+               (unsigned)diagnostic->ready,
+               (unsigned)diagnostic->busy,
+               (unsigned)diagnostic->done,
+               (unsigned long)diagnostic->captured_count,
+               (unsigned long)diagnostic->read_count);
+    }
+    if (status == SIGNAL_ADC_E_LINK) {
+        printf("[G] LINK check: inspect active ADC/FPGA transport "
+               "and common GND\r\n");
+    }
+}
+
+static uint8_t GContest_NormalizeWaveformCycles(uint8_t waveform_cycles)
+{
+    return (waveform_cycles == G_CONTEST_MAX_WAVEFORM_CYCLES) ?
+           G_CONTEST_MAX_WAVEFORM_CYCLES : 1U;
+}
+
+static void GContest_PrintWaveform(uint8_t waveform_cycles)
+{
+    const uint8_t cycles =
+        GContest_NormalizeWaveformCycles(waveform_cycles);
+    const uint32_t total_points =
+        (uint32_t)cycles * G_CONTEST_WAVEFORM_POINTS_PER_CYCLE;
+
+    printf("[WAVE] begin cycles=%u points_per_cycle=%lu total_points=%lu "
+           "unit=mV\r\n",
+           (unsigned)cycles,
+           (unsigned long)G_CONTEST_WAVEFORM_POINTS_PER_CYCLE,
+           (unsigned long)total_points);
+
+    for (uint8_t cycle = 0U; cycle < cycles; ++cycle) {
+        for (uint32_t point = 0U;
+             point < G_CONTEST_WAVEFORM_POINTS_PER_CYCLE;
+             ++point) {
+            const float phase_turns =
+                (float)point /
+                (float)G_CONTEST_WAVEFORM_POINTS_PER_CYCLE;
+            const float voltage_mv = 1000.0f *
+                PeriodicAnalyzer_Evaluate(&s_result, phase_turns);
+
+            printf("%.6f\r\n", (double)voltage_mv);
+        }
+    }
+    printf("[WAVE] end\r\n");
+}
+
+static void GContest_PrintMeasurementAndSpectrum(void)
+{
+    printf("[MEAS] Vpp=%.3fmV RMS=%.3fmV F0=%.2fHz "
+           "residual_RMS=%.3fmV clip=%u\r\n",
+           (double)(1000.0f * s_result.vpp_v),
+           (double)(1000.0f * s_result.true_rms_v),
+           (double)s_result.fundamental_hz,
+           (double)(1000.0f * s_result.residual_rms_v),
+           (unsigned)s_result.clipped);
+
+    printf("[SPEC] begin band=%.0f..%.0fHz count=%u "
+           "columns=component,frequency_Hz,peak_mV,vpp_mV "
+           "order=frequency_ascending\r\n",
+           (double)G_CONTEST_MIN_FREQ_HZ,
+           (double)G_CONTEST_MAX_FREQ_HZ,
+           (unsigned)s_result.spectrum_component_count);
+    for (uint8_t i = 0U;
+         i < s_result.spectrum_component_count;
+         ++i) {
+        if (s_result.spectrum[i].harmonic_order != 0U) {
+            printf("SPEC,H%u,%.2f,%.6f,%.6f\r\n",
+                   (unsigned)s_result.spectrum[i].harmonic_order,
+                   (double)s_result.spectrum[i].frequency_hz,
+                   (double)(1000.0f *
+                            s_result.spectrum[i].peak_amplitude_v),
+                   (double)(2000.0f *
+                            s_result.spectrum[i].peak_amplitude_v));
+        } else {
+            printf("SPEC,C%u,%.2f,%.6f,%.6f\r\n",
+                   (unsigned)(i + 1U),
+                   (double)s_result.spectrum[i].frequency_hz,
+                   (double)(1000.0f *
+                            s_result.spectrum[i].peak_amplitude_v),
+                   (double)(2000.0f *
+                            s_result.spectrum[i].peak_amplitude_v));
+        }
+    }
+    printf("[SPEC] end\r\n");
 }
 
 HAL_StatusTypeDef GContest_Init(void)
 {
-    AD9280_StatusTypeDef adc_status;
+    const SignalAdc_Info *adc_info;
+    SignalAdc_Status adc_status;
 
-    if ((G_CONTEST_ADC_CLOCK_HZ / G_CONTEST_FPGA_DECIMATION) !=
-        G_CONTEST_SAMPLE_RATE_HZ) {
+    adc_status = SignalAdc_Init();
+    if (adc_status != SIGNAL_ADC_OK) {
+        GContest_PrintCaptureDiagnostic(adc_status);
+        return HAL_ERROR;
+    }
+    adc_info = SignalAdc_GetInfo();
+    if ((adc_info == NULL) ||
+        !(adc_info->output_sample_rate_hz > 0.0f) ||
+        (adc_info->max_samples < G_CONTEST_SAMPLE_COUNT) ||
+        (G_CONTEST_MAX_FREQ_HZ >
+         0.5f * adc_info->output_sample_rate_hz)) {
+        printf("[G] ADC backend parameters are incompatible with G test\r\n");
         return HAL_ERROR;
     }
 
     PeriodicAnalyzer_GetDefaultConfig(&s_analyzer_config);
-    s_analyzer_config.sample_rate_hz = (float)G_CONTEST_SAMPLE_RATE_HZ;
+    s_analyzer_config.sample_rate_hz =
+        adc_info->output_sample_rate_hz;
     s_analyzer_config.min_frequency_hz = G_CONTEST_MIN_FREQ_HZ;
     s_analyzer_config.max_frequency_hz = G_CONTEST_MAX_FREQ_HZ;
-    s_analyzer_config.input_volts_per_adc_volt =
-        1.0f / G_CONTEST_FRONT_END_GAIN;
+    s_analyzer_config.input_volts_per_adc_volt = 1.0f;
     s_analyzer_config.min_component_peak_v =
         G_CONTEST_MIN_COMPONENT_PEAK_V;
     s_analyzer_config.relative_peak_threshold = 0.01f;
-    GContest_LoadInitialCalibration();
+    /* No theoretical correction is applied before full-system calibration. */
+    s_analyzer_config.cal_count = 0U;
 
     memset(&s_result, 0, sizeof(s_result));
     s_frame_number = 0U;
     s_last_latency_ms = 0U;
 
-    adc_status = AD9280_AppInit();
-    if (adc_status != AD9280_OK) {
-        printf("[G] AD9280 init failed: %d\r\n", (int)adc_status);
-        return HAL_ERROR;
-    }
-    adc_status = AD9280_AppSetVoltageCalibration(
-        G_CONTEST_CAL_LOW_CODE,
-        G_CONTEST_CAL_LOW_V,
-        G_CONTEST_CAL_HIGH_CODE,
-        G_CONTEST_CAL_HIGH_V);
-    if (adc_status != AD9280_OK) return HAL_ERROR;
-
-    adc_status = AD9280_SetCic3Filter(1U);
-    if (adc_status != AD9280_OK) {
-        printf("[G] FPGA image lacks CIC3/R16 support (need ADC fw 1.2)\r\n");
-        return HAL_ERROR;
-    }
-
-    printf("[G] READY AD9280=32MSPS CIC3/R16 Fs=%lu N=%lu df=%.5fHz\r\n",
-           (unsigned long)G_CONTEST_SAMPLE_RATE_HZ,
+    printf("[G] READY ADC=%s physicalFs=%luHz Fs=%.0fHz "
+           "N=%lu df=%.5fHz\r\n",
+           adc_info->name,
+           (unsigned long)adc_info->physical_sample_clock_hz,
+           (double)adc_info->output_sample_rate_hz,
            (unsigned long)G_CONTEST_SAMPLE_COUNT,
-           (double)G_CONTEST_BIN_WIDTH_HZ);
+           (double)(adc_info->output_sample_rate_hz /
+                    (float)G_CONTEST_SAMPLE_COUNT));
+    printf("[G] ADC physical_bits=%u physical_lsb=%.6fmV "
+           "transport=%s transport_lsb=%.6fmV\r\n",
+           (unsigned)adc_info->resolution_bits,
+           (double)(1000.0f * adc_info->nominal_lsb_v),
+           adc_info->transport_format,
+           (double)(1000.0f * adc_info->transport_lsb_v));
+    printf("[G] frequency_response_calibration=OFF "
+           "voltage_transfer=nominal\r\n");
     return HAL_OK;
 }
 
-void GContest_Process(void)
+void GContest_Process(uint8_t waveform_cycles)
 {
-    const uint8_t *codes;
-    const AD9280_AppDataTypeDef *adc_data;
-    AD9280_StatusTypeDef adc_status;
+    SignalAdc_FrameInfo frame;
+    SignalAdc_Status adc_status = SIGNAL_ADC_E_UNKNOWN;
     PeriodicAnalyzer_Status analyzer_status;
     uint32_t start_ms = HAL_GetTick();
 
-    adc_status = AD9280_AppCapture(G_CONTEST_SAMPLE_COUNT,
-                                   G_CONTEST_FPGA_DECIMATION,
-                                   G_CONTEST_CAPTURE_TIMEOUT_MS);
-    if (adc_status != AD9280_OK) {
-        printf("[G] capture failed: %d\r\n", (int)adc_status);
+    for (uint32_t attempt = 1U;
+         attempt <= G_CONTEST_CAPTURE_MAX_ATTEMPTS;
+         ++attempt) {
+        adc_status = SignalAdc_Capture(s_input_volts,
+                                      G_CONTEST_SAMPLE_COUNT,
+                                      G_CONTEST_SAMPLE_COUNT,
+                                      G_CONTEST_CAPTURE_TIMEOUT_MS,
+                                      &frame);
+        if (adc_status == SIGNAL_ADC_OK) break;
+        if ((adc_status != SIGNAL_ADC_E_LINK) ||
+            (attempt >= G_CONTEST_CAPTURE_MAX_ATTEMPTS)) {
+            break;
+        }
+
+        {
+            const SignalAdc_Diagnostic *diagnostic =
+                SignalAdc_GetDiagnostic();
+            printf("[G] transient LINK error stage=%s; "
+                   "retry %lu/%lu\r\n",
+                   (diagnostic != NULL) ?
+                       SignalAdc_StageName(diagnostic->stage) : "UNKNOWN",
+                   (unsigned long)attempt,
+                   (unsigned long)(G_CONTEST_CAPTURE_MAX_ATTEMPTS - 1U));
+        }
+        (void)SignalAdc_Abort();
+        HAL_Delay(G_CONTEST_CAPTURE_RETRY_DELAY_MS);
+    }
+    if (adc_status != SIGNAL_ADC_OK) {
+        GContest_PrintCaptureDiagnostic(adc_status);
         return;
     }
 
-    codes = AD9280_AppGetSamples();
-    adc_data = AD9280_AppGetData();
-    if ((codes == NULL) ||
-        (AD9280_AppGetSampleCount() != G_CONTEST_SAMPLE_COUNT)) {
+    if ((frame.sample_count != G_CONTEST_SAMPLE_COUNT) ||
+        !(frame.sample_rate_hz > 0.0f) ||
+        (G_CONTEST_MAX_FREQ_HZ > 0.5f * frame.sample_rate_hz)) {
         printf("[G] incomplete frame\r\n");
         return;
     }
-
-    for (uint32_t i = 0U; i < G_CONTEST_SAMPLE_COUNT; ++i) {
-        s_input_volts[i] = AD9280_AppCodeToVoltage(codes[i]);
-    }
+    s_analyzer_config.sample_rate_hz = frame.sample_rate_hz;
 
     analyzer_status = PeriodicAnalyzer_Analyze(s_input_volts,
                                                 G_CONTEST_SAMPLE_COUNT,
                                                 &s_analyzer_config,
                                                 &s_result);
-    s_result.clipped =
-        ((adc_data->capture.overrange != 0U) ||
-         (adc_data->capture.min_code <= G_CONTEST_CLIP_LOW_CODE) ||
-         (adc_data->capture.max_code >= G_CONTEST_CLIP_HIGH_CODE)) ? 1U : 0U;
+    s_result.clipped = frame.clipped;
     s_frame_number++;
     s_last_latency_ms = HAL_GetTick() - start_ms;
 
     if (analyzer_status == PERIODIC_ANALYZER_OK) {
-        printf("[G] #%lu %lums f0=%.2fHz vpp=%.3fmV rms=%.3fmV lines=%u clip=%u\r\n",
+        printf("[G] frame=%lu capture_analyze=%lums model_lines=%u\r\n",
                (unsigned long)s_frame_number,
                (unsigned long)s_last_latency_ms,
-               (double)s_result.fundamental_hz,
-               (double)(1000.0f * s_result.vpp_v),
-               (double)(1000.0f * s_result.true_rms_v),
-               (unsigned)s_result.component_count,
-               (unsigned)s_result.clipped);
-        for (uint32_t i = 0U; i < s_result.component_count; ++i) {
-            printf("[G] H%u f=%.2fHz Apeak=%.3fmV phase=%.2fdeg\r\n",
-                   (unsigned)s_result.component[i].harmonic_order,
-                   (double)s_result.component[i].frequency_hz,
-                   (double)(1000.0f * s_result.component[i].peak_amplitude_v),
-                   (double)(57.2957795f * s_result.component[i].phase_rad));
-        }
+               (unsigned)s_result.component_count);
+        GContest_PrintWaveform(waveform_cycles);
+        GContest_PrintMeasurementAndSpectrum();
+        printf("[DONE] frame=%lu\r\n", (unsigned long)s_frame_number);
     } else {
         printf("[G] analyzer status=%d latency=%lums\r\n",
                (int)analyzer_status,

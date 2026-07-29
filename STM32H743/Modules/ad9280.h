@@ -16,6 +16,15 @@ extern "C" {
 #define AD9280_MODULE_INPUT_MIN_V    (-5.0f)    /* 高速AD/DA模块标称最小输入电压。 */
 #define AD9280_MODULE_INPUT_MAX_V    5.0f       /* 高速AD/DA模块标称最大输入电压。 */
 #define AD9280_IDEAL_VOLTS_PER_CODE  (10.0f / 256.0f) /* 模块理想每码输入电压。 */
+#define AD9280_CAPTURE_PROTOCOL_Q8_8_VERSION 0x00010003UL
+#define AD9280_SAMPLE_WORD_BITS       16U
+#define AD9280_SAMPLE_FRACTION_BITS   8U
+
+/*
+ * FPGA capture samples are signed two's-complement Q8.8 values.
+ * One integer ADC code is represented by 0x0100.
+ */
+typedef int16_t AD9280_SampleTypeDef;
 
 /* AD9280底层驱动返回状态。 */
 typedef enum
@@ -25,6 +34,7 @@ typedef enum
   AD9280_ERROR_NOT_INIT,  /* 驱动尚未初始化。 */
   AD9280_ERROR_LINK,      /* STM32与FPGA通信失败。 */
   AD9280_ERROR_DEVICE,    /* FPGA采集固件标识或版本不匹配。 */
+  AD9280_ERROR_FORMAT,    /* FPGA sample protocol is not signed 16-bit Q8.8. */
   AD9280_ERROR_NOT_READY, /* FPGA的32MHz采样时钟未锁定。 */
   AD9280_ERROR_BUSY,      /* FPGA正在执行上一次采集。 */
   AD9280_ERROR_TIMEOUT,   /* 等待触发或采集完成超时。 */
@@ -58,13 +68,13 @@ typedef struct
   uint8_t triggered;             /* 已发生触发标志。 */
   uint8_t waiting_trigger;       /* 正在等待阈值触发标志。 */
   uint8_t overrange;             /* 采集期间出现AD9280越界标志。 */
-  uint8_t min_code;              /* 已保存样本最小原始码。 */
-  uint8_t max_code;              /* 已保存样本最大原始码。 */
-  uint8_t latest_code;           /* 最近一个物理采样码。 */
+  AD9280_SampleTypeDef min_sample_q8_8; /* Minimum stored signed Q8.8 sample. */
+  AD9280_SampleTypeDef max_sample_q8_8; /* Maximum stored signed Q8.8 sample. */
+  AD9280_SampleTypeDef latest_sample_q8_8; /* Latest centered ADC sample. */
   uint16_t captured_count;       /* 实际保存的样本点数。 */
   uint32_t overrange_count;      /* 采集窗口内OTR有效的物理时钟数。 */
-  uint32_t sample_sum;           /* 已保存样本原始码累加和。 */
-  float mean_code;               /* 已保存样本原始码平均值。 */
+  int32_t sample_sum_q8_8;       /* Signed sum of stored Q8.8 samples. */
+  float mean_sample_q8_8;        /* Mean in Q8.8 integer-LSB units. */
   float stored_sample_rate_hz;   /* 抽取后的缓存采样率，单位Hz。 */
 } AD9280_CaptureInfoTypeDef;
 
@@ -75,9 +85,12 @@ typedef struct
   uint32_t device_id;                  /* FPGA采集单元设备标识。 */
   uint32_t firmware_version;           /* FPGA采集协议版本。 */
   uint32_t sample_clock_hz;            /* ADC物理采样时钟，单位Hz。 */
+  uint8_t sample_word_bits;            /* SPI sample word width. */
+  uint8_t sample_fraction_bits;        /* Signed fixed-point fraction width. */
   AD9280_CaptureConfigTypeDef config;  /* 最近一次采集配置。 */
   AD9280_CaptureInfoTypeDef capture;   /* 最近一次采集状态。 */
   AD9280_StatusTypeDef status;         /* 最近一次底层操作状态。 */
+  uint16_t read_progress; /* Samples copied before a read error. */
 } AD9280_DataTypeDef;
 
 /* 填充一次立即触发采集的默认配置。 */
@@ -94,7 +107,7 @@ AD9280_StatusTypeDef AD9280_StartCapture(
 AD9280_StatusTypeDef AD9280_WaitCapture(uint32_t timeout_ms);
 
 /* 从FPGA块RAM读取最近一次完整采样块。 */
-AD9280_StatusTypeDef AD9280_ReadCapture(uint8_t *samples,
+AD9280_StatusTypeDef AD9280_ReadCapture(AD9280_SampleTypeDef *samples,
                                         uint16_t capacity,
                                         uint16_t *sample_count);
 

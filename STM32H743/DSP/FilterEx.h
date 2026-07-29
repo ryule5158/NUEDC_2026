@@ -179,6 +179,68 @@ void FilterEx_RMSProcessBlock(FilterEx_RMS_t *filter,
                               const float *input, float *output,
                               uint32_t length);
 
+/* ========================================================================== */
+/* Fractional delay                                                          */
+/* ========================================================================== */
+
+/* 流式分数延时器状态，环形历史缓冲区由调用者提供。 */
+typedef struct {
+    float *ring;            /* 输入样本的环形历史缓冲区。 */
+    uint32_t capacity;      /* 环形缓冲区容量，单位为样本点。 */
+    uint32_t write_index;   /* 当前输入样本的写入位置。 */
+    uint32_t integer_delay; /* 延时的整数采样点部分。 */
+    float fraction;         /* 延时的小数采样点部分，范围0~1。 */
+} FilterEx_FractionalDelay_t;
+
+/* 初始化分数延时器，storage_length至少为2。 */
+FilterEx_Status_t FilterEx_FractionalDelayInit(
+    FilterEx_FractionalDelay_t *delay,
+    float *storage,
+    uint32_t storage_length);
+
+/* 直接设置分数延时，最大值为capacity-2个采样点。 */
+FilterEx_Status_t FilterEx_FractionalDelaySetSamples(
+    FilterEx_FractionalDelay_t *delay,
+    float delay_samples);
+
+/* 按采样率、当前点频和目标相移设置延时，phase_deg范围为0~180。 */
+FilterEx_Status_t FilterEx_FractionalDelaySetPhase(
+    FilterEx_FractionalDelay_t *delay,
+    float sample_rate_hz,
+    float frequency_hz,
+    float phase_deg);
+
+/* 清空分数延时器历史数据，随后前若干点为启动暂态。 */
+void FilterEx_FractionalDelayReset(FilterEx_FractionalDelay_t *delay);
+
+/* 处理一个输入采样点并返回线性插值后的延时输出。 */
+static inline float FilterEx_FractionalDelayProcess(
+    FilterEx_FractionalDelay_t *delay,
+    float x)
+{
+    uint32_t index0;
+    uint32_t index1;
+    float y;
+
+    delay->ring[delay->write_index] = x;
+    index0 = delay->write_index + delay->capacity - delay->integer_delay;
+    if (index0 >= delay->capacity) index0 -= delay->capacity;
+    index1 = (index0 == 0u) ? (delay->capacity - 1u) : (index0 - 1u);
+    y = (1.0f - delay->fraction) * delay->ring[index0]
+      + delay->fraction * delay->ring[index1];
+
+    delay->write_index++;
+    if (delay->write_index == delay->capacity) delay->write_index = 0u;
+    return y;
+}
+
+/* 批量处理分数延时输入，input和output允许为同一数组。 */
+void FilterEx_FractionalDelayProcessBlock(
+    FilterEx_FractionalDelay_t *delay,
+    const float *input,
+    float *output,
+    uint32_t length);
+
 /* 无堆内存的 O(window) 流式中值滤波状态。 */
 typedef struct {
     float ring[FILTEREX_MEDIAN_MAX_WINDOW];

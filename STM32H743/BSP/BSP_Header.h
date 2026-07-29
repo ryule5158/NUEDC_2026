@@ -3,8 +3,12 @@
 
 /* 汇总板级通用服务接口。 */
 #include "Serial_Buffer.h"
-#include "adc_app.h"
-#include "adc_dual_capture.h"
-#include "fpga_boot_restore.h"
+#include "bsp_storage.h"
+#include "bsp_sdram.h"
+#include "bsp_nand.h"
+#include "bsp_qspi_flash.h"
+#include "storage_test.h"
+#include "signal_adc.h"
+#include "g_tjc_ui.h"
 
 #endif /* __BSP_HEADER_H__ */

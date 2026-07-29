@@ -1,11 +1,12 @@
 #include "ad5687_app.h"
+#include "main.h"
 
 #define AD5687_APP_SCK_GPIO_PORT   GPIOA       /* 两片AD5687共用软件SPI时钟端口 */
 #define AD5687_APP_SCK_PIN         GPIO_PIN_5  /* 两片AD5687共用软件SPI时钟引脚 */
 #define AD5687_APP_MOSI_GPIO_PORT  GPIOA       /* 两片AD5687共用软件SPI数据端口 */
 #define AD5687_APP_MOSI_PIN        GPIO_PIN_7  /* 两片AD5687共用软件SPI数据引脚 */
-#define AD5687_APP_CS_GPIO_PORT    GPIOE       /* 两片AD5687共用片选端口，PC4已改作ADC输入 */
-#define AD5687_APP_CS_PIN          GPIO_PIN_8  /* 两片AD5687共用片选引脚 */
+#define AD5687_APP_CS_GPIO_PORT    AD5687_CS_GPIO_Port /* 两片AD5687共用片选端口。 */
+#define AD5687_APP_CS_PIN          AD5687_CS_Pin       /* 两片AD5687共用片选引脚。 */
 
 /*
  * AD5687波形由主循环软件送点产生, 必须持续调用AD5687_AppProcess()。

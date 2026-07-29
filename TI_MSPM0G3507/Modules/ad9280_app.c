@@ -8,7 +8,8 @@
 #endif
 #include <float.h>
 
-static uint8_t s_ad9280_samples[AD9280_BUFFER_MAX_SAMPLES]; /* 应用层原始采样缓存。 */
+static AD9280_SampleTypeDef
+    s_ad9280_samples[AD9280_BUFFER_MAX_SAMPLES]; /* FPGA signed Q8.8 samples. */
 static AD9280_AppDataTypeDef s_ad9280_app_data; /* 应用层最近一次运行数据。 */
 static AD9280_VoltageCalibrationTypeDef
     s_ad9280_calibration; /* 模块输入电压两点校准数据。 */
@@ -169,7 +170,7 @@ float AD9280_AppCodeToVoltage(uint8_t code)
  * Parameter:       null
  * Return   :       原始采样缓存只读指针
  ************************************************************/
-const uint8_t *AD9280_AppGetSamples(void)
+const AD9280_SampleTypeDef *AD9280_AppGetSamples(void)
 {
   return s_ad9280_samples;
 }

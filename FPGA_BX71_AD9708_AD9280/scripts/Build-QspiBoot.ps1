@@ -170,10 +170,10 @@ $bootHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $bootFile).Hash
 ) | Set-Content -LiteralPath $hashFile -Encoding ASCII
 @(
     "BuildTime:  $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss zzz')"
-    "Bitstream:  $bitFile"
+    "Bitstream:  BX71_G_ANALYZER_PS7.bit"
     "BitLength:  $($bitItem.Length)"
     "BitSHA256:  $bitHash"
-    "BootImage:  $bootFile"
+    "BootImage:  BOOT_G_ANALYZER.bin"
     "BootLength: $($bootItem.Length)"
     "BootSHA256: $bootHash"
 ) | Set-Content -LiteralPath $manifestFile -Encoding ASCII

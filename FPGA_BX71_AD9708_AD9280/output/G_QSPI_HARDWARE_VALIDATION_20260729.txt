@@ -1,6 +1,10 @@
 BX71 G-ANALYZER PERSISTENT QSPI VALIDATION
 =========================================
 
+STATUS: HISTORICAL PRE-Q8.8 IMAGE RECORD.
+The hashes below identify the exact image that passed the board-level test.
+They do not validate the newer signed-Q8.8 release artifacts.
+
 Build time: 2026-07-29 11:32:03 +08:00
 Program time: 2026-07-29 12:21 +08:00
 

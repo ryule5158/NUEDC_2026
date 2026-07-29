@@ -18,9 +18,6 @@
 #define AD9280_REG_FILTER              0x2FU /* bit0 enables the G-mode CIC3/R16 filter. */
 
 #define AD9280_DEVICE_ID               0xAD928001UL /* 预期FPGA采集单元标识。 */
-#define AD9280_FIRMWARE_VERSION        0x00010001UL /* 当前支持的采集协议版本。 */
-#define AD9280_FIRMWARE_MIN_VERSION    0x00010001UL
-#define AD9280_FIRMWARE_CIC3_VERSION   0x00010002UL
 #define AD9280_CONTROL_START           0x00000001UL /* 启动一次采集的控制位。 */
 #define AD9280_CONTROL_ABORT           0x00000002UL /* 终止当前采集的控制位。 */
 #define AD9280_STATUS_READY            0x00000001UL /* ADC采样时钟锁定状态位。 */
@@ -29,8 +26,9 @@
 #define AD9280_STATUS_TRIGGERED        0x00000008UL /* 已触发状态位。 */
 #define AD9280_STATUS_OVERRANGE        0x00000010UL /* 采集期间越界状态位。 */
 #define AD9280_STATUS_WAIT_TRIGGER     0x00000020UL /* 等待阈值触发状态位。 */
-#define AD9280_READ_DATA_ADDR_SHIFT    8U           /* 缓存返回地址的位移。 */
+#define AD9280_READ_DATA_ADDR_SHIFT    16U          /* Q8.8缓存返回地址的位移。 */
 #define AD9280_READ_DATA_ADDR_MASK     0x00000FFFUL /* 缓存返回地址有效位。 */
+#define AD9280_READ_DATA_RESERVED_MASK 0xF0000000UL
 
 static FPGA_LinkHandleTypeDef s_ad9280_link; /* STM32到FPGA的SPI链路句柄。 */
 static AD9280_DataTypeDef s_ad9280_data;     /* AD9280底层驱动运行数据。 */
@@ -61,6 +59,10 @@ static AD9280_StatusTypeDef AD9280_EndSession(AD9280_StatusTypeDef status);
 
 /* 检查采集配置是否位于FPGA真实能力范围内。 */
 static uint8_t AD9280_ConfigValid(const AD9280_CaptureConfigTypeDef *config);
+
+/* Decode protocol two's-complement fields without implementation-defined casts. */
+static int16_t AD9280_DecodeS16(uint32_t value);
+static int32_t AD9280_DecodeS32(uint32_t value);
 
 /************************************************************
  * Function :       AD9280_GetDefaultCaptureConfig
@@ -123,13 +125,21 @@ AD9280_StatusTypeDef AD9280_Init(SPI_HandleTypeDef *hspi)
 
   status = AD9280_ReadReg(AD9280_REG_FIRMWARE_VERSION,
                           &s_ad9280_data.firmware_version);
-  if ((status != AD9280_OK) ||
-      (s_ad9280_data.firmware_version < AD9280_FIRMWARE_MIN_VERSION) ||
-      (s_ad9280_data.firmware_version > AD9280_FIRMWARE_CIC3_VERSION))
+  if (status != AD9280_OK)
   {
-    return AD9280_Return((status == AD9280_OK) ?
-                         AD9280_ERROR_DEVICE : status);
+    return AD9280_Return(status);
   }
+  if (s_ad9280_data.firmware_version !=
+      AD9280_CAPTURE_PROTOCOL_Q8_8_VERSION)
+  {
+    /*
+     * Firmware 1.1/1.2 returns unsigned 8-bit samples in another bit layout.
+     * Reject it here so those words can never be silently decoded as Q8.8.
+     */
+    return AD9280_Return(AD9280_ERROR_FORMAT);
+  }
+  s_ad9280_data.sample_word_bits = AD9280_SAMPLE_WORD_BITS;
+  s_ad9280_data.sample_fraction_bits = AD9280_SAMPLE_FRACTION_BITS;
 
   status = AD9280_ReadReg(AD9280_REG_SAMPLE_CLK_HZ,
                           &s_ad9280_data.sample_clock_hz);
@@ -228,6 +238,7 @@ AD9280_StatusTypeDef AD9280_StartCapture(
   if (status == AD9280_OK)
   {
     s_ad9280_data.config = *config;
+    s_ad9280_data.read_progress = 0U;
     s_ad9280_data.capture = (AD9280_CaptureInfoTypeDef){0};
     s_ad9280_data.capture.adc_ready = 1U;
     s_ad9280_data.capture.busy = 1U;
@@ -293,7 +304,7 @@ AD9280_StatusTypeDef AD9280_WaitCapture(uint32_t timeout_ms)
  *                  sample_count: 实际读取点数
  * Return   :       AD9280状态
  ************************************************************/
-AD9280_StatusTypeDef AD9280_ReadCapture(uint8_t *samples,
+AD9280_StatusTypeDef AD9280_ReadCapture(AD9280_SampleTypeDef *samples,
                                         uint16_t capacity,
                                         uint16_t *sample_count)
 {
@@ -312,6 +323,7 @@ AD9280_StatusTypeDef AD9280_ReadCapture(uint8_t *samples,
     return AD9280_Return(AD9280_ERROR_PARAM);
   }
   *sample_count = 0U;
+  s_ad9280_data.read_progress = 0U;
 
   status = AD9280_GetCaptureInfo(&info);
   if (status != AD9280_OK)
@@ -350,10 +362,12 @@ AD9280_StatusTypeDef AD9280_ReadCapture(uint8_t *samples,
       }
     }
     if ((status == AD9280_OK) &&
+        ((value & AD9280_READ_DATA_RESERVED_MASK) == 0U) &&
         (((value >> AD9280_READ_DATA_ADDR_SHIFT) &
           AD9280_READ_DATA_ADDR_MASK) == index))
     {
-      samples[index] = (uint8_t)value;
+      samples[index] = AD9280_DecodeS16(value);
+      s_ad9280_data.read_progress = (uint16_t)(index + 1U);
     }
     else if (status == AD9280_OK)
     {
@@ -437,12 +451,12 @@ AD9280_StatusTypeDef AD9280_GetCaptureInfo(AD9280_CaptureInfoTypeDef *info)
       ((status_reg & AD9280_STATUS_WAIT_TRIGGER) != 0U) ? 1U : 0U;
   info->captured_count = (uint16_t)(count_reg & 0x1FFFU);
   info->overrange_count = overrange_count;
-  info->min_code = (uint8_t)min_max;
-  info->max_code = (uint8_t)(min_max >> 8);
-  info->sample_sum = sample_sum;
-  info->latest_code = (uint8_t)latest;
-  info->mean_code = (info->captured_count == 0U) ? 0.0f :
-                    (float)sample_sum / (float)info->captured_count;
+  info->min_sample_q8_8 = AD9280_DecodeS16(min_max);
+  info->max_sample_q8_8 = AD9280_DecodeS16(min_max >> 16);
+  info->sample_sum_q8_8 = AD9280_DecodeS32(sample_sum);
+  info->latest_sample_q8_8 = AD9280_DecodeS16(latest);
+  info->mean_sample_q8_8 = (info->captured_count == 0U) ? 0.0f :
+      (float)info->sample_sum_q8_8 / (float)info->captured_count;
   info->stored_sample_rate_hz =
       (float)s_ad9280_data.sample_clock_hz /
       (float)s_ad9280_data.config.decimation;
@@ -483,7 +497,8 @@ AD9280_StatusTypeDef AD9280_SetCic3Filter(uint8_t enable)
     return AD9280_Return(AD9280_ERROR_PARAM);
   }
   if ((enable != 0U) &&
-      (s_ad9280_data.firmware_version < AD9280_FIRMWARE_CIC3_VERSION))
+      (s_ad9280_data.firmware_version !=
+       AD9280_CAPTURE_PROTOCOL_Q8_8_VERSION))
   {
     return AD9280_Return(AD9280_ERROR_DEVICE);
   }
@@ -635,4 +650,25 @@ static uint8_t AD9280_ConfigValid(const AD9280_CaptureConfigTypeDef *config)
     return 0U;
   }
   return 1U;
+}
+
+static int16_t AD9280_DecodeS16(uint32_t value)
+{
+  uint32_t magnitude;
+  value &= 0x0000FFFFUL;
+  if (value < 0x00008000UL)
+  {
+    return (int16_t)value;
+  }
+  magnitude = 0x00010000UL - value;
+  return (int16_t)(-(int32_t)magnitude);
+}
+
+static int32_t AD9280_DecodeS32(uint32_t value)
+{
+  if (value <= 0x7FFFFFFFUL)
+  {
+    return (int32_t)value;
+  }
+  return -1 - (int32_t)(0xFFFFFFFFUL - value);
 }

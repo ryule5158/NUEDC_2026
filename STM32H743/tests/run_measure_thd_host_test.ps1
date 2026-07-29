@@ -1,73 +1,94 @@
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 
-$projectRoot = Split-Path -Parent $PSScriptRoot
+$testRoot = $PSScriptRoot
+$projectRoot = Split-Path -Parent $testRoot
 
-# 优先用vswhere查找，再扫描常见版本/版本类型，避免绑定开发机安装路径。
-$vcvars = $null
-$vswhere = Join-Path ${env:ProgramFiles(x86)} `
-    'Microsoft Visual Studio\Installer\vswhere.exe'
-if (Test-Path -LiteralPath $vswhere) {
-    $installationPath = & $vswhere -latest -products '*' `
-        -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
-        -property installationPath
-    if ($installationPath) {
-        $candidate = Join-Path $installationPath 'VC\Auxiliary\Build\vcvars64.bat'
-        if (Test-Path -LiteralPath $candidate) {
-            $vcvars = $candidate
-        }
-    }
+# Prefer Vivado 2018.3 MinGW so an incomplete MSVC installation cannot break the test.
+$gccCandidates = @()
+if ($env:XILINX_VIVADO) {
+    $gccCandidates += (Join-Path $env:XILINX_VIVADO 'msys64\mingw64\bin\gcc.exe')
 }
-if (-not $vcvars) {
-    foreach ($root in @($env:ProgramFiles, ${env:ProgramFiles(x86)})) {
-        foreach ($year in @('2022', '2019', '2017')) {
-            foreach ($edition in @('Community', 'Professional',
-                                    'Enterprise', 'BuildTools')) {
-                $candidate = Join-Path $root `
-                    "Microsoft Visual Studio\$year\$edition\VC\Auxiliary\Build\vcvars64.bat"
-                if (Test-Path -LiteralPath $candidate) {
-                    $vcvars = $candidate
-                    break
-                }
-            }
-            if ($vcvars) { break }
-        }
-        if ($vcvars) { break }
+$pathGcc = Get-Command gcc.exe -ErrorAction SilentlyContinue
+if ($pathGcc) {
+    $gccCandidates += $pathGcc.Source
+}
+foreach ($drive in Get-PSDrive -PSProvider FileSystem) {
+    foreach ($relativeRoot in @(
+        'Vivado\2018.3',
+        'Xilinx\Vivado\2018.3',
+        'Tools\Xilinx\Vivado\2018.3'
+    )) {
+        $gccCandidates += (Join-Path `
+            (Join-Path $drive.Root $relativeRoot) `
+            'msys64\mingw64\bin\gcc.exe')
     }
 }
 
-$buildDir = Join-Path $env:TEMP "nuedc_measure_thd_host_test"
-New-Item -ItemType Directory -Force -Path $buildDir | Out-Null
-$testSource = Join-Path $PSScriptRoot "measure_thd_host_test.c"
-$measureSource = Join-Path $projectRoot "DSP\Measure.c"
-$stubInclude = Join-Path $PSScriptRoot "stubs"
-$dspInclude = Join-Path $projectRoot "DSP"
-$testExe = Join-Path $buildDir "measure_thd_host_test.exe"
-$compileLog = Join-Path $buildDir "compile.log"
-
-if ($vcvars) {
-    $compileCommand = "call `"$vcvars`" >nul && cl /nologo /std:c11 /W4 " +
-        "/I`"$stubInclude`" /I`"$dspInclude`" " +
-        "`"$testSource`" `"$measureSource`" /Fe:`"$testExe`" " +
-        "/link /OUT:`"$testExe`""
-    $savedErrorPreference = $ErrorActionPreference
-    $ErrorActionPreference = "Continue"
-    cmd.exe /d /c $compileCommand 2>&1 | Tee-Object -FilePath $compileLog
-    $compileExitCode = $LASTEXITCODE
-    $ErrorActionPreference = $savedErrorPreference
-    if ($compileExitCode -ne 0) {
-        throw "Host compile failed. See $compileLog"
+$gcc = $null
+foreach ($candidate in $gccCandidates) {
+    if ($candidate -and (Test-Path -LiteralPath $candidate)) {
+        $gcc = (Resolve-Path -LiteralPath $candidate).Path
+        break
     }
+}
+if (-not $gcc) {
+    throw 'Vivado 2018.3 MinGW gcc.exe was not found.'
+}
 
-    & $testExe
-    if ($LASTEXITCODE -ne 0) {
-        throw "THD C host test failed with exit code $LASTEXITCODE"
+# Copy sources to TEMP because this older MinGW does not handle non-ASCII paths reliably.
+$buildRoot = Join-Path ([System.IO.Path]::GetTempPath()) `
+    ("nuedc_measure_thd_test_{0}" -f $PID)
+$resolvedTemp = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath())
+$resolvedBuild = [System.IO.Path]::GetFullPath($buildRoot)
+if (-not $resolvedBuild.StartsWith(
+        $resolvedTemp, [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw 'The host-test directory is outside the system TEMP directory.'
+}
+
+New-Item -ItemType Directory -Path $resolvedBuild -Force | Out-Null
+$originalPath = $env:PATH
+$env:PATH = (Split-Path -Parent $gcc) + ';' + $originalPath
+try {
+    Copy-Item -LiteralPath (Join-Path $testRoot 'measure_thd_host_test.c') `
+        -Destination $resolvedBuild
+    Copy-Item -LiteralPath (Join-Path $projectRoot 'DSP\Measure.c') `
+        -Destination $resolvedBuild
+    Copy-Item -LiteralPath (Join-Path $projectRoot 'DSP\Measure.h') `
+        -Destination $resolvedBuild
+    Copy-Item -LiteralPath (Join-Path $testRoot 'stubs\arm_math.h') `
+        -Destination $resolvedBuild
+    Copy-Item -LiteralPath (Join-Path $testRoot 'stubs\main.h') `
+        -Destination $resolvedBuild
+
+    $testExe = Join-Path $resolvedBuild 'measure_thd_host_test.exe'
+    Push-Location $resolvedBuild
+    try {
+        & $gcc -std=c11 -Wall -Wextra -Wpedantic -Werror `
+            -finput-charset=UTF-8 `
+            measure_thd_host_test.c Measure.c -lm -o $testExe
+        if ($LASTEXITCODE -ne 0) {
+            throw "THD host-test compilation failed with exit code $LASTEXITCODE."
+        }
+
+        & $testExe
+        if ($LASTEXITCODE -ne 0) {
+            throw "THD C host test failed with exit code $LASTEXITCODE."
+        }
     }
-} else {
-    Write-Host "MSVC C compiler is unavailable; running the portable numerical regression only."
+    finally {
+        Pop-Location
+    }
+}
+finally {
+    $env:PATH = $originalPath
+    if (Test-Path -LiteralPath $resolvedBuild) {
+        Remove-Item -LiteralPath $resolvedBuild -Recurse -Force
+    }
 }
 
 $python = (Get-Command python -ErrorAction Stop).Source
-& $python (Join-Path $PSScriptRoot "measure_thd_numeric_test.py")
+$env:PYTHONIOENCODING = 'utf-8'
+& $python (Join-Path $testRoot 'measure_thd_numeric_test.py')
 if ($LASTEXITCODE -ne 0) {
-    throw "THD numerical regression failed with exit code $LASTEXITCODE"
+    throw "THD numerical regression failed with exit code $LASTEXITCODE."
 }

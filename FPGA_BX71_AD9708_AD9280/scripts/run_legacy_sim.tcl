@@ -8,7 +8,9 @@ if {[file pathtype $script_path] eq "absolute"} {
 }
 set root_dir [file dirname $script_dir]
 
-proc run_legacy_test {root_dir project_name top_name rtl_file tb_file} {
+proc run_legacy_test {
+    root_dir project_name top_name rtl_file tb_file expected_marker
+} {
     set project_dir [file join $root_dir "Vivado" "Simulation" $project_name]
     file mkdir $project_dir
     create_project -force $project_name $project_dir -part xc7z020clg400-2
@@ -23,10 +25,29 @@ proc run_legacy_test {root_dir project_name top_name rtl_file tb_file} {
     update_compile_order -fileset sim_1
     launch_simulation -mode behavioral
     close_sim
+
+    set simulation_log [file join $project_dir \
+        "${project_name}.sim" "sim_1" "behav" "xsim" "simulate.log"]
+    if {![file exists $simulation_log]} {
+        close_project
+        error "Simulation log was not generated: $simulation_log"
+    }
+    set log_handle [open $simulation_log r]
+    set log_text [read $log_handle]
+    close $log_handle
+    if {[string first $expected_marker $log_text] < 0} {
+        close_project
+        error "Simulation did not reach PASS; inspect: $simulation_log"
+    }
+
     close_project
 }
 
 run_legacy_test $root_dir legacy_adc_sim tb_ad9280_capture_core \
-    ad9280_capture_core.v tb_ad9280_capture_core.v
+    ad9280_capture_core.v tb_ad9280_capture_core.v \
+    "AD9280_CAPTURE_TEST_PASS"
 run_legacy_test $root_dir legacy_dac_sim tb_ad9708_level_scaling \
-    ad9708_wave_core.v tb_ad9708_level_scaling.v
+    ad9708_wave_core.v tb_ad9708_level_scaling.v \
+    "TEST_PASS: Q8.8 scaling plus hardware AM/FM"
+
+puts "LEGACY_SIM_PASS"

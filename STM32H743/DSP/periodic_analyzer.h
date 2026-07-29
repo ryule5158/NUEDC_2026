@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #define PERIODIC_ANALYZER_MAX_COMPONENTS    3U
+#define PERIODIC_ANALYZER_MAX_SPECTRUM_COMPONENTS 12U
 #define PERIODIC_ANALYZER_MAX_CAL_POINTS    8U
 #define PERIODIC_ANALYZER_MAX_FFT_POINTS    4096U
 
@@ -44,15 +45,24 @@ typedef struct {
 } PeriodicAnalyzer_Component;
 
 typedef struct {
+    uint16_t harmonic_order;
+    float frequency_hz;
+    float peak_amplitude_v;
+} PeriodicAnalyzer_SpectrumComponent;
+
+typedef struct {
     PeriodicAnalyzer_Status status;
     uint8_t valid;
     uint8_t component_count;
+    uint8_t spectrum_component_count;
     uint8_t clipped;
     float fundamental_hz;
     float vpp_v;
     float true_rms_v;
     float residual_rms_v;
     PeriodicAnalyzer_Component component[PERIODIC_ANALYZER_MAX_COMPONENTS];
+    PeriodicAnalyzer_SpectrumComponent
+        spectrum[PERIODIC_ANALYZER_MAX_SPECTRUM_COMPONENTS];
 } PeriodicAnalyzer_Result;
 
 void PeriodicAnalyzer_GetDefaultConfig(PeriodicAnalyzer_Config *config);

@@ -18,6 +18,10 @@ Desktop.ini
 *.tmp
 *.swp
 *~
+*.obj
+__pycache__/
+*.py[cod]
+STM32H743/tests/build/
 
 # Keil debugger and one-off rebuild logs
 TI_MSPM0G3507/Keil/EventRecorderStub.scvd

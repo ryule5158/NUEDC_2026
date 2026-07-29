@@ -1,7 +1,6 @@
 #ifndef __DSP_HEADER_H__
 #define __DSP_HEADER_H__ /* DSP接口汇总头文件包含保护。 */
 
-#include "ADC_FFT.h"    /* ADC采样数据FFT分析接口，兼容BSP/adc_app电压缓冲区。 */
 #include "Filter.h"     /* FIR、IIR、中值、滑动平均和抽取滤波接口。 */
 #include "FilterEx.h"   /* 流式FIR、SOS、巴特沃斯和平滑滤波接口。 */
 #include "IQ.h"         /* 已知频率IQ幅度和相位提取接口。 */

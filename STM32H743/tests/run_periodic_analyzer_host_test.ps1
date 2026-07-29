@@ -1,6 +1,31 @@
 $ErrorActionPreference = 'Stop'
-$gcc = 'E:\Vivado\2018.3\msys64\mingw64\bin\gcc.exe'
-if (-not (Test-Path -LiteralPath $gcc)) { throw 'Vivado MinGW GCC not found.' }
+$gccCandidates = @()
+if ($env:XILINX_VIVADO) {
+  $gccCandidates += (Join-Path $env:XILINX_VIVADO `
+    'msys64\mingw64\bin\gcc.exe')
+}
+$pathGcc = Get-Command gcc.exe -ErrorAction SilentlyContinue
+if ($pathGcc) {
+  $gccCandidates += $pathGcc.Source
+}
+foreach ($drive in Get-PSDrive -PSProvider FileSystem) {
+  foreach ($relativeRoot in @(
+      'Vivado\2018.3',
+      'Xilinx\Vivado\2018.3',
+      'Tools\Xilinx\Vivado\2018.3'
+  )) {
+    $gccCandidates += (Join-Path `
+      (Join-Path $drive.Root $relativeRoot) `
+      'msys64\mingw64\bin\gcc.exe')
+  }
+}
+$gcc = $gccCandidates |
+  Where-Object { $_ -and (Test-Path -LiteralPath $_) } |
+  Select-Object -First 1
+if (-not $gcc) {
+  throw 'Vivado 2018.3 MinGW GCC was not found.'
+}
+$gcc = (Resolve-Path -LiteralPath $gcc).Path
 $originalPath = $env:PATH
 $env:PATH = (Split-Path -Parent $gcc) + ';' + $env:PATH
 $testRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
