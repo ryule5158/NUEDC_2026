@@ -42,11 +42,18 @@ extern UART_HandleTypeDef huart3;
 
 /* USER CODE END Private defines */
 
-void MX_USART1_UART_Init(void);
-void MX_USART2_UART_Init(void);
+HAL_StatusTypeDef MX_USART1_UART_Init(void);
+HAL_StatusTypeDef MX_USART2_UART_Init(void);
 void MX_USART3_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+
+/*
+ * Bounded polling output used by printf and fatal diagnostics.
+ * It never waits on HAL_GetTick() and therefore cannot block forever when
+ * USART1 or the HAL UART state machine is unhealthy.
+ */
+uint32_t USART1_DebugWrite(const uint8_t *data, uint32_t length);
 
 /* USER CODE END Prototypes */
 

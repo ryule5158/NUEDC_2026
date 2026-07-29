@@ -73,11 +73,7 @@ void HardFault_DumpRegisters(uint32_t *stack_frame)
   printf("MMFAR=0x%08lX    BFAR=0x%08lX\r\n",
          (unsigned long)(*(volatile uint32_t *)0xE000ED34),
          (unsigned long)(*(volatile uint32_t *)0xE000ED38));
-  printf("System halted. Reset MCU to recover.\r\n");
-
-  while (1)
-  {
-  }
+  Error_HandlerReason("HardFault; register dump printed above");
 }
 
 /* USER CODE END 0 */
@@ -101,9 +97,7 @@ void NMI_Handler(void)
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-   while (1)
-  {
-  }
+  Error_HandlerReason("Non-maskable interrupt");
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
@@ -138,6 +132,7 @@ void MemManage_Handler(void)
   printf("CFSR=0x%08lX MMFAR=0x%08lX\r\n",
          (unsigned long)(*(volatile uint32_t *)0xE000ED28),
          (unsigned long)(*(volatile uint32_t *)0xE000ED34));
+  Error_HandlerReason("MemManage fault");
   /* USER CODE END MemoryManagement_IRQn 0 */
   while (1)
   {
@@ -156,6 +151,7 @@ void BusFault_Handler(void)
   printf("CFSR=0x%08lX BFAR=0x%08lX\r\n",
          (unsigned long)(*(volatile uint32_t *)0xE000ED28),
          (unsigned long)(*(volatile uint32_t *)0xE000ED38));
+  Error_HandlerReason("BusFault");
   /* USER CODE END BusFault_IRQn 0 */
   while (1)
   {
@@ -173,6 +169,7 @@ void UsageFault_Handler(void)
   printf("\r\n=== USAGE FAULT ===\r\n");
   printf("CFSR=0x%08lX\r\n",
          (unsigned long)(*(volatile uint32_t *)0xE000ED28));
+  Error_HandlerReason("UsageFault");
   /* USER CODE END UsageFault_IRQn 0 */
   while (1)
   {

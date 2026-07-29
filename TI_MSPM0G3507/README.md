@@ -2,6 +2,10 @@
 
 > 本工程运行于 MSP-LITO-G3507，使用 Keil 编译、TI SysConfig 管理板级配置。
 > 当前 `main.c` 初始化 AD9910，输出 **1 kHz 满幅正弦**，随后进入低功耗循环。
+>
+> 当前 G 题 FPGA 使用 v1.4、固定 CIC3/R16 和响应 profile `0x00030010`；
+> TI 目录中的 AD9280 副本仍是历史通用驱动，未完成该协议迁移和回归。因此 TI
+> 不参与当前 G 题生产链路，不得与 STM32 同时连接或用旧驱动控制当前位流。
 
 ## 快速入口
 
@@ -14,7 +18,7 @@
 | 构建结果 | ArmClang 6.23：`0 Error(s), 0 Warning(s)` |
 
 ```powershell
-cd D:\NUEDC\省赛\Integrated_Project\TI_MSPM0G3507
+Set-Location C:\Users\21274\Documents\省赛\d_repo_latest_precision\TI_MSPM0G3507
 .\open_sysconfig.ps1       # 打开图形化配置
 .\generate_sysconfig.ps1   # 手动生成配置
 .\build_keil.ps1           # 生成配置并全量构建
@@ -40,7 +44,7 @@ cd D:\NUEDC\省赛\Integrated_Project\TI_MSPM0G3507
 两路 ADC 的 `ADCMEM0` 必须保持 `TRIGGER_NEXT`；不要改为首次触发后自由运行的
 `AUTO_NEXT`。
 
-## TI 与 BX71 接线
+## TI 与 BX71 接线（历史参考）
 
 | MSPM0G3507 | MSP-LITO 位置 | BX71 P2 / 球位 | 作用 |
 |---|---|---|---|
@@ -50,9 +54,9 @@ cd D:\NUEDC\省赛\Integrated_Project\TI_MSPM0G3507
 | PA15 / GPIO | J2-32 | P2-34 / K18 | 低有效片选 |
 | GND | 任一 GND | 任一 GND | 必须共地 |
 
-AD9708、AD9280 和 ProMax 共用 SPI0，必须在主循环中串行访问，不要在中断中调用。
-125 MSPS DAC、32 MSPS ADC 和 ProMax 实时 DSP 均由 FPGA 执行，TI 只传配置和读取
-结果。
+该表只记录历史通用镜像的物理连线。完成 TI 端 v1.4、固定 R16、signed Q8.8
+和响应 profile 校验前，不要把 TI 接入当前 G 位流。历史 AD9708、AD9280 和
+ProMax 共用 SPI0，若以后恢复通用镜像也必须串行访问，不能在中断中调用。
 
 ## 模块接线速查
 
@@ -93,7 +97,6 @@ AD5687 和 DAC8831 可分别静态输出，但两个软件波形任务不能并�
 #include "ad603.h"
 #include "ad9910_app.h"
 #include "ad9708_app.h"
-#include "ad9280_app.h"
 
 SYSCFG_DL_init();
 NUEDC_HAL_Init();
@@ -116,13 +119,11 @@ if (AD603_Init(&ad603, &ad603_cfg) == AD603_OK) {
 if (AD9708_AppInit() == AD9708_OK) {
     (void)AD9708_AppOutputCalibrationCode(192U);
 }
-if (AD9280_AppInit() == AD9280_OK) {
-    (void)AD9280_AppCapture(1024U, 1U, 100U);
-}
 ```
 
 AD603 默认把 -20～60 dB 映射为 0.400～1.446 V；`10000 mdB` 表示 10 dB。
-实测端点不同只需修改校准结构体。
+实测端点不同只需修改校准结构体。上面的 AD9708 调用只适用于历史通用 FPGA
+镜像；当前 G 题生产位流将 AD9708 固定在中点，不提供其控制寄存器。
 
 ## 片上双 ADC
 
@@ -150,7 +151,7 @@ AD603 默认把 -20～60 dB 映射为 0.400～1.446 V；`10000 mdB` 表示 10 dB
 | MCU | 128 KB Flash、32 KB SRAM、2 KB 栈 |
 | 片上 ADC | 双通道同步、12 位、最高 1 MSPS |
 | 软件 DAC | 保守上限 1000 点/秒 |
-| AD9280 | FPGA 内 32 MSPS；TI 可读取 1～4096 点块数据 |
+| AD9280 | 历史驱动未适配当前 G 题 v1.4，暂不可控制生产位流 |
 | DSP | 512 点轻量实现，不复制 STM32 的 4096 点大工作区 |
 
 1 MSPS 片上 ADC 无法为 100 kHz 基波的第五次谐波留下奈奎斯特保护带。高频 THD

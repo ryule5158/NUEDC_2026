@@ -1,25 +1,31 @@
 `timescale 1ns / 1ps
 
 /*
- * Three-stage CIC decimator used by the 2026 G signal analyzer.
+ * Fixed three-stage CIC decimator for the G analyzer.
+ *
  * Input:  unsigned offset-binary AD9280 code at 32 MSPS.
  * Output: signed two's-complement Q8.8 sample at 2 MSPS (R=16).
  *
- * DC gain is 16^3=4096.  Converting the normalized result to Q8.8
- * therefore requires division by 16.  That division uses symmetric
- * round-to-nearest, ties-to-even, followed by signed saturation.
+ * The host compensates the exact deterministic magnitude response
  *
- * The integrators intentionally use two's-complement modular arithmetic; 24 bits
- * are wider than the 9 + 3*log2(16) = 21 bits required by this CIC.
+ *   |H(f)| = |sin(pi*f*R/Fs)/(R*sin(pi*f/Fs))|^3
+ *
+ * and the linear phase -2*pi*f*[3*(R-1)/2]/Fs.  The three integrators use
+ * two's-complement modular arithmetic; 24 bits exceed the 9+3*log2(16)=21
+ * bits required to preserve the full CIC result.
+ *
+ * for every reported spectral line. Keeping the CIC here preserves the
+ * oversampling/noise benefit of the 8-bit ADC without leaving its passband
+ * droop in the final voltage result.
  */
 module cic3_decimator_16(
-    input  wire       clk,
-    input  wire       reset_n,
-    input  wire       clear,
-    input  wire       input_valid,
-    input  wire [7:0] input_code,
-    output reg                      output_valid,
-    output reg signed [15:0]        output_sample_q8_8
+    input  wire                      clk,
+    input  wire                      reset_n,
+    input  wire                      clear,
+    input  wire                      input_valid,
+    input  wire [7:0]                input_code,
+    output reg                       output_valid,
+    output reg signed [15:0]         output_sample_q8_8
 );
 
     localparam [4:0] DECIMATION = 5'd16;
@@ -49,13 +55,10 @@ module cic3_decimator_16(
     wire signed [23:0] comb3_next = comb2_next - comb_delay3;
 
     /*
-     * Normalize the R^3 CIC gain while retaining eight fractional bits:
-     *
-     *     q8_8 = value * 256 / 4096 = value / 16.
-     *
-     * Work on the magnitude so positive and negative values follow exactly
-     * the same rounding rule.  Half-way cases select the even result, which
-     * avoids a cumulative DC bias.
+     * Normalize R^3=4096 while retaining eight fractional bits:
+     * q8_8 = value*256/4096 = value/16.
+     * Magnitude-domain round-to-nearest, ties-to-even keeps the quantizer
+     * symmetric, followed by signed saturation.
      */
     function signed [15:0] CIC_ToQ8_8;
         input signed [23:0] value;

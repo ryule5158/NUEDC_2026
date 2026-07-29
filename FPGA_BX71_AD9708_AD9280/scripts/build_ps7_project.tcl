@@ -1,8 +1,16 @@
 # Build a clean PS7-integrated image for the 2026 G signal analyzer.
 # The release top stays fixed, while RTL/XDC/IP inputs are discovered on every run.
 
-set script_path [file normalize [info script]]
-set script_dir [file dirname $script_path]
+# Keep an ASCII junction path intact when Build-QspiBoot.ps1 supplies one.
+# file normalize resolves the junction back to the Chinese workspace path;
+# Vivado 2018.3 can then crash at the end of PS7 synthesis with
+# "TclStackFree: incorrect freePtr".
+set script_path [info script]
+if {[file pathtype $script_path] eq "absolute"} {
+    set script_dir [file dirname $script_path]
+} else {
+    set script_dir [file join [pwd] [file dirname $script_path]]
+}
 set root_dir [file dirname $script_dir]
 set project_name "BX71_G_ANALYZER_PS7"
 set vivado_dir [file join $root_dir "Vivado"]
@@ -18,7 +26,8 @@ proc collect_design_files {directory patterns} {
     set result [list]
     foreach pattern $patterns {
         foreach candidate [glob -nocomplain -types f -directory $directory $pattern] {
-            lappend result [file normalize $candidate]
+            # Preserve the caller's ASCII junction prefix for Vivado 2018.3.
+            lappend result $candidate
         }
     }
     foreach child [glob -nocomplain -types d -directory $directory *] {
@@ -44,7 +53,7 @@ set ip_files [collect_design_files \
 if {[llength $rtl_files] == 0} {
     error "No RTL sources were discovered under rtl/ or rtl_ps7/"
 }
-if {[lsearch -exact $rtl_files [file normalize $top_file]] < 0} {
+if {[lsearch -exact $rtl_files $top_file] < 0} {
     error "Release top is not part of the discovered RTL set: $top_file"
 }
 if {[llength $constraint_files] == 0} {

@@ -15,7 +15,7 @@ module tb_ad9280_capture_core;
     localparam REG_MIN_MAX          = 7'h2C;
     localparam REG_SUM              = 7'h2D;
     localparam REG_LATEST           = 7'h2E;
-    localparam REG_FILTER           = 7'h2F;
+    localparam REG_RESPONSE_PROFILE = 7'h2F;
 
     reg cfg_clk = 1'b0;
     reg adc_clk = 1'b0;
@@ -32,10 +32,6 @@ module tb_ad9280_capture_core;
     wire [31:0] bus_rdata;
 
     reg signed [15:0] sample_now;
-    reg signed [15:0] sample_previous;
-    reg signed [15:0] sample_min;
-    reg signed [15:0] sample_max;
-    reg signed [31:0] sample_sum;
     integer index;
     integer timeout_count;
 
@@ -61,15 +57,6 @@ module tb_ad9280_capture_core;
         .bus_select(bus_select),
         .bus_rdata(bus_rdata)
     );
-
-    function signed [15:0] CodeToQ8_8;
-        input [7:0] code;
-        reg signed [8:0] centered;
-        begin
-            centered = $signed({1'b0, code}) - 9'sd128;
-            CodeToQ8_8 = {centered[7:0], 8'h00};
-        end
-    endfunction
 
     task WriteReg;
         input [6:0] addr;
@@ -99,7 +86,7 @@ module tb_ad9280_capture_core;
     endtask
 
     /*
-     * Protocol v1.3:
+     * Protocol v1.4:
      *   bits 31:28 = zero
      *   bits 27:16 = 12-bit address tag
      *   bits 15:0  = signed two's-complement Q8.8 sample
@@ -123,15 +110,14 @@ module tb_ad9280_capture_core;
         end
     endtask
 
-    task CheckRawConstant;
+    task CheckCicConstant;
         input [7:0] code;
         input signed [15:0] expected_q8_8;
         begin
             ramp_enable = 1'b0;
             adc_data = code;
-            WriteReg(REG_FILTER, 32'd0);
             WriteReg(REG_SAMPLE_COUNT, 32'd4);
-            WriteReg(REG_DECIMATION, 32'd1);
+            WriteReg(REG_DECIMATION, 32'd16);
             WriteReg(REG_TRIGGER, 32'd0);
             WriteReg(REG_CONTROL, 32'd1);
             WaitDone();
@@ -140,7 +126,7 @@ module tb_ad9280_capture_core;
                 ReadSample(index[11:0], sample_now);
                 if ($signed(sample_now) !== expected_q8_8) begin
                     $fatal(1,
-                           "Raw Q8.8 mismatch code=%0d actual=%0d expected=%0d",
+                           "CIC Q8.8 mismatch code=%0d actual=%0d expected=%0d",
                            code, $signed(sample_now), expected_q8_8);
                 end
             end
@@ -149,13 +135,13 @@ module tb_ad9280_capture_core;
             repeat (2) @(posedge cfg_clk);
             if (($signed(bus_rdata[15:0]) !== expected_q8_8) ||
                 ($signed(bus_rdata[31:16]) !== expected_q8_8))
-                $fatal(1, "Raw signed MIN/MAX mismatch");
+                $fatal(1, "CIC signed MIN/MAX mismatch");
 
             bus_addr = REG_SUM;
             #1;
             if ($signed(bus_rdata) !==
                 (4 * $signed(expected_q8_8)))
-                $fatal(1, "Raw signed SUM mismatch");
+                $fatal(1, "CIC signed SUM mismatch");
 
             bus_addr = REG_LATEST;
             repeat (2) @(posedge cfg_clk);
@@ -171,63 +157,31 @@ module tb_ad9280_capture_core;
 
         bus_addr = REG_FIRMWARE_VERSION;
         #1;
-        if (bus_rdata != 32'h00010003)
+        if (bus_rdata != 32'h00010004)
             $fatal(1, "G capture protocol version mismatch");
 
         /*
-         * Raw bypass uses the same centered signed Q8.8 format.  These checks
-         * also prove the READ_DATA address shift and high-byte/low-byte order.
+         * Fixed CIC3/R16 uses centered signed Q8.8. Constant codes have unity
+         * DC gain and also prove READ_DATA address/byte ordering.
          */
-        CheckRawConstant(8'd160, 16'sh2000);
-        CheckRawConstant(8'd96, -16'sh2000);
+        CheckCicConstant(8'd160, 16'sh2000);
+        CheckCicConstant(8'd96, -16'sh2000);
 
-        /* Eight samples with R=2 must advance by two ADC codes = 0x0200. */
-        adc_data = 8'd20;
-        ramp_enable = 1'b1;
-        WriteReg(REG_FILTER, 32'd0);
-        WriteReg(REG_SAMPLE_COUNT, 32'd8);
+        /* Any requested decimation is forced to the reviewed R=16 profile. */
         WriteReg(REG_DECIMATION, 32'd2);
-        WriteReg(REG_TRIGGER, 32'd0);
-        WriteReg(REG_CONTROL, 32'd1);
-        WaitDone();
-        bus_addr = REG_CAPTURED_COUNT;
+        bus_addr = REG_DECIMATION;
         #1;
-        if (bus_rdata[12:0] != 13'd8)
-            $fatal(1, "Immediate capture count mismatch");
+        if (bus_rdata != 32'd16)
+            $fatal(1, "Fixed R16 decimation readback mismatch");
 
-        WriteReg(REG_READ_ADDR, 32'd0);
-        ReadSample(12'd0, sample_previous);
-        sample_min = sample_previous;
-        sample_max = sample_previous;
-        sample_sum = sample_previous;
-        for (index = 1; index < 8; index = index + 1) begin
-            ReadSample(index[11:0], sample_now);
-            if (($signed(sample_now) -
-                 $signed(sample_previous)) != 16'sd512)
-                $fatal(1, "Raw Q8.8 decimation interval mismatch");
-            if ($signed(sample_now) < $signed(sample_min))
-                sample_min = sample_now;
-            if ($signed(sample_now) > $signed(sample_max))
-                sample_max = sample_now;
-            sample_sum = sample_sum + sample_now;
-            sample_previous = sample_now;
-        end
-
-        bus_addr = REG_MIN_MAX;
-        repeat (2) @(posedge cfg_clk);
-        if (($signed(bus_rdata[15:0]) !== $signed(sample_min)) ||
-            ($signed(bus_rdata[31:16]) !== $signed(sample_max)))
-            $fatal(1, "Signed Q8.8 min/max statistics mismatch");
-        bus_addr = REG_SUM;
-        #1;
-        if ($signed(bus_rdata) !== $signed(sample_sum))
-            $fatal(1, "Signed Q8.8 sum statistics mismatch");
-
-        /* A rising trigger stores the threshold-crossing raw sample in Q8.8. */
+        /*
+         * A rising trigger starts the fixed CIC capture at the threshold
+         * crossing; the buffered frame begins after the CIC warm-up.
+         */
         ramp_enable = 1'b0;
         adc_data = 8'd90;
         WriteReg(REG_SAMPLE_COUNT, 32'd4);
-        WriteReg(REG_DECIMATION, 32'd1);
+        WriteReg(REG_DECIMATION, 32'd16);
         WriteReg(REG_TRIGGER, {22'd0, 2'd1, 8'd100});
         WriteReg(REG_CONTROL, 32'd1);
         bus_addr = REG_STATUS;
@@ -237,13 +191,12 @@ module tb_ad9280_capture_core;
 
         ramp_enable = 1'b1;
         WaitDone();
-        WriteReg(REG_READ_ADDR, 32'd0);
-        ReadSample(12'd0, sample_now);
-        if ($signed(sample_now) !==
-            $signed(CodeToQ8_8(8'd100)))
-            $fatal(1, "Rising trigger first sample mismatch");
+        bus_addr = REG_CAPTURED_COUNT;
+        #1;
+        if (bus_rdata[12:0] != 13'd4)
+            $fatal(1, "Rising trigger capture count mismatch");
 
-        /* Falling trigger stores the crossing sample in the same format. */
+        /* Falling trigger starts the same fixed CIC capture path. */
         ramp_enable = 1'b0;
         adc_data = 8'd110;
         WriteReg(REG_SAMPLE_COUNT, 32'd4);
@@ -253,11 +206,10 @@ module tb_ad9280_capture_core;
         @(negedge adc_clk);
         adc_data = 8'd90;
         WaitDone();
-        WriteReg(REG_READ_ADDR, 32'd0);
-        ReadSample(12'd0, sample_now);
-        if ($signed(sample_now) !==
-            $signed(CodeToQ8_8(8'd90)))
-            $fatal(1, "Falling trigger first sample mismatch");
+        bus_addr = REG_CAPTURED_COUNT;
+        #1;
+        if (bus_rdata[12:0] != 13'd4)
+            $fatal(1, "Falling trigger capture count mismatch");
 
         /* OTR is still counted on every physical ADC sample. */
         adc_otr = 1'b1;
@@ -271,8 +223,8 @@ module tb_ad9280_capture_core;
             $fatal(1, "Overrange status mismatch");
         bus_addr = REG_OVERRANGE_COUNT;
         #1;
-        if (bus_rdata != 32'd4)
-            $fatal(1, "Overrange count mismatch");
+        if (bus_rdata < 32'd64)
+            $fatal(1, "Physical-clock overrange count mismatch");
 
         /* Waiting for a trigger may be aborted without a stale done token. */
         adc_data = 8'd80;
@@ -286,14 +238,17 @@ module tb_ad9280_capture_core;
         if ((bus_rdata[1] != 1'b0) || (bus_rdata[2] != 1'b0))
             $fatal(1, "Abort state mismatch");
 
-        /* CIC mode retains a non-zero DC level as signed Q8.8. */
+        /*
+         * The response profile is immutable. The MCU uses this ID to apply
+         * the exact CIC3/R16 inverse magnitude response.
+         */
         ramp_enable = 1'b0;
         adc_data = 8'd160;
-        WriteReg(REG_FILTER, 32'd1);
-        bus_addr = REG_FILTER;
+        WriteReg(REG_RESPONSE_PROFILE, 32'hFFFFFFFF);
+        bus_addr = REG_RESPONSE_PROFILE;
         #1;
-        if (bus_rdata[0] != 1'b1)
-            $fatal(1, "G CIC enable readback mismatch");
+        if (bus_rdata != 32'h00030010)
+            $fatal(1, "CIC3/R16 response profile mismatch");
         WriteReg(REG_SAMPLE_COUNT, 32'd4);
         WriteReg(REG_DECIMATION, 32'd16);
         WriteReg(REG_TRIGGER, 32'd0);
@@ -304,7 +259,7 @@ module tb_ad9280_capture_core;
             ReadSample(index[11:0], sample_now);
             if ($signed(sample_now) !== 16'sh2000) begin
                 $fatal(1,
-                       "G CIC Q8.8 DC mismatch index=%0d value=%0d",
+                       "CIC3/R16 Q8.8 DC mismatch index=%0d value=%0d",
                        index, $signed(sample_now));
             end
         end

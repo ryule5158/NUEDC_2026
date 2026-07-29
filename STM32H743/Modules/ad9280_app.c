@@ -8,6 +8,8 @@
 #endif
 #include <float.h>
 
+#define AD9280_APP_READ_TIMEOUT_MS 1500U
+
 static AD9280_SampleTypeDef
     s_ad9280_samples[AD9280_BUFFER_MAX_SAMPLES]; /* FPGA signed Q8.8 samples. */
 static AD9280_AppDataTypeDef s_ad9280_app_data; /* 应用层最近一次运行数据。 */
@@ -17,7 +19,8 @@ static AD9280_VoltageCalibrationTypeDef
 /* 执行立即或阈值触发的公共阻塞采集流程。 */
 static AD9280_StatusTypeDef AD9280_AppCaptureInternal(
     const AD9280_CaptureConfigTypeDef *config,
-    uint32_t timeout_ms);
+    uint32_t timeout_ms,
+    uint8_t read_samples);
 
 /* 将校准范围内的输入电压换算为8位触发码。 */
 static AD9280_StatusTypeDef AD9280_AppVoltageToCode(float voltage_v,
@@ -58,7 +61,7 @@ AD9280_StatusTypeDef AD9280_AppInit(void)
 /************************************************************
  * Function :       AD9280_AppCapture
  * Comment  :       立即触发并阻塞读取一块高速采样数据
- * Parameter:       sample_count: 点数; decimation: 抽取倍数;
+ * Parameter:       sample_count: 点数; decimation: 协议v1.4固定为16;
  *                  timeout_ms: 超时时间
  * Return   :       AD9280状态
  ************************************************************/
@@ -72,13 +75,32 @@ AD9280_StatusTypeDef AD9280_AppCapture(uint16_t sample_count,
   config.decimation = decimation;
   config.trigger_mode = AD9280_TRIGGER_IMMEDIATE;
   config.trigger_threshold = 128U;
-  return AD9280_AppCaptureInternal(&config, timeout_ms);
+  return AD9280_AppCaptureInternal(&config, timeout_ms, 1U);
+}
+
+/************************************************************
+ * Function :       AD9280_AppCaptureStats
+ * Comment  :       Capture a frame and read only its FPGA statistics
+ * Parameter:       sample_count; fixed decimation; timeout_ms
+ * Return   :       AD9280 status
+ ************************************************************/
+AD9280_StatusTypeDef AD9280_AppCaptureStats(uint16_t sample_count,
+                                            uint16_t decimation,
+                                            uint32_t timeout_ms)
+{
+  AD9280_CaptureConfigTypeDef config;
+
+  config.sample_count = sample_count;
+  config.decimation = decimation;
+  config.trigger_mode = AD9280_TRIGGER_IMMEDIATE;
+  config.trigger_threshold = 128U;
+  return AD9280_AppCaptureInternal(&config, timeout_ms, 0U);
 }
 
 /************************************************************
  * Function :       AD9280_AppCaptureTriggered
  * Comment  :       按校准后的输入电压阈值触发并阻塞读取采样块
- * Parameter:       点数、抽取倍数、边沿、触发电压和超时时间
+ * Parameter:       点数、固定抽取值16、边沿、触发电压和超时时间
  * Return   :       AD9280状态
  ************************************************************/
 AD9280_StatusTypeDef AD9280_AppCaptureTriggered(
@@ -106,7 +128,7 @@ AD9280_StatusTypeDef AD9280_AppCaptureTriggered(
     s_ad9280_app_data.status = status;
     return status;
   }
-  return AD9280_AppCaptureInternal(&config, timeout_ms);
+  return AD9280_AppCaptureInternal(&config, timeout_ms, 1U);
 }
 
 /************************************************************
@@ -217,7 +239,8 @@ AD9280_AppGetVoltageCalibration(void)
  ************************************************************/
 static AD9280_StatusTypeDef AD9280_AppCaptureInternal(
     const AD9280_CaptureConfigTypeDef *config,
-    uint32_t timeout_ms)
+    uint32_t timeout_ms,
+    uint8_t read_samples)
 {
   AD9280_StatusTypeDef status;
   AD9280_StatusTypeDef info_status;
@@ -240,19 +263,23 @@ static AD9280_StatusTypeDef AD9280_AppCaptureInternal(
     s_ad9280_app_data.capture_stage = AD9280_APP_CAPTURE_WAIT;
     status = AD9280_WaitCapture(timeout_ms);
   }
-  if (status == AD9280_OK)
+  if ((status == AD9280_OK) && (read_samples != 0U))
   {
     s_ad9280_app_data.capture_stage = AD9280_APP_CAPTURE_READ;
     status = AD9280_ReadCapture(s_ad9280_samples,
                                 AD9280_BUFFER_MAX_SAMPLES,
+                                AD9280_APP_READ_TIMEOUT_MS,
                                 &read_count);
   }
-  else if (status == AD9280_ERROR_TIMEOUT)
+  if ((status == AD9280_ERROR_TIMEOUT) ||
+      (status == AD9280_ERROR_LINK))
   {
     (void)AD9280_AbortCapture();
+    s_ad9280_app_data.status = status;
+    return status;
   }
 
-  if (status == AD9280_OK)
+  if ((status == AD9280_OK) && (read_samples != 0U))
   {
     s_ad9280_app_data.sample_count = read_count;
   }

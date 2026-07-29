@@ -1,6 +1,12 @@
 `timescale 1ns / 1ps
 
-/* AD9280采集核心：完成触发、抽取、缓存、统计和寄存器读写。 */
+/*
+ * AD9280 precision capture core.
+ *
+ * A fixed CIC3/R16 stage retains the 32 MSPS oversampling information of the
+ * 8-bit converter. Protocol v1.4 identifies this exact response so the STM32
+ * removes its deterministic gain and phase for every measured spectral line.
+ */
 module ad9280_capture_core(
     input  wire        cfg_clk,
     input  wire        adc_clk,
@@ -32,13 +38,17 @@ module ad9280_capture_core(
     localparam REG_MIN_MAX         = 7'h2C; /* 已存样本最小值和最大值。 */
     localparam REG_SUM             = 7'h2D; /* 已存样本累加和。 */
     localparam REG_LATEST          = 7'h2E; /* 最近一个ADC采样码。 */
-    localparam REG_FILTER          = 7'h2F; /* bit0: enable G-mode CIC3/R16 anti-alias decimator. */
+    localparam REG_RESPONSE_PROFILE = 7'h2F; /* Fixed digital-response profile. */
 
     localparam [31:0] DEVICE_ID       = 32'hAD928001; /* AD9280采集单元标识。 */
     localparam [31:0] SAMPLE_CLK_HZ    = 32'd32000000; /* AD9280采样时钟。 */
     localparam [12:0] BUFFER_DEPTH     = 13'd4096; /* FPGA采样缓存深度。 */
-    /* v1.3: READ_DATA, MIN/MAX, SUM and LATEST use signed Q8.8 samples. */
-    localparam [31:0] G_CAPTURE_VERSION = 32'h00010003;
+    /*
+     * v1.4 keeps signed Q8.8 and fixes the digital path to CIC3/R16. The MCU
+     * uses the same profile constants to remove passband droop analytically.
+     */
+    localparam [31:0] G_CAPTURE_VERSION = 32'h00010004;
+    localparam [31:0] CIC3_R16_PROFILE = 32'h00030010;
 
     localparam [1:0] TRIGGER_IMMEDIATE = 2'd0; /* 立即开始采集。 */
     localparam [1:0] TRIGGER_RISING    = 2'd1; /* 阈值上升沿触发。 */
@@ -47,7 +57,6 @@ module ad9280_capture_core(
 
     /* 配置时钟域寄存器。 */
     reg [12:0] sample_count_cfg;
-    reg [15:0] decimation_cfg;
     reg [1:0] trigger_mode_cfg;
     reg [7:0] trigger_threshold_cfg;
     reg [11:0] read_addr_cfg;
@@ -55,29 +64,29 @@ module ad9280_capture_core(
     reg abort_toggle_cfg;
     reg signed [15:0] ram_read_data;
     reg capture_valid_cfg;
-    reg filter_enable_cfg;
 
     /* ADC时钟域配置同步与锁存寄存器。 */
-    reg [12:0] sample_count_meta;
-    reg [12:0] sample_count_sync;
-    reg [15:0] decimation_meta;
-    reg [15:0] decimation_sync;
-    reg [1:0] trigger_mode_meta;
-    reg [1:0] trigger_mode_sync;
-    reg [7:0] trigger_threshold_meta;
-    reg [7:0] trigger_threshold_sync;
-    reg filter_enable_meta;
-    reg filter_enable_sync;
-    (* ASYNC_REG = "TRUE" *) reg [1:0] start_toggle_sync;
+    /*
+     * Bundled-data CDC: the configuration buses pass through two explicit
+     * synchronizer stages.  The associated start token uses three stages, so
+     * the buses have an additional full adc_clk period to settle before they
+     * are latched.  ASYNC_REG keeps every synchronizer stage together during
+     * implementation; it is not being used to hide a timing path.
+     */
+    (* ASYNC_REG = "TRUE" *) reg [12:0] sample_count_meta;
+    (* ASYNC_REG = "TRUE" *) reg [12:0] sample_count_sync;
+    (* ASYNC_REG = "TRUE" *) reg [1:0] trigger_mode_meta;
+    (* ASYNC_REG = "TRUE" *) reg [1:0] trigger_mode_sync;
+    (* ASYNC_REG = "TRUE" *) reg [7:0] trigger_threshold_meta;
+    (* ASYNC_REG = "TRUE" *) reg [7:0] trigger_threshold_sync;
+    (* ASYNC_REG = "TRUE" *) reg [2:0] start_toggle_sync;
     (* ASYNC_REG = "TRUE" *) reg [1:0] abort_toggle_sync;
     reg start_toggle_seen;
     reg abort_toggle_seen;
     reg [12:0] sample_count_latched;
-    reg [15:0] decimation_latched;
     reg [1:0] trigger_mode_latched;
     reg [7:0] trigger_threshold_latched;
 
-    reg filter_enable_latched;
     /* ADC时钟域采集状态与统计量。 */
     reg busy_adc;
     reg triggered_adc;
@@ -91,7 +100,6 @@ module ad9280_capture_core(
     reg signed [15:0] latest_sample_adc;
     reg [7:0] previous_sample_adc;
     reg [11:0] write_addr_adc;
-    reg [15:0] decimation_count_adc;
 
     /* 块RAM写端口流水寄存器。 */
     reg ram_write_enable_adc;
@@ -103,66 +111,64 @@ module ad9280_capture_core(
     (* ASYNC_REG = "TRUE" *) reg [1:0] triggered_sync;
     (* ASYNC_REG = "TRUE" *) reg [1:0] overrange_sync;
     (* ASYNC_REG = "TRUE" *) reg [2:0] completion_toggle_sync;
-    reg [12:0] captured_count_meta;
-    reg [12:0] captured_count_sync;
-    reg [31:0] overrange_count_meta;
-    reg [31:0] overrange_count_sync;
-    reg signed [31:0] sample_sum_meta;
-    reg signed [31:0] sample_sum_sync;
-    reg signed [15:0] sample_min_meta;
-    reg signed [15:0] sample_min_sync;
-    reg signed [15:0] sample_max_meta;
-    reg signed [15:0] sample_max_sync;
-    reg signed [15:0] latest_sample_meta;
-    reg signed [15:0] latest_sample_sync;
+    /*
+     * The result buses stop changing when completion_toggle_adc changes.
+     * They use two stages while the completion token uses three, guaranteeing
+     * that register reads cannot observe the final token before the complete
+     * statistics snapshot has reached the cfg_clk domain.
+     */
+    (* ASYNC_REG = "TRUE" *) reg [12:0] captured_count_meta;
+    (* ASYNC_REG = "TRUE" *) reg [12:0] captured_count_sync;
+    (* ASYNC_REG = "TRUE" *) reg [31:0] overrange_count_meta;
+    (* ASYNC_REG = "TRUE" *) reg [31:0] overrange_count_sync;
+    (* ASYNC_REG = "TRUE" *) reg signed [31:0] sample_sum_meta;
+    (* ASYNC_REG = "TRUE" *) reg signed [31:0] sample_sum_sync;
+    (* ASYNC_REG = "TRUE" *) reg signed [15:0] sample_min_meta;
+    (* ASYNC_REG = "TRUE" *) reg signed [15:0] sample_min_sync;
+    (* ASYNC_REG = "TRUE" *) reg signed [15:0] sample_max_meta;
+    (* ASYNC_REG = "TRUE" *) reg signed [15:0] sample_max_sync;
+    (* ASYNC_REG = "TRUE" *) reg signed [15:0] latest_sample_meta;
+    (* ASYNC_REG = "TRUE" *) reg signed [15:0] latest_sample_sync;
 
     /* 4096×16位双时钟Q8.8采样缓存，综合为FPGA块RAM。 */
     /*
-     * Every buffered sample uses signed two's-complement Q8.8 in both CIC
-     * and raw-bypass modes.
+     * Every buffered sample uses signed two's-complement Q8.8. One normalized
+     * ADC code is represented by 0x0100 at DC.
      */
     (* ram_style = "block" *) reg signed [15:0] sample_ram [0:4095];
 
     wire cic_output_valid;
     wire signed [15:0] cic_output_q8_8;
-    wire raw_store_sample;
     wire signed [8:0] centered_adc_sample =
         $signed({1'b0, adc_data}) - 9'sd128;
     wire signed [15:0] raw_sample_q8_8 =
         {centered_adc_sample[7:0], 8'h00};
-    wire signed [15:0] stored_sample;
+    wire signed [15:0] stored_sample = cic_output_q8_8;
     /* 跨时钟控制事件和采集状态组合条件。 */
-    wire start_event = start_toggle_sync[1] ^ start_toggle_seen;
+    wire start_event = start_toggle_sync[2] ^ start_toggle_seen;
     wire abort_event = abort_toggle_sync[1] ^ abort_toggle_seen;
     wire trigger_now = AD9280_TriggerHit(trigger_mode_latched,
                                          previous_sample_adc,
                                          adc_data,
                                          trigger_threshold_latched);
     wire capture_window = busy_adc && (triggered_adc || trigger_now);
-    assign raw_store_sample = capture_window &&
-                              ((!triggered_adc) ||
-                               (decimation_count_adc == 16'd0));
-    wire store_sample = filter_enable_latched ?
-                        cic_output_valid : raw_store_sample;
-    assign stored_sample = filter_enable_latched ?
-                           cic_output_q8_8 : raw_sample_q8_8;
+    wire store_sample = cic_output_valid;
     wire capture_done_cfg = capture_valid_cfg &&
                             (completion_toggle_sync[2] == start_toggle_cfg);
     wire capture_busy_cfg = capture_valid_cfg && !capture_done_cfg;
 
-    assign bus_select = (bus_addr >= REG_CONTROL) && (bus_addr <= REG_FILTER);
+    assign bus_select =
+        (bus_addr >= REG_CONTROL) && (bus_addr <= REG_RESPONSE_PROFILE);
 
-    /* 判断当前样本是否满足所选阈值触发条件。 */
     cic3_decimator_16 g_cic_decimator (
         .clk(adc_clk),
         .reset_n(reset_n),
         .clear(start_event || abort_event),
-        .input_valid(capture_window && filter_enable_latched),
+        .input_valid(capture_window),
         .input_code(adc_data),
         .output_valid(cic_output_valid),
         .output_sample_q8_8(cic_output_q8_8)
     );
-
 
     function AD9280_TriggerHit;
         /* 触发模式、相邻样本和比较阈值。 */
@@ -195,13 +201,11 @@ module ad9280_capture_core(
     always @(posedge cfg_clk or negedge reset_n) begin
         if (!reset_n) begin
             sample_count_cfg <= 13'd1024;
-            decimation_cfg <= 16'd1;
             trigger_mode_cfg <= TRIGGER_IMMEDIATE;
             trigger_threshold_cfg <= 8'd128;
             start_toggle_cfg <= 1'b0;
             abort_toggle_cfg <= 1'b0;
             capture_valid_cfg <= 1'b0;
-            filter_enable_cfg <= 1'b0;
         end else begin
             if (bus_write) begin
                 case (bus_addr)
@@ -217,14 +221,23 @@ module ad9280_capture_core(
                     end
                     REG_SAMPLE_COUNT:
                         sample_count_cfg <= bus_wdata[12:0];
-                    REG_DECIMATION:
-                        decimation_cfg <= bus_wdata[15:0];
+                    /*
+                     * Protocol v1.4 has exactly one reviewed DSP profile.
+                     * REG_DECIMATION is read-only compatibility metadata;
+                     * writes have no state and therefore cannot select a
+                     * second signal path.
+                     */
+                    REG_DECIMATION: begin end
                     REG_TRIGGER: begin
                         trigger_mode_cfg <= bus_wdata[9:8];
                         trigger_threshold_cfg <= bus_wdata[7:0];
                     end
-                    REG_FILTER:
-                        filter_enable_cfg <= bus_wdata[0];
+                    /*
+                     * Kept for deterministic legacy-host readback. Writes are
+                     * deliberately ignored: no command can select an
+                     * unreviewed response or invalidate host compensation.
+                     */
+                    REG_RESPONSE_PROFILE: begin end
                     default: begin end
                 endcase
             end
@@ -250,28 +263,21 @@ module ad9280_capture_core(
         if (!reset_n) begin
             sample_count_meta <= 13'd1024;
             sample_count_sync <= 13'd1024;
-            decimation_meta <= 16'd1;
-            decimation_sync <= 16'd1;
             trigger_mode_meta <= TRIGGER_IMMEDIATE;
             trigger_mode_sync <= TRIGGER_IMMEDIATE;
             trigger_threshold_meta <= 8'd128;
             trigger_threshold_sync <= 8'd128;
-            start_toggle_sync <= 2'b00;
-            filter_enable_meta <= 1'b0;
-            filter_enable_sync <= 1'b0;
+            start_toggle_sync <= 3'b000;
             abort_toggle_sync <= 2'b00;
         end else begin
             sample_count_meta <= sample_count_cfg;
             sample_count_sync <= sample_count_meta;
-            decimation_meta <= decimation_cfg;
-            decimation_sync <= decimation_meta;
             trigger_mode_meta <= trigger_mode_cfg;
             trigger_mode_sync <= trigger_mode_meta;
             trigger_threshold_meta <= trigger_threshold_cfg;
-            filter_enable_meta <= filter_enable_cfg;
-            filter_enable_sync <= filter_enable_meta;
             trigger_threshold_sync <= trigger_threshold_meta;
-            start_toggle_sync <= {start_toggle_sync[0], start_toggle_cfg};
+            start_toggle_sync <= {start_toggle_sync[1:0],
+                                  start_toggle_cfg};
             abort_toggle_sync <= {abort_toggle_sync[0], abort_toggle_cfg};
         end
     end
@@ -282,9 +288,7 @@ module ad9280_capture_core(
             start_toggle_seen <= 1'b0;
             abort_toggle_seen <= 1'b0;
             sample_count_latched <= 13'd1024;
-            decimation_latched <= 16'd1;
             trigger_mode_latched <= TRIGGER_IMMEDIATE;
-            filter_enable_latched <= 1'b0;
             trigger_threshold_latched <= 8'd128;
             busy_adc <= 1'b0;
             triggered_adc <= 1'b0;
@@ -297,7 +301,6 @@ module ad9280_capture_core(
             sample_max_adc <= 16'sh8000;
             latest_sample_adc <= 16'sd0;
             previous_sample_adc <= 8'd128;
-            decimation_count_adc <= 16'd0;
         end else begin
             latest_sample_adc <= raw_sample_q8_8;
             previous_sample_adc <= adc_data;
@@ -313,16 +316,12 @@ module ad9280_capture_core(
                 busy_adc <= 1'b0;
                 triggered_adc <= 1'b0;
             end else if (start_event) begin
-                start_toggle_seen <= start_toggle_sync[1];
+                start_toggle_seen <= start_toggle_sync[2];
                 sample_count_latched <=
                     ((sample_count_sync == 13'd0) ||
                      (sample_count_sync > BUFFER_DEPTH)) ?
                     BUFFER_DEPTH : sample_count_sync;
-                decimation_latched <=
-                    (decimation_sync == 16'd0) ? 16'd1 : decimation_sync;
                 trigger_mode_latched <= trigger_mode_sync;
-                filter_enable_latched <= filter_enable_sync &&
-                                         (decimation_sync == 16'd16);
                 trigger_threshold_latched <= trigger_threshold_sync;
                 busy_adc <= 1'b1;
                 triggered_adc <= (trigger_mode_sync == TRIGGER_IMMEDIATE);
@@ -332,7 +331,6 @@ module ad9280_capture_core(
                 sample_sum_adc <= 32'sd0;
                 sample_min_adc <= 16'sh7FFF;
                 sample_max_adc <= 16'sh8000;
-                decimation_count_adc <= 16'd0;
                 previous_sample_adc <= adc_data;
             end else if (busy_adc) begin
                 if (!triggered_adc && trigger_now) begin
@@ -362,18 +360,10 @@ module ad9280_capture_core(
                     end
 
                     captured_count_adc <= captured_count_adc + 1'b1;
-                    if (!filter_enable_latched) begin
-                        decimation_count_adc <= decimation_latched - 1'b1;
-                    end
-
                     if ((captured_count_adc + 1'b1) >= sample_count_latched) begin
                         busy_adc <= 1'b0;
                         completion_toggle_adc <= start_toggle_seen;
                     end
-                end else if (!filter_enable_latched &&
-                             triggered_adc &&
-                             (decimation_count_adc != 16'd0)) begin
-                    decimation_count_adc <= decimation_count_adc - 1'b1;
                 end
             end
         end
@@ -463,7 +453,7 @@ module ad9280_capture_core(
             REG_SAMPLE_COUNT:
                 bus_rdata = {19'd0, sample_count_cfg};
             REG_DECIMATION:
-                bus_rdata = {16'd0, decimation_cfg};
+                bus_rdata = 32'd16;
             REG_TRIGGER:
                 bus_rdata = {22'd0, trigger_mode_cfg,
                              trigger_threshold_cfg};
@@ -471,7 +461,7 @@ module ad9280_capture_core(
                 bus_rdata = {20'd0, read_addr_cfg};
             REG_READ_DATA:
                 /*
-                 * Protocol v1.3 sample word:
+                 * Protocol v1.4 sample word:
                  * [31:28] reserved, [27:16] address tag,
                  * [15:0] signed two's-complement Q8.8 sample.
                  * The SPI slave transmits this 32-bit word MSB first.
@@ -494,8 +484,8 @@ module ad9280_capture_core(
             REG_LATEST:
                 bus_rdata = {{16{latest_sample_sync[15]}},
                              latest_sample_sync};
-            REG_FILTER:
-                bus_rdata = {31'd0, filter_enable_cfg};
+            REG_RESPONSE_PROFILE:
+                bus_rdata = CIC3_R16_PROFILE;
             default:
                 bus_rdata = 32'd0;
         endcase

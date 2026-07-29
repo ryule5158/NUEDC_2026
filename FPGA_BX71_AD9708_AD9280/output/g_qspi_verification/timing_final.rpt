@@ -1,13 +1,13 @@
 Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
-| Date         : Wed Jul 29 16:03:09 2026
-| Host         : LAPTOP-9SJO8I4N running 64-bit major release  (build 9200)
-| Command      : report_timing_summary -delay_type min_max -report_unconstrained -file C:/Users/LENOVO/Desktop/NUEDC_2026/FPGA_BX71_AD9708_AD9280/output/g_qspi_verification/timing_final.rpt
+| Date         : Wed Jul 29 18:23:32 2026
+| Host         : FYH2005 running 64-bit major release  (build 9200)
+| Command      : report_timing_summary -delay_type min_max -report_unconstrained -file C:/Users/21274/AppData/Local/Temp/NF/output/g_qspi_verification/timing_final.rpt
 | Design       : g_analyzer_zynq_top
 | Device       : 7z020-clg400
 | Speed File   : -2  PRODUCTION 1.11 2014-09-11
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Timing Summary Report
 
@@ -126,7 +126,7 @@ Table of Contents
 
     WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints     WPWS(ns)     TPWS(ns)  TPWS Failing Endpoints  TPWS Total Endpoints  
     -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------     --------     --------  ----------------------  --------------------  
-      1.008        0.000                      0                 1342        0.081        0.000                      0                 1342        6.408        0.000                       0                   910  
+      1.008        0.000                      0                 1226        0.118        0.000                      0                 1226        6.408        0.000                       0                   841  
 
 
 All user specified timing constraints are met.
@@ -155,9 +155,9 @@ clk_50m            {0.000 10.000}       20.000          50.000
 
 Clock             WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints     WPWS(ns)     TPWS(ns)  TPWS Failing Endpoints  TPWS Total Endpoints  
 -----             -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------     --------     --------  ----------------------  --------------------  
-clk_50m            14.682        0.000                      0                  478        0.081        0.000                      0                  478        7.000        0.000                       0                   415  
+clk_50m            13.965        0.000                      0                  445        0.118        0.000                      0                  445        7.000        0.000                       0                   412  
   clk125                                                                                                                                                        6.408        0.000                       0                     3  
-  clk32            14.420        0.000                      0                  855        0.100        0.000                      0                  855       15.125        0.000                       0                   486  
+  clk32            14.714        0.000                      0                  772        0.121        0.000                      0                  772       15.125        0.000                       0                   420  
   clkfb                                                                                                                                                        18.408        0.000                       0                     3  
   clkfb_1                                                                                                                                                      18.408        0.000                       0                     3  
 
@@ -223,28 +223,28 @@ Path Group    From Clock    To Clock
 From Clock:  clk_50m
   To Clock:  clk_50m
 
-Setup :            0  Failing Endpoints,  Worst Slack       14.682ns,  Total Violation        0.000ns
-Hold  :            0  Failing Endpoints,  Worst Slack        0.081ns,  Total Violation        0.000ns
+Setup :            0  Failing Endpoints,  Worst Slack       13.965ns,  Total Violation        0.000ns
+Hold  :            0  Failing Endpoints,  Worst Slack        0.118ns,  Total Violation        0.000ns
 PW    :            0  Failing Endpoints,  Worst Slack        7.000ns,  Total Violation        0.000ns
 ---------------------------------------------------------------------------------------------------
 
 
 Max Delay Paths
 --------------------------------------------------------------------------------------
-Slack (MET) :             14.682ns  (required time - arrival time)
-  Source:                 analyzer_logic/spi_if/reg_addr_reg[4]/C
+Slack (MET) :             13.965ns  (required time - arrival time)
+  Source:                 analyzer_logic/spi_if/reg_addr_reg[1]/C
                             (rising edge-triggered cell FDCE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
-  Destination:            analyzer_logic/adc_capture/read_addr_cfg_reg[9]/D
-                            (rising edge-triggered cell FDRE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Destination:            analyzer_logic/spi_if/read_snapshot_reg[5]/D
+                            (rising edge-triggered cell FDCE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
   Path Group:             clk_50m
   Path Type:              Setup (Max at Slow Process Corner)
   Requirement:            20.000ns  (clk_50m rise@20.000ns - clk_50m rise@0.000ns)
-  Data Path Delay:        5.314ns  (logic 1.620ns (30.486%)  route 3.694ns (69.514%))
-  Logic Levels:           6  (CARRY4=3 LUT3=2 LUT6=1)
-  Clock Path Skew:        -0.028ns (DCD - SCD + CPR)
-    Destination Clock Delay (DCD):    4.435ns = ( 24.435 - 20.000 ) 
-    Source Clock Delay      (SCD):    4.838ns
-    Clock Pessimism Removal (CPR):    0.376ns
+  Data Path Delay:        6.066ns  (logic 0.903ns (14.885%)  route 5.163ns (85.115%))
+  Logic Levels:           3  (LUT6=2 MUXF7=1)
+  Clock Path Skew:        -0.009ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    4.484ns = ( 24.484 - 20.000 ) 
+    Source Clock Delay      (SCD):    4.834ns
+    Clock Pessimism Removal (CPR):    0.342ns
   Clock Uncertainty:      0.035ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
     Total System Jitter     (TSJ):    0.071ns
     Total Input Jitter      (TIJ):    0.000ns
@@ -259,27 +259,18 @@ Slack (MET) :             14.682ns  (required time - arrival time)
     U18                  IBUF (Prop_ibuf_I_O)         1.429     1.429 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.873     3.302    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085     3.387 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.451     4.838    analyzer_logic/spi_if/cfg_clk
-    SLICE_X87Y92         FDCE                                         r  analyzer_logic/spi_if/reg_addr_reg[4]/C
+                         net (fo=411, routed)         1.447     4.834    analyzer_logic/spi_if/cfg_clk
+    SLICE_X83Y62         FDCE                                         r  analyzer_logic/spi_if/reg_addr_reg[1]/C
   -------------------------------------------------------------------    -------------------
-    SLICE_X87Y92         FDCE (Prop_fdce_C_Q)         0.348     5.186 f  analyzer_logic/spi_if/reg_addr_reg[4]/Q
-                         net (fo=11, routed)          0.825     6.012    analyzer_logic/spi_if/spi_addr[4]
-    SLICE_X88Y92         LUT3 (Prop_lut3_I2_O)        0.242     6.254 r  analyzer_logic/spi_if/decimation_cfg[15]_i_3/O
-                         net (fo=24, routed)          1.875     8.129    analyzer_logic/spi_if/reg_addr_reg[6]_0
-    SLICE_X87Y89         LUT6 (Prop_lut6_I1_O)        0.105     8.234 r  analyzer_logic/spi_if/read_addr_cfg_rep[11]_i_6/O
-                         net (fo=25, routed)          0.993     9.227    analyzer_logic/spi_if/read_addr_cfg_rep[11]_i_6_n_0
-    SLICE_X88Y88         LUT3 (Prop_lut3_I1_O)        0.105     9.332 r  analyzer_logic/spi_if/i___165_carry_i_4/O
-                         net (fo=1, routed)           0.000     9.332    analyzer_logic/adc_capture/S[1]
-    SLICE_X88Y88         CARRY4 (Prop_carry4_S[1]_CO[3])
-                                                      0.457     9.789 r  analyzer_logic/adc_capture/i_/i_/i___165_carry/CO[3]
-                         net (fo=1, routed)           0.000     9.789    analyzer_logic/adc_capture/i_/i_/i___165_carry_n_0
-    SLICE_X88Y89         CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.098     9.887 r  analyzer_logic/adc_capture/i_/i_/i___165_carry__0/CO[3]
-                         net (fo=1, routed)           0.000     9.887    analyzer_logic/adc_capture/i_/i_/i___165_carry__0_n_0
-    SLICE_X88Y90         CARRY4 (Prop_carry4_CI_O[1])
-                                                      0.265    10.152 r  analyzer_logic/adc_capture/i_/i_/i___165_carry__1/O[1]
-                         net (fo=1, routed)           0.000    10.152    analyzer_logic/adc_capture/i_/i_/i___165_carry__1_n_6
-    SLICE_X88Y90         FDRE                                         r  analyzer_logic/adc_capture/read_addr_cfg_reg[9]/D
+    SLICE_X83Y62         FDCE (Prop_fdce_C_Q)         0.379     5.213 r  analyzer_logic/spi_if/reg_addr_reg[1]/Q
+                         net (fo=79, routed)          4.229     9.442    analyzer_logic/adc_capture/read_snapshot_reg[23][1]
+    SLICE_X86Y58         LUT6 (Prop_lut6_I2_O)        0.105     9.547 r  analyzer_logic/adc_capture/read_snapshot[5]_i_5/O
+                         net (fo=1, routed)           0.000     9.547    analyzer_logic/adc_capture/read_snapshot[5]_i_5_n_0
+    SLICE_X86Y58         MUXF7 (Prop_muxf7_I1_O)      0.178     9.725 r  analyzer_logic/adc_capture/read_snapshot_reg[5]_i_2/O
+                         net (fo=1, routed)           0.934    10.660    analyzer_logic/adc_capture/read_snapshot_reg[5]_i_2_n_0
+    SLICE_X90Y61         LUT6 (Prop_lut6_I0_O)        0.241    10.901 r  analyzer_logic/adc_capture/read_snapshot[5]_i_1/O
+                         net (fo=1, routed)           0.000    10.901    analyzer_logic/spi_if/D[2]
+    SLICE_X90Y61         FDCE                                         r  analyzer_logic/spi_if/read_snapshot_reg[5]/D
   -------------------------------------------------------------------    -------------------
 
                          (clock clk_50m rise edge)   20.000    20.000 r  
@@ -288,16 +279,16 @@ Slack (MET) :             14.682ns  (required time - arrival time)
     U18                  IBUF (Prop_ibuf_I_O)         1.363    21.363 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.701    23.064    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077    23.141 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.293    24.435    analyzer_logic/adc_capture/cfg_clk
-    SLICE_X88Y90         FDRE                                         r  analyzer_logic/adc_capture/read_addr_cfg_reg[9]/C
-                         clock pessimism              0.376    24.810    
-                         clock uncertainty           -0.035    24.775    
-    SLICE_X88Y90         FDRE (Setup_fdre_C_D)        0.059    24.834    analyzer_logic/adc_capture/read_addr_cfg_reg[9]
+                         net (fo=411, routed)         1.342    24.484    analyzer_logic/spi_if/cfg_clk
+    SLICE_X90Y61         FDCE                                         r  analyzer_logic/spi_if/read_snapshot_reg[5]/C
+                         clock pessimism              0.342    24.825    
+                         clock uncertainty           -0.035    24.790    
+    SLICE_X90Y61         FDCE (Setup_fdce_C_D)        0.076    24.866    analyzer_logic/spi_if/read_snapshot_reg[5]
   -------------------------------------------------------------------
-                         required time                         24.834    
-                         arrival time                         -10.152    
+                         required time                         24.866    
+                         arrival time                         -10.901    
   -------------------------------------------------------------------
-                         slack                                 14.682    
+                         slack                                 13.965    
 
 
 
@@ -305,20 +296,20 @@ Slack (MET) :             14.682ns  (required time - arrival time)
 
 Min Delay Paths
 --------------------------------------------------------------------------------------
-Slack (MET) :             0.081ns  (arrival time - required time)
-  Source:                 analyzer_logic/adc_capture/read_addr_cfg_reg_rep[2]/C
-                            (rising edge-triggered cell FDRE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
-  Destination:            analyzer_logic/adc_capture/sample_ram_reg_0/ADDRBWRADDR[5]
-                            (rising edge-triggered cell RAMB36E1 clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+Slack (MET) :             0.118ns  (arrival time - required time)
+  Source:                 analyzer_logic/adc_capture/overrange_sync_reg[0]/C
+                            (rising edge-triggered cell FDCE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Destination:            analyzer_logic/adc_capture/overrange_sync_reg[1]/D
+                            (rising edge-triggered cell FDCE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
   Path Group:             clk_50m
   Path Type:              Hold (Min at Fast Process Corner)
   Requirement:            0.000ns  (clk_50m rise@0.000ns - clk_50m rise@0.000ns)
-  Data Path Delay:        0.316ns  (logic 0.164ns (51.894%)  route 0.152ns (48.106%))
+  Data Path Delay:        0.196ns  (logic 0.141ns (71.838%)  route 0.055ns (28.162%))
   Logic Levels:           0  
-  Clock Path Skew:        0.052ns (DCD - SCD - CPR)
-    Destination Clock Delay (DCD):    2.124ns
-    Source Clock Delay      (SCD):    1.570ns
-    Clock Pessimism Removal (CPR):    0.502ns
+  Clock Path Skew:        0.000ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    2.091ns
+    Source Clock Delay      (SCD):    1.573ns
+    Clock Pessimism Removal (CPR):    0.518ns
 
     Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
   -------------------------------------------------------------------    -------------------
@@ -328,12 +319,12 @@ Slack (MET) :             0.081ns  (arrival time - required time)
     U18                  IBUF (Prop_ibuf_I_O)         0.266     0.266 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.674     0.940    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     0.966 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.604     1.570    analyzer_logic/adc_capture/cfg_clk
-    SLICE_X90Y89         FDRE                                         r  analyzer_logic/adc_capture/read_addr_cfg_reg_rep[2]/C
+                         net (fo=411, routed)         0.607     1.573    analyzer_logic/adc_capture/cfg_clk
+    SLICE_X101Y57        FDCE                                         r  analyzer_logic/adc_capture/overrange_sync_reg[0]/C
   -------------------------------------------------------------------    -------------------
-    SLICE_X90Y89         FDRE (Prop_fdre_C_Q)         0.164     1.734 r  analyzer_logic/adc_capture/read_addr_cfg_reg_rep[2]/Q
-                         net (fo=2, routed)           0.152     1.886    analyzer_logic/adc_capture/read_addr_cfg[2]
-    RAMB36_X4Y17         RAMB36E1                                     r  analyzer_logic/adc_capture/sample_ram_reg_0/ADDRBWRADDR[5]
+    SLICE_X101Y57        FDCE (Prop_fdce_C_Q)         0.141     1.714 r  analyzer_logic/adc_capture/overrange_sync_reg[0]/Q
+                         net (fo=1, routed)           0.055     1.769    analyzer_logic/adc_capture/overrange_sync[0]
+    SLICE_X101Y57        FDCE                                         r  analyzer_logic/adc_capture/overrange_sync_reg[1]/D
   -------------------------------------------------------------------    -------------------
 
                          (clock clk_50m rise edge)    0.000     0.000 r  
@@ -342,16 +333,15 @@ Slack (MET) :             0.081ns  (arrival time - required time)
     U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.910     2.124    analyzer_logic/adc_capture/cfg_clk
-    RAMB36_X4Y17         RAMB36E1                                     r  analyzer_logic/adc_capture/sample_ram_reg_0/CLKBWRCLK
-                         clock pessimism             -0.502     1.622    
-    RAMB36_X4Y17         RAMB36E1 (Hold_ramb36e1_CLKBWRCLK_ADDRBWRADDR[5])
-                                                      0.183     1.805    analyzer_logic/adc_capture/sample_ram_reg_0
+                         net (fo=411, routed)         0.877     2.091    analyzer_logic/adc_capture/cfg_clk
+    SLICE_X101Y57        FDCE                                         r  analyzer_logic/adc_capture/overrange_sync_reg[1]/C
+                         clock pessimism             -0.518     1.573    
+    SLICE_X101Y57        FDCE (Hold_fdce_C_D)         0.078     1.651    analyzer_logic/adc_capture/overrange_sync_reg[1]
   -------------------------------------------------------------------
-                         required time                         -1.805    
-                         arrival time                           1.886    
+                         required time                         -1.651    
+                         arrival time                           1.769    
   -------------------------------------------------------------------
-                         slack                                  0.081    
+                         slack                                  0.118    
 
 
 
@@ -365,7 +355,7 @@ Period(ns):         20.000
 Sources:            { clk_50m }
 
 Check Type        Corner  Lib Pin             Reference Pin  Required(ns)  Actual(ns)  Slack(ns)  Location         Pin
-Min Period        n/a     RAMB36E1/CLKBWRCLK  n/a            2.170         20.000      17.830     RAMB36_X4Y18     analyzer_logic/adc_capture/sample_ram_reg_1/CLKBWRCLK
+Min Period        n/a     RAMB36E1/CLKBWRCLK  n/a            2.170         20.000      17.830     RAMB36_X4Y11     analyzer_logic/adc_capture/sample_ram_reg_0/CLKBWRCLK
 Max Period        n/a     PLLE2_ADV/CLKIN1    n/a            52.633        20.000      32.633     PLLE2_ADV_X1Y0   analyzer_logic/dac_clkgen/pll_i/CLKIN1
 Low Pulse Width   Fast    PLLE2_ADV/CLKIN1    n/a            3.000         10.000      7.000      PLLE2_ADV_X1Y0   analyzer_logic/dac_clkgen/pll_i/CLKIN1
 High Pulse Width  Slow    MMCME2_ADV/CLKIN1   n/a            3.000         10.000      7.000      MMCME2_ADV_X1Y0  analyzer_logic/adc_clkgen/mmcm_i/CLKIN1
@@ -399,27 +389,27 @@ Max Period  n/a     PLLE2_ADV/CLKOUT0  n/a            160.000       8.000       
 From Clock:  clk32
   To Clock:  clk32
 
-Setup :            0  Failing Endpoints,  Worst Slack       14.420ns,  Total Violation        0.000ns
-Hold  :            0  Failing Endpoints,  Worst Slack        0.100ns,  Total Violation        0.000ns
+Setup :            0  Failing Endpoints,  Worst Slack       14.714ns,  Total Violation        0.000ns
+Hold  :            0  Failing Endpoints,  Worst Slack        0.121ns,  Total Violation        0.000ns
 PW    :            0  Failing Endpoints,  Worst Slack       15.125ns,  Total Violation        0.000ns
 ---------------------------------------------------------------------------------------------------
 
 
 Max Delay Paths
 --------------------------------------------------------------------------------------
-Slack (MET) :             14.420ns  (required time - arrival time)
-  Source:                 analyzer_logic/ad9280_data_iob_reg[7]/C
-                            (rising edge-triggered cell FDPE clocked by clk32  {rise@0.000ns fall@15.625ns period=31.250ns})
-  Destination:            analyzer_logic/adc_capture/g_cic_decimator/output_sample_q8_8_reg[8]/D
+Slack (MET) :             14.714ns  (required time - arrival time)
+  Source:                 analyzer_logic/ad9280_data_iob_reg[2]/C
+                            (rising edge-triggered cell FDCE clocked by clk32  {rise@0.000ns fall@15.625ns period=31.250ns})
+  Destination:            analyzer_logic/adc_capture/g_cic_decimator/output_sample_q8_8_reg[2]/D
                             (rising edge-triggered cell FDCE clocked by clk32  {rise@0.000ns fall@15.625ns period=31.250ns})
   Path Group:             clk32
   Path Type:              Setup (Max at Slow Process Corner)
   Requirement:            31.250ns  (clk32 rise@31.250ns - clk32 rise@0.000ns)
-  Data Path Delay:        16.648ns  (logic 6.552ns (39.357%)  route 10.096ns (60.643%))
-  Logic Levels:           23  (CARRY4=13 LUT2=1 LUT3=3 LUT4=1 LUT5=2 LUT6=3)
-  Clock Path Skew:        -0.162ns (DCD - SCD + CPR)
-    Destination Clock Delay (DCD):    4.494ns = ( 35.744 - 31.250 ) 
-    Source Clock Delay      (SCD):    4.997ns
+  Data Path Delay:        16.340ns  (logic 6.103ns (37.350%)  route 10.237ns (62.650%))
+  Logic Levels:           25  (CARRY4=14 LUT2=1 LUT3=2 LUT4=3 LUT5=2 LUT6=3)
+  Clock Path Skew:        -0.174ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    4.484ns = ( 35.734 - 31.250 ) 
+    Source Clock Delay      (SCD):    4.999ns
     Clock Pessimism Removal (CPR):    0.342ns
   Clock Uncertainty:      0.052ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
     Total System Jitter     (TSJ):    0.071ns
@@ -434,76 +424,81 @@ Slack (MET) :             14.420ns  (required time - arrival time)
     U18                  IBUF (Prop_ibuf_I_O)         1.429     1.429 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.873     3.302    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085     3.387 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.552     4.939    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         1.552     4.939    analyzer_logic/adc_clkgen/cfg_clk
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
                                                      -3.232     1.707 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
                          net (fo=1, routed)           1.597     3.304    analyzer_logic/adc_clkgen/clk32
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.085     3.389 r  analyzer_logic/adc_clkgen/clk32_buf_i/O
-                         net (fo=484, routed)         1.608     4.997    analyzer_logic/clk_adc
-    ILOGIC_X1Y58         FDPE                                         r  analyzer_logic/ad9280_data_iob_reg[7]/C
+                         net (fo=418, routed)         1.610     4.999    analyzer_logic/clk_adc
+    ILOGIC_X1Y96         FDCE                                         r  analyzer_logic/ad9280_data_iob_reg[2]/C
   -------------------------------------------------------------------    -------------------
-    ILOGIC_X1Y58         FDPE (Prop_fdpe_C_Q)         0.448     5.445 r  analyzer_logic/ad9280_data_iob_reg[7]/Q
-                         net (fo=82, routed)          2.799     8.244    analyzer_logic/adc_capture/g_cic_decimator/Q[7]
-    SLICE_X109Y94        LUT2 (Prop_lut2_I0_O)        0.154     8.398 r  analyzer_logic/adc_capture/g_cic_decimator/integrator1_next_carry__1_i_4/O
-                         net (fo=1, routed)           0.000     8.398    analyzer_logic/adc_capture/g_cic_decimator/integrator1_next_carry__1_i_4_n_0
-    SLICE_X109Y94        CARRY4 (Prop_carry4_S[1]_CO[3])
-                                                      0.457     8.855 r  analyzer_logic/adc_capture/g_cic_decimator/integrator1_next_carry__1/CO[3]
-                         net (fo=1, routed)           0.000     8.855    analyzer_logic/adc_capture/g_cic_decimator/integrator1_next_carry__1_n_0
-    SLICE_X109Y95        CARRY4 (Prop_carry4_CI_O[2])
-                                                      0.200     9.055 r  analyzer_logic/adc_capture/g_cic_decimator/integrator1_next_carry__2/O[2]
-                         net (fo=4, routed)           0.647     9.702    analyzer_logic/adc_capture/g_cic_decimator/integrator1_next[14]
-    SLICE_X110Y95        LUT3 (Prop_lut3_I0_O)        0.275     9.977 r  analyzer_logic/adc_capture/g_cic_decimator/integrator3_next__0_carry__2_i_1/O
-                         net (fo=2, routed)           0.517    10.494    analyzer_logic/adc_capture/g_cic_decimator/integrator3_next__0_carry__2_i_1_n_0
-    SLICE_X110Y95        LUT4 (Prop_lut4_I3_O)        0.268    10.762 r  analyzer_logic/adc_capture/g_cic_decimator/integrator3_next__0_carry__2_i_5/O
-                         net (fo=1, routed)           0.000    10.762    analyzer_logic/adc_capture/g_cic_decimator/integrator3_next__0_carry__2_i_5_n_0
-    SLICE_X110Y95        CARRY4 (Prop_carry4_S[3]_CO[3])
-                                                      0.332    11.094 r  analyzer_logic/adc_capture/g_cic_decimator/integrator3_next__0_carry__2/CO[3]
-                         net (fo=1, routed)           0.000    11.094    analyzer_logic/adc_capture/g_cic_decimator/integrator3_next__0_carry__2_n_0
-    SLICE_X110Y96        CARRY4 (Prop_carry4_CI_O[3])
-                                                      0.260    11.354 r  analyzer_logic/adc_capture/g_cic_decimator/integrator3_next__0_carry__3/O[3]
-                         net (fo=7, routed)           0.951    12.305    analyzer_logic/adc_capture/g_cic_decimator/integrator3_next[19]
-    SLICE_X109Y100       LUT5 (Prop_lut5_I1_O)        0.271    12.576 r  analyzer_logic/adc_capture/g_cic_decimator/comb3_next__2_carry__4_i_11/O
-                         net (fo=2, routed)           0.430    13.006    analyzer_logic/adc_capture/g_cic_decimator/comb3_next__2_carry__4_i_11_n_0
-    SLICE_X108Y100       LUT6 (Prop_lut6_I5_O)        0.275    13.281 r  analyzer_logic/adc_capture/g_cic_decimator/comb3_next__2_carry__4_i_2/O
-                         net (fo=2, routed)           0.858    14.140    analyzer_logic/adc_capture/g_cic_decimator/comb3_next__2_carry__4_i_2_n_0
-    SLICE_X105Y100       LUT3 (Prop_lut3_I0_O)        0.105    14.245 r  analyzer_logic/adc_capture/g_cic_decimator/comb3_next__2_carry__4_i_6/O
-                         net (fo=1, routed)           0.000    14.245    analyzer_logic/adc_capture/g_cic_decimator/comb3_next__2_carry__4_i_6_n_0
-    SLICE_X105Y100       CARRY4 (Prop_carry4_S[1]_O[3])
-                                                      0.530    14.775 r  analyzer_logic/adc_capture/g_cic_decimator/comb3_next__2_carry__4/O[3]
-                         net (fo=101, routed)         0.845    15.620    analyzer_logic/adc_capture/g_cic_decimator/comb3_next[23]
-    SLICE_X102Y96        LUT3 (Prop_lut3_I1_O)        0.257    15.877 r  analyzer_logic/adc_capture/g_cic_decimator/rounded_magnitude0_carry_i_1/O
-                         net (fo=2, routed)           0.437    16.314    analyzer_logic/adc_capture/g_cic_decimator/rounded_magnitude0_carry_i_1_n_0
-    SLICE_X103Y97        CARRY4 (Prop_carry4_CYINIT_O[1])
-                                                      0.482    16.796 f  analyzer_logic/adc_capture/g_cic_decimator/rounded_magnitude0_carry/O[1]
-                         net (fo=2, routed)           0.545    17.341    analyzer_logic/adc_capture/g_cic_decimator/rounded_magnitude0[2]
-    SLICE_X102Y97        LUT5 (Prop_lut5_I4_O)        0.250    17.591 r  analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry_i_4/O
-                         net (fo=1, routed)           0.000    17.591    analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry_i_4_n_0
-    SLICE_X102Y97        CARRY4 (Prop_carry4_S[1]_CO[3])
-                                                      0.444    18.035 r  analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry/CO[3]
-                         net (fo=1, routed)           0.000    18.035    analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry_n_0
-    SLICE_X102Y98        CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.100    18.135 r  analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry__0/CO[3]
-                         net (fo=1, routed)           0.000    18.135    analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry__0_n_0
-    SLICE_X102Y99        CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.100    18.235 r  analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry__1/CO[3]
-                         net (fo=1, routed)           0.001    18.235    analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry__1_n_0
-    SLICE_X102Y100       CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.100    18.335 r  analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry__2/CO[3]
-                         net (fo=1, routed)           0.000    18.335    analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry__2_n_0
-    SLICE_X102Y101       CARRY4 (Prop_carry4_CI_O[1])
-                                                      0.257    18.592 f  analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry__3/O[1]
-                         net (fo=4, routed)           0.713    19.305    analyzer_logic/adc_capture/g_cic_decimator/scaled0[18]
-    SLICE_X100Y101       LUT6 (Prop_lut6_I0_O)        0.245    19.550 r  analyzer_logic/adc_capture/g_cic_decimator/CIC_ToQ8_81_carry_i_2/O
-                         net (fo=1, routed)           0.399    19.949    analyzer_logic/adc_capture/g_cic_decimator/CIC_ToQ8_81_carry_i_2_n_0
-    SLICE_X100Y102       CARRY4 (Prop_carry4_DI[2]_CO[3])
-                                                      0.334    20.283 r  analyzer_logic/adc_capture/g_cic_decimator/CIC_ToQ8_81_carry/CO[3]
-                         net (fo=1, routed)           0.000    20.283    analyzer_logic/adc_capture/g_cic_decimator/CIC_ToQ8_81_carry_n_0
-    SLICE_X100Y103       CARRY4 (Prop_carry4_CI_CO[1])
-                                                      0.131    20.414 f  analyzer_logic/adc_capture/g_cic_decimator/CIC_ToQ8_81_carry__0/CO[1]
-                         net (fo=16, routed)          0.954    21.368    analyzer_logic/adc_capture/g_cic_decimator/CIC_ToQ8_81
-    SLICE_X99Y97         LUT6 (Prop_lut6_I4_O)        0.277    21.645 r  analyzer_logic/adc_capture/g_cic_decimator/output_sample_q8_8[8]_i_1/O
-                         net (fo=1, routed)           0.000    21.645    analyzer_logic/adc_capture/g_cic_decimator/output_sample_q8_8[8]_i_1_n_0
-    SLICE_X99Y97         FDCE                                         r  analyzer_logic/adc_capture/g_cic_decimator/output_sample_q8_8_reg[8]/D
+    ILOGIC_X1Y96         FDCE (Prop_fdce_C_Q)         0.448     5.447 r  analyzer_logic/ad9280_data_iob_reg[2]/Q
+                         net (fo=8, routed)           1.705     7.152    analyzer_logic/adc_capture/g_cic_decimator/Q[2]
+    SLICE_X112Y70        LUT2 (Prop_lut2_I1_O)        0.154     7.306 r  analyzer_logic/adc_capture/g_cic_decimator/integrator1_next_carry_i_2/O
+                         net (fo=1, routed)           0.000     7.306    analyzer_logic/adc_capture/g_cic_decimator/integrator1_next_carry_i_2_n_0
+    SLICE_X112Y70        CARRY4 (Prop_carry4_S[2]_CO[3])
+                                                      0.316     7.622 r  analyzer_logic/adc_capture/g_cic_decimator/integrator1_next_carry/CO[3]
+                         net (fo=1, routed)           0.000     7.622    analyzer_logic/adc_capture/g_cic_decimator/integrator1_next_carry_n_0
+    SLICE_X112Y71        CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.100     7.722 r  analyzer_logic/adc_capture/g_cic_decimator/integrator1_next_carry__0/CO[3]
+                         net (fo=1, routed)           0.000     7.722    analyzer_logic/adc_capture/g_cic_decimator/integrator1_next_carry__0_n_0
+    SLICE_X112Y72        CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.178     7.900 r  analyzer_logic/adc_capture/g_cic_decimator/integrator1_next_carry__1/O[0]
+                         net (fo=4, routed)           0.357     8.256    analyzer_logic/adc_capture/g_cic_decimator/integrator1_next[8]
+    SLICE_X109Y72        LUT3 (Prop_lut3_I0_O)        0.238     8.494 r  analyzer_logic/adc_capture/g_cic_decimator/integrator3_next__0_carry__1_i_3/O
+                         net (fo=2, routed)           0.680     9.174    analyzer_logic/adc_capture/g_cic_decimator/integrator3_next__0_carry__1_i_3_n_0
+    SLICE_X110Y72        LUT4 (Prop_lut4_I3_O)        0.105     9.279 r  analyzer_logic/adc_capture/g_cic_decimator/integrator3_next__0_carry__1_i_7/O
+                         net (fo=1, routed)           0.000     9.279    analyzer_logic/adc_capture/g_cic_decimator/integrator3_next__0_carry__1_i_7_n_0
+    SLICE_X110Y72        CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.457     9.736 r  analyzer_logic/adc_capture/g_cic_decimator/integrator3_next__0_carry__1/CO[3]
+                         net (fo=1, routed)           0.000     9.736    analyzer_logic/adc_capture/g_cic_decimator/integrator3_next__0_carry__1_n_0
+    SLICE_X110Y73        CARRY4 (Prop_carry4_CI_O[3])
+                                                      0.260     9.996 r  analyzer_logic/adc_capture/g_cic_decimator/integrator3_next__0_carry__2/O[3]
+                         net (fo=7, routed)           0.818    10.815    analyzer_logic/adc_capture/g_cic_decimator/integrator3_next[15]
+    SLICE_X103Y73        LUT5 (Prop_lut5_I1_O)        0.260    11.075 r  analyzer_logic/adc_capture/g_cic_decimator/comb3_next__2_carry__3_i_14/O
+                         net (fo=2, routed)           0.857    11.932    analyzer_logic/adc_capture/g_cic_decimator/comb3_next__2_carry__3_i_14_n_0
+    SLICE_X108Y73        LUT6 (Prop_lut6_I5_O)        0.267    12.199 r  analyzer_logic/adc_capture/g_cic_decimator/comb3_next__2_carry__3_i_3/O
+                         net (fo=2, routed)           0.856    13.055    analyzer_logic/adc_capture/g_cic_decimator/comb3_next__2_carry__3_i_3_n_0
+    SLICE_X105Y73        LUT3 (Prop_lut3_I0_O)        0.105    13.160 r  analyzer_logic/adc_capture/g_cic_decimator/comb3_next__2_carry__3_i_7/O
+                         net (fo=1, routed)           0.000    13.160    analyzer_logic/adc_capture/g_cic_decimator/comb3_next__2_carry__3_i_7_n_0
+    SLICE_X105Y73        CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.457    13.617 r  analyzer_logic/adc_capture/g_cic_decimator/comb3_next__2_carry__3/CO[3]
+                         net (fo=1, routed)           0.000    13.617    analyzer_logic/adc_capture/g_cic_decimator/comb3_next__2_carry__3_n_0
+    SLICE_X105Y74        CARRY4 (Prop_carry4_CI_O[3])
+                                                      0.260    13.877 r  analyzer_logic/adc_capture/g_cic_decimator/comb3_next__2_carry__4/O[3]
+                         net (fo=102, routed)         0.646    14.523    analyzer_logic/adc_capture/g_cic_decimator/comb3_next[23]
+    SLICE_X96Y71         LUT4 (Prop_lut4_I2_O)        0.257    14.780 r  analyzer_logic/adc_capture/g_cic_decimator/output_sample_q8_8[15]_i_6/O
+                         net (fo=19, routed)          0.998    15.778    analyzer_logic/adc_capture/g_cic_decimator/output_sample_q8_8[15]_i_6_n_0
+    SLICE_X100Y73        LUT5 (Prop_lut5_I3_O)        0.105    15.883 r  analyzer_logic/adc_capture/g_cic_decimator/output_sample_q8_8[0]_i_2/O
+                         net (fo=33, routed)          0.653    16.536    analyzer_logic/adc_capture/g_cic_decimator/output_sample_q8_8[0]_i_2_n_0
+    SLICE_X99Y69         LUT4 (Prop_lut4_I3_O)        0.105    16.641 r  analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry_i_1/O
+                         net (fo=1, routed)           0.394    17.035    analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry_i_1_n_0
+    SLICE_X98Y70         CARRY4 (Prop_carry4_CYINIT_CO[3])
+                                                      0.494    17.529 r  analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry/CO[3]
+                         net (fo=1, routed)           0.000    17.529    analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry_n_0
+    SLICE_X98Y71         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.100    17.629 r  analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry__0/CO[3]
+                         net (fo=1, routed)           0.000    17.629    analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry__0_n_0
+    SLICE_X98Y72         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.100    17.729 r  analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry__1/CO[3]
+                         net (fo=1, routed)           0.000    17.729    analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry__1_n_0
+    SLICE_X98Y73         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.100    17.829 r  analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry__2/CO[3]
+                         net (fo=1, routed)           0.000    17.829    analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry__2_n_0
+    SLICE_X98Y74         CARRY4 (Prop_carry4_CI_O[3])
+                                                      0.262    18.091 r  analyzer_logic/adc_capture/g_cic_decimator/scaled0_carry__3/O[3]
+                         net (fo=4, routed)           0.812    18.903    analyzer_logic/adc_capture/g_cic_decimator/scaled0[20]
+    SLICE_X95Y72         LUT6 (Prop_lut6_I0_O)        0.250    19.153 r  analyzer_logic/adc_capture/g_cic_decimator/i__carry_i_1__0/O
+                         net (fo=1, routed)           0.531    19.684    analyzer_logic/adc_capture/g_cic_decimator/i__carry_i_1__0_n_0
+    SLICE_X95Y73         CARRY4 (Prop_carry4_DI[3]_CO[3])
+                                                      0.318    20.002 r  analyzer_logic/adc_capture/g_cic_decimator/CIC_ToQ8_81_inferred__0/i__carry/CO[3]
+                         net (fo=1, routed)           0.000    20.002    analyzer_logic/adc_capture/g_cic_decimator/CIC_ToQ8_81_inferred__0/i__carry_n_0
+    SLICE_X95Y74         CARRY4 (Prop_carry4_CI_CO[1])
+                                                      0.132    20.134 r  analyzer_logic/adc_capture/g_cic_decimator/CIC_ToQ8_81_inferred__0/i__carry__0/CO[1]
+                         net (fo=16, routed)          0.930    21.064    analyzer_logic/adc_capture/g_cic_decimator/CIC_ToQ8_810_in
+    SLICE_X99Y70         LUT6 (Prop_lut6_I5_O)        0.275    21.339 r  analyzer_logic/adc_capture/g_cic_decimator/output_sample_q8_8[2]_i_1/O
+                         net (fo=1, routed)           0.000    21.339    analyzer_logic/adc_capture/g_cic_decimator/output_sample_q8_8[2]_i_1_n_0
+    SLICE_X99Y70         FDCE                                         r  analyzer_logic/adc_capture/g_cic_decimator/output_sample_q8_8_reg[2]/D
   -------------------------------------------------------------------    -------------------
 
                          (clock clk32 rise edge)     31.250    31.250 r  
@@ -512,21 +507,21 @@ Slack (MET) :             14.420ns  (required time - arrival time)
     U18                  IBUF (Prop_ibuf_I_O)         1.363    32.613 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.701    34.314    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077    34.391 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.386    35.777    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         1.386    35.777    analyzer_logic/adc_clkgen/cfg_clk
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
                                                      -2.915    32.862 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
                          net (fo=1, routed)           1.454    34.316    analyzer_logic/adc_clkgen/clk32
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.077    34.393 r  analyzer_logic/adc_clkgen/clk32_buf_i/O
-                         net (fo=484, routed)         1.350    35.744    analyzer_logic/adc_capture/g_cic_decimator/clk_adc
-    SLICE_X99Y97         FDCE                                         r  analyzer_logic/adc_capture/g_cic_decimator/output_sample_q8_8_reg[8]/C
-                         clock pessimism              0.342    36.085    
-                         clock uncertainty           -0.052    36.033    
-    SLICE_X99Y97         FDCE (Setup_fdce_C_D)        0.032    36.065    analyzer_logic/adc_capture/g_cic_decimator/output_sample_q8_8_reg[8]
+                         net (fo=418, routed)         1.340    35.734    analyzer_logic/adc_capture/g_cic_decimator/clk_adc
+    SLICE_X99Y70         FDCE                                         r  analyzer_logic/adc_capture/g_cic_decimator/output_sample_q8_8_reg[2]/C
+                         clock pessimism              0.342    36.075    
+                         clock uncertainty           -0.052    36.023    
+    SLICE_X99Y70         FDCE (Setup_fdce_C_D)        0.030    36.053    analyzer_logic/adc_capture/g_cic_decimator/output_sample_q8_8_reg[2]
   -------------------------------------------------------------------
-                         required time                         36.065    
-                         arrival time                         -21.645    
+                         required time                         36.053    
+                         arrival time                         -21.339    
   -------------------------------------------------------------------
-                         slack                                 14.420    
+                         slack                                 14.714    
 
 
 
@@ -534,20 +529,20 @@ Slack (MET) :             14.420ns  (required time - arrival time)
 
 Min Delay Paths
 --------------------------------------------------------------------------------------
-Slack (MET) :             0.100ns  (arrival time - required time)
-  Source:                 analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[14]/C
-                            (rising edge-triggered cell FDCE clocked by clk32  {rise@0.000ns fall@15.625ns period=31.250ns})
-  Destination:            analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[16]/D
-                            (rising edge-triggered cell FDCE clocked by clk32  {rise@0.000ns fall@15.625ns period=31.250ns})
+Slack (MET) :             0.121ns  (arrival time - required time)
+  Source:                 analyzer_logic/adc_capture/trigger_threshold_meta_reg[7]/C
+                            (rising edge-triggered cell FDPE clocked by clk32  {rise@0.000ns fall@15.625ns period=31.250ns})
+  Destination:            analyzer_logic/adc_capture/trigger_threshold_sync_reg[7]/D
+                            (rising edge-triggered cell FDPE clocked by clk32  {rise@0.000ns fall@15.625ns period=31.250ns})
   Path Group:             clk32
   Path Type:              Hold (Min at Fast Process Corner)
   Requirement:            0.000ns  (clk32 rise@0.000ns - clk32 rise@0.000ns)
-  Data Path Delay:        0.556ns  (logic 0.357ns (64.202%)  route 0.199ns (35.798%))
-  Logic Levels:           3  (CARRY4=2 LUT2=1)
-  Clock Path Skew:        0.351ns (DCD - SCD - CPR)
-    Destination Clock Delay (DCD):    2.210ns
-    Source Clock Delay      (SCD):    1.606ns
-    Clock Pessimism Removal (CPR):    0.253ns
+  Data Path Delay:        0.196ns  (logic 0.141ns (71.838%)  route 0.055ns (28.162%))
+  Logic Levels:           0  
+  Clock Path Skew:        0.000ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    2.095ns
+    Source Clock Delay      (SCD):    1.576ns
+    Clock Pessimism Removal (CPR):    0.519ns
 
     Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
   -------------------------------------------------------------------    -------------------
@@ -557,25 +552,17 @@ Slack (MET) :             0.100ns  (arrival time - required time)
     U18                  IBUF (Prop_ibuf_I_O)         0.266     0.266 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.674     0.940    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     0.966 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.597     1.563    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         0.597     1.563    analyzer_logic/adc_clkgen/cfg_clk
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
                                                      -1.150     0.413 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
                          net (fo=1, routed)           0.529     0.942    analyzer_logic/adc_clkgen/clk32
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.026     0.968 r  analyzer_logic/adc_clkgen/clk32_buf_i/O
-                         net (fo=484, routed)         0.638     1.606    analyzer_logic/adc_capture/g_cic_decimator/clk_adc
-    SLICE_X108Y99        FDCE                                         r  analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[14]/C
+                         net (fo=418, routed)         0.608     1.576    analyzer_logic/adc_capture/clk_adc
+    SLICE_X105Y60        FDPE                                         r  analyzer_logic/adc_capture/trigger_threshold_meta_reg[7]/C
   -------------------------------------------------------------------    -------------------
-    SLICE_X108Y99        FDCE (Prop_fdce_C_Q)         0.164     1.770 f  analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[14]/Q
-                         net (fo=8, routed)           0.198     1.968    analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[23]_0[14]
-    SLICE_X106Y99        LUT2 (Prop_lut2_I1_O)        0.045     2.013 r  analyzer_logic/adc_capture/g_cic_decimator/comb_delay2[15]_i_3/O
-                         net (fo=1, routed)           0.000     2.013    analyzer_logic/adc_capture/g_cic_decimator_n_63
-    SLICE_X106Y99        CARRY4 (Prop_carry4_DI[2]_CO[3])
-                                                      0.094     2.107 r  analyzer_logic/adc_capture/comb_delay2_reg[15]_i_1/CO[3]
-                         net (fo=1, routed)           0.001     2.108    analyzer_logic/adc_capture/comb_delay2_reg[15]_i_1_n_0
-    SLICE_X106Y100       CARRY4 (Prop_carry4_CI_O[0])
-                                                      0.054     2.162 r  analyzer_logic/adc_capture/comb_delay2_reg[19]_i_1/O[0]
-                         net (fo=1, routed)           0.000     2.162    analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[23]_0[16]
-    SLICE_X106Y100       FDCE                                         r  analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[16]/D
+    SLICE_X105Y60        FDPE (Prop_fdpe_C_Q)         0.141     1.717 r  analyzer_logic/adc_capture/trigger_threshold_meta_reg[7]/Q
+                         net (fo=1, routed)           0.055     1.772    analyzer_logic/adc_capture/trigger_threshold_meta[7]
+    SLICE_X105Y60        FDPE                                         r  analyzer_logic/adc_capture/trigger_threshold_sync_reg[7]/D
   -------------------------------------------------------------------    -------------------
 
                          (clock clk32 rise edge)      0.000     0.000 r  
@@ -584,20 +571,20 @@ Slack (MET) :             0.100ns  (arrival time - required time)
     U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.864     2.078    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         0.864     2.078    analyzer_logic/adc_clkgen/cfg_clk
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
                                                      -1.467     0.611 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
                          net (fo=1, routed)           0.576     1.187    analyzer_logic/adc_clkgen/clk32
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     1.216 r  analyzer_logic/adc_clkgen/clk32_buf_i/O
-                         net (fo=484, routed)         0.994     2.210    analyzer_logic/adc_capture/g_cic_decimator/clk_adc
-    SLICE_X106Y100       FDCE                                         r  analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[16]/C
-                         clock pessimism             -0.253     1.957    
-    SLICE_X106Y100       FDCE (Hold_fdce_C_D)         0.105     2.062    analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[16]
+                         net (fo=418, routed)         0.879     2.095    analyzer_logic/adc_capture/clk_adc
+    SLICE_X105Y60        FDPE                                         r  analyzer_logic/adc_capture/trigger_threshold_sync_reg[7]/C
+                         clock pessimism             -0.519     1.576    
+    SLICE_X105Y60        FDPE (Hold_fdpe_C_D)         0.075     1.651    analyzer_logic/adc_capture/trigger_threshold_sync_reg[7]
   -------------------------------------------------------------------
-                         required time                         -2.062    
-                         arrival time                           2.162    
+                         required time                         -1.651    
+                         arrival time                           1.772    
   -------------------------------------------------------------------
-                         slack                                  0.100    
+                         slack                                  0.121    
 
 
 
@@ -611,10 +598,10 @@ Period(ns):         31.250
 Sources:            { analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0 }
 
 Check Type        Corner  Lib Pin             Reference Pin  Required(ns)  Actual(ns)  Slack(ns)  Location         Pin
-Min Period        n/a     RAMB36E1/CLKARDCLK  n/a            2.170         31.250      29.080     RAMB36_X4Y18     analyzer_logic/adc_capture/sample_ram_reg_1/CLKARDCLK
+Min Period        n/a     RAMB36E1/CLKARDCLK  n/a            2.170         31.250      29.080     RAMB36_X4Y11     analyzer_logic/adc_capture/sample_ram_reg_0/CLKARDCLK
 Max Period        n/a     MMCME2_ADV/CLKOUT0  n/a            213.360       31.250      182.110    MMCME2_ADV_X1Y0  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
-Low Pulse Width   Fast    FDCE/C              n/a            0.500         15.625      15.125     SLICE_X109Y93    analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[2]/C
-High Pulse Width  Slow    FDCE/C              n/a            0.500         15.625      15.125     SLICE_X96Y81     analyzer_logic/adc_capture/decimation_count_adc_reg[0]/C
+Low Pulse Width   Fast    FDCE/C              n/a            0.500         15.625      15.125     SLICE_X104Y75    analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[19]/C
+High Pulse Width  Fast    FDCE/C              n/a            0.500         15.625      15.125     SLICE_X106Y72    analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[14]/C
 
 
 
@@ -704,12 +691,12 @@ Slack (MET) :             1.008ns  (required time - arrival time)
     U18                  IBUF (Prop_ibuf_I_O)         1.429     1.429 f  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.873     3.302    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085     3.387 f  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.552     4.939    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         1.552     4.939    analyzer_logic/adc_clkgen/cfg_clk
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
                                                      -3.232     1.707 f  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
                          net (fo=1, routed)           1.597     3.304    analyzer_logic/adc_clkgen/clk32
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.085     3.389 f  analyzer_logic/adc_clkgen/clk32_buf_i/O
-                         net (fo=484, routed)         1.603     4.992    analyzer_logic/clk_adc
+                         net (fo=418, routed)         1.603     4.992    analyzer_logic/clk_adc
     OLOGIC_X1Y85         ODDR (Prop_oddr_C_Q)         0.418     5.410 r  analyzer_logic/adc_clk_oddr/Q
                          net (fo=1, routed)           0.001     5.411    ad9280_clk_o_OBUF
     Y17                  OBUF (Prop_obuf_I_O)         3.023     8.434 r  ad9280_clk_o_OBUF_inst/O
@@ -729,12 +716,12 @@ Slack (MET) :             1.008ns  (required time - arrival time)
     U18                  IBUF (Prop_ibuf_I_O)         1.363    32.613 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.701    34.314    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077    34.391 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.386    35.777    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         1.386    35.777    analyzer_logic/adc_clkgen/cfg_clk
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
                                                      -2.915    32.862 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
                          net (fo=1, routed)           1.454    34.316    analyzer_logic/adc_clkgen/clk32
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.077    34.393 r  analyzer_logic/adc_clkgen/clk32_buf_i/O
-                         net (fo=484, routed)         1.388    35.781    analyzer_logic/clk_adc
+                         net (fo=418, routed)         1.388    35.781    analyzer_logic/clk_adc
     ILOGIC_X1Y78         FDCE                                         r  analyzer_logic/ad9280_data_iob_reg[0]/C
                          clock pessimism              0.246    36.027    
                          clock uncertainty           -0.052    35.975    
@@ -776,12 +763,12 @@ Slack (MET) :             1.518ns  (arrival time - required time)
     U18                  IBUF (Prop_ibuf_I_O)         0.266     0.266 f  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.674     0.940    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     0.966 f  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.597     1.563    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         0.597     1.563    analyzer_logic/adc_clkgen/cfg_clk
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
                                                      -1.150     0.413 f  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
                          net (fo=1, routed)           0.529     0.942    analyzer_logic/adc_clkgen/clk32
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.026     0.968 f  analyzer_logic/adc_clkgen/clk32_buf_i/O
-                         net (fo=484, routed)         0.627     1.595    analyzer_logic/clk_adc
+                         net (fo=418, routed)         0.627     1.595    analyzer_logic/clk_adc
     OLOGIC_X1Y85         ODDR (Prop_oddr_C_Q)         0.177     1.772 r  analyzer_logic/adc_clk_oddr/Q
                          net (fo=1, routed)           0.001     1.773    ad9280_clk_o_OBUF
     Y17                  OBUF (Prop_obuf_I_O)         1.441     3.213 r  ad9280_clk_o_OBUF_inst/O
@@ -801,12 +788,12 @@ Slack (MET) :             1.518ns  (arrival time - required time)
     U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.864     2.078    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         0.864     2.078    analyzer_logic/adc_clkgen/cfg_clk
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
                                                      -1.467     0.611 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
                          net (fo=1, routed)           0.576     1.187    analyzer_logic/adc_clkgen/clk32
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     1.216 r  analyzer_logic/adc_clkgen/clk32_buf_i/O
-                         net (fo=484, routed)         0.902     2.118    analyzer_logic/clk_adc
+                         net (fo=418, routed)         0.902     2.118    analyzer_logic/clk_adc
     ILOGIC_X1Y87         FDCE                                         r  analyzer_logic/ad9280_data_iob_reg[5]/C
                          clock pessimism             -0.248     1.870    
     ILOGIC_X1Y87         FDCE (Hold_fdce_C_D)         0.068     1.938    analyzer_logic/ad9280_data_iob_reg[5]
@@ -839,16 +826,16 @@ Slack:                    inf
                             (output port)
   Path Group:             (none)
   Path Type:              Max at Slow Process Corner
-  Data Path Delay:        7.654ns  (logic 3.364ns (43.953%)  route 4.290ns (56.047%))
+  Data Path Delay:        9.159ns  (logic 3.364ns (36.728%)  route 5.795ns (63.272%))
   Logic Levels:           1  (OBUF=1)
   Timing Exception:       False Path
 
     Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
   -------------------------------------------------------------------    -------------------
     MMCME2_ADV_X1Y0      MMCME2_ADV                   0.000     0.000 r  analyzer_logic/adc_clkgen/mmcm_i/LOCKED
-                         net (fo=15, routed)          4.290     4.290    led_OBUF
-    L16                  OBUF (Prop_obuf_I_O)         3.364     7.654 r  stm32_irq_OBUF_inst/O
-                         net (fo=0)                   0.000     7.654    stm32_irq
+                         net (fo=14, routed)          5.795     5.795    led_OBUF
+    L16                  OBUF (Prop_obuf_I_O)         3.364     9.159 r  stm32_irq_OBUF_inst/O
+                         net (fo=0)                   0.000     9.159    stm32_irq
     L16                                                               r  stm32_irq (OUT)
   -------------------------------------------------------------------    -------------------
 
@@ -865,16 +852,16 @@ Slack:                    inf
                             (output port)
   Path Group:             (none)
   Path Type:              Min at Fast Process Corner
-  Data Path Delay:        2.509ns  (logic 1.298ns (51.752%)  route 1.210ns (48.248%))
+  Data Path Delay:        3.324ns  (logic 1.298ns (39.060%)  route 2.026ns (60.940%))
   Logic Levels:           1  (OBUF=1)
   Timing Exception:       False Path
 
     Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
   -------------------------------------------------------------------    -------------------
     MMCME2_ADV_X1Y0      MMCME2_ADV                   0.000     0.000 r  analyzer_logic/adc_clkgen/mmcm_i/LOCKED
-                         net (fo=15, routed)          1.210     1.210    led_OBUF
-    T10                  OBUF (Prop_obuf_I_O)         1.298     2.509 r  led_OBUF_inst/O
-                         net (fo=0)                   0.000     2.509    led
+                         net (fo=14, routed)          2.026     2.026    led_OBUF
+    T10                  OBUF (Prop_obuf_I_O)         1.298     3.324 r  led_OBUF_inst/O
+                         net (fo=0)                   0.000     3.324    led
     T10                                                               r  led (OUT)
   -------------------------------------------------------------------    -------------------
 
@@ -901,7 +888,7 @@ Slack:                    inf
                             (output port)
   Path Group:             (none)
   Path Type:              Max at Slow Process Corner
-  Data Path Delay:        9.493ns  (logic 4.389ns (46.237%)  route 5.104ns (53.763%))
+  Data Path Delay:        11.227ns  (logic 4.429ns (39.453%)  route 6.797ns (60.547%))
   Logic Levels:           5  (LUT5=1 LUT6=2 MUXF7=1 OBUFT=1)
   Clock Uncertainty:      0.025ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
     Total System Jitter     (TSJ):    0.050ns
@@ -918,21 +905,21 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         1.429     1.429 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.873     3.302    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085     3.387 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.450     4.837    analyzer_logic/spi_if/cfg_clk
-    SLICE_X85Y93         FDCE                                         r  analyzer_logic/spi_if/byte_idx_reg[1]/C
+                         net (fo=411, routed)         1.447     4.834    analyzer_logic/spi_if/cfg_clk
+    SLICE_X86Y63         FDCE                                         r  analyzer_logic/spi_if/byte_idx_reg[1]/C
   -------------------------------------------------------------------    -------------------
-    SLICE_X85Y93         FDCE (Prop_fdce_C_Q)         0.348     5.185 r  analyzer_logic/spi_if/byte_idx_reg[1]/Q
-                         net (fo=31, routed)          1.193     6.378    analyzer_logic/spi_if/p_0_in[1]
-    SLICE_X91Y92         LUT5 (Prop_lut5_I3_O)        0.242     6.620 r  analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_17/O
-                         net (fo=1, routed)           0.546     7.166    analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_17_n_0
-    SLICE_X91Y92         LUT6 (Prop_lut6_I5_O)        0.105     7.271 r  analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_9/O
-                         net (fo=1, routed)           0.658     7.929    analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_9_n_0
-    SLICE_X90Y93         LUT6 (Prop_lut6_I1_O)        0.105     8.034 r  analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_3/O
-                         net (fo=1, routed)           0.000     8.034    analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_3_n_0
-    SLICE_X90Y93         MUXF7 (Prop_muxf7_I1_O)      0.178     8.212 r  analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_1/O
-                         net (fo=1, routed)           2.707    10.919    stm32_spi_miso_OBUF
-    K17                  OBUFT (Prop_obuft_I_O)       3.411    14.330 r  stm32_spi_miso_OBUFT_inst/O
-                         net (fo=0)                   0.000    14.330    stm32_spi_miso
+    SLICE_X86Y63         FDCE (Prop_fdce_C_Q)         0.398     5.232 f  analyzer_logic/spi_if/byte_idx_reg[1]/Q
+                         net (fo=28, routed)          1.578     6.810    analyzer_logic/spi_if/p_0_in[1]
+    SLICE_X91Y62         LUT5 (Prop_lut5_I3_O)        0.232     7.042 r  analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_16/O
+                         net (fo=1, routed)           0.514     7.556    analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_16_n_0
+    SLICE_X90Y62         LUT6 (Prop_lut6_I5_O)        0.105     7.661 r  analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_8/O
+                         net (fo=1, routed)           0.879     8.541    analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_8_n_0
+    SLICE_X86Y61         LUT6 (Prop_lut6_I0_O)        0.105     8.646 r  analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_3/O
+                         net (fo=1, routed)           0.000     8.646    analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_3_n_0
+    SLICE_X86Y61         MUXF7 (Prop_muxf7_I1_O)      0.178     8.824 r  analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_1/O
+                         net (fo=1, routed)           3.826    12.650    stm32_spi_miso_OBUF
+    K17                  OBUFT (Prop_obuft_I_O)       3.411    16.061 r  stm32_spi_miso_OBUFT_inst/O
+                         net (fo=0)                   0.000    16.061    stm32_spi_miso
     K17                                                               r  stm32_spi_miso (OUT)
   -------------------------------------------------------------------    -------------------
 
@@ -949,7 +936,7 @@ Slack:                    inf
                             (output port)
   Path Group:             (none)
   Path Type:              Min at Fast Process Corner
-  Data Path Delay:        2.187ns  (logic 0.988ns (45.175%)  route 1.199ns (54.825%))
+  Data Path Delay:        2.553ns  (logic 0.988ns (38.699%)  route 1.565ns (61.301%))
   Logic Levels:           1  (OBUFT=1)
   Clock Uncertainty:      0.025ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
     Total System Jitter     (TSJ):    0.050ns
@@ -966,14 +953,14 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         0.266     0.266 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.674     0.940    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     0.966 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.690     1.656    analyzer_logic/spi_if/cfg_clk
-    SLICE_X96Y100        FDPE                                         r  analyzer_logic/spi_if/cs_level_reg/C
+                         net (fo=411, routed)         0.597     1.563    analyzer_logic/spi_if/cfg_clk
+    SLICE_X90Y70         FDPE                                         r  analyzer_logic/spi_if/cs_level_reg/C
   -------------------------------------------------------------------    -------------------
-    SLICE_X96Y100        FDPE (Prop_fdpe_C_Q)         0.164     1.820 r  analyzer_logic/spi_if/cs_level_reg/Q
-                         net (fo=14, routed)          1.199     3.019    stm32_spi_miso_TRI
+    SLICE_X90Y70         FDPE (Prop_fdpe_C_Q)         0.164     1.727 r  analyzer_logic/spi_if/cs_level_reg/Q
+                         net (fo=14, routed)          1.565     3.292    stm32_spi_miso_TRI
     K17                  OBUFT (TriStatD_obuft_T_O)
-                                                      0.824     3.843 r  stm32_spi_miso_OBUFT_inst/O
-                         net (fo=0)                   0.000     3.843    stm32_spi_miso
+                                                      0.824     4.116 r  stm32_spi_miso_OBUFT_inst/O
+                         net (fo=0)                   0.000     4.116    stm32_spi_miso
     K17                                                               r  stm32_spi_miso (OUT)
   -------------------------------------------------------------------    -------------------
 
@@ -1000,7 +987,7 @@ Slack:                    inf
                             (rising edge-triggered cell ODDR clocked by clk125  {rise@0.000ns fall@4.000ns period=8.000ns})
   Path Group:             (none)
   Path Type:              Setup (Max at Slow Process Corner)
-  Data Path Delay:        4.030ns  (logic 1.522ns (37.783%)  route 2.507ns (62.217%))
+  Data Path Delay:        5.779ns  (logic 1.522ns (26.345%)  route 4.256ns (73.655%))
   Logic Levels:           2  (IBUF=1 LUT2=1)
   Clock Path Skew:        4.537ns (DCD - SCD + CPR)
     Destination Clock Delay (DCD):    4.537ns
@@ -1013,9 +1000,9 @@ Slack:                    inf
     T19                                               0.000     0.000 f  reset_n (IN)
                          net (fo=0)                   0.000     0.000    reset_n
     T19                  IBUF (Prop_ibuf_I_O)         1.417     1.417 f  reset_n_IBUF_inst/O
-                         net (fo=16, routed)          1.373     2.790    analyzer_logic/dac_clkgen/reset_n_IBUF
-    SLICE_X113Y67        LUT2 (Prop_lut2_I1_O)        0.105     2.895 r  analyzer_logic/dac_clkgen/dac_clk_oddr_i_1/O
-                         net (fo=1, routed)           1.134     4.030    analyzer_logic/R0
+                         net (fo=15, routed)          3.105     4.522    analyzer_logic/dac_clkgen/reset_n_IBUF
+    SLICE_X113Y64        LUT2 (Prop_lut2_I1_O)        0.105     4.627 r  analyzer_logic/dac_clkgen/dac_clk_oddr_i_1/O
+                         net (fo=1, routed)           1.152     5.779    analyzer_logic/R0
     OLOGIC_X1Y86         ODDR                                         r  analyzer_logic/dac_clk_oddr/R
   -------------------------------------------------------------------    -------------------
 
@@ -1025,7 +1012,7 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         1.363     1.363 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.701     3.064    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077     3.141 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.405     4.546    analyzer_logic/dac_clkgen/cfg_clk
+                         net (fo=411, routed)         1.405     4.546    analyzer_logic/dac_clkgen/cfg_clk
     PLLE2_ADV_X1Y0       PLLE2_ADV (Prop_plle2_adv_CLKIN1_CLKOUT0)
                                                      -2.931     1.615 r  analyzer_logic/dac_clkgen/pll_i/CLKOUT0
                          net (fo=1, routed)           1.451     3.066    analyzer_logic/dac_clkgen/clk125
@@ -1046,7 +1033,7 @@ Slack:                    inf
                             (rising edge-triggered cell ODDR clocked by clk125  {rise@0.000ns fall@4.000ns period=8.000ns})
   Path Group:             (none)
   Path Type:              Hold (Min at Fast Process Corner)
-  Data Path Delay:        1.536ns  (logic 0.299ns (19.479%)  route 1.237ns (80.521%))
+  Data Path Delay:        2.496ns  (logic 0.299ns (11.990%)  route 2.196ns (88.010%))
   Logic Levels:           2  (IBUF=1 LUT2=1)
   Clock Path Skew:        2.116ns (DCD - SCD - CPR)
     Destination Clock Delay (DCD):    2.116ns
@@ -1059,9 +1046,9 @@ Slack:                    inf
     T19                                               0.000     0.000 f  reset_n (IN)
                          net (fo=0)                   0.000     0.000    reset_n
     T19                  IBUF (Prop_ibuf_I_O)         0.254     0.254 f  reset_n_IBUF_inst/O
-                         net (fo=16, routed)          0.664     0.918    analyzer_logic/dac_clkgen/reset_n_IBUF
-    SLICE_X113Y67        LUT2 (Prop_lut2_I1_O)        0.045     0.963 r  analyzer_logic/dac_clkgen/dac_clk_oddr_i_1/O
-                         net (fo=1, routed)           0.573     1.536    analyzer_logic/R0
+                         net (fo=15, routed)          1.608     1.862    analyzer_logic/dac_clkgen/reset_n_IBUF
+    SLICE_X113Y64        LUT2 (Prop_lut2_I1_O)        0.045     1.907 r  analyzer_logic/dac_clkgen/dac_clk_oddr_i_1/O
+                         net (fo=1, routed)           0.589     2.496    analyzer_logic/R0
     OLOGIC_X1Y86         ODDR                                         r  analyzer_logic/dac_clk_oddr/R
   -------------------------------------------------------------------    -------------------
 
@@ -1071,7 +1058,7 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.869     2.083    analyzer_logic/dac_clkgen/cfg_clk
+                         net (fo=411, routed)         0.869     2.083    analyzer_logic/dac_clkgen/cfg_clk
     PLLE2_ADV_X1Y0       PLLE2_ADV (Prop_plle2_adv_CLKIN1_CLKOUT0)
                                                      -1.488     0.595 r  analyzer_logic/dac_clkgen/pll_i/CLKOUT0
                          net (fo=1, routed)           0.592     1.187    analyzer_logic/dac_clkgen/clk125
@@ -1088,8 +1075,8 @@ Path Group:  (none)
 From Clock:  
   To Clock:  clk32
 
-Max Delay           484 Endpoints
-Min Delay           484 Endpoints
+Max Delay           418 Endpoints
+Min Delay           418 Endpoints
 --------------------------------------------------------------------------------------
 
 
@@ -1098,14 +1085,14 @@ Max Delay Paths
 Slack:                    inf
   Source:                 reset_n
                             (input port)
-  Destination:            analyzer_logic/adc_capture/g_cic_decimator/warmup_count_reg[0]/CLR
+  Destination:            analyzer_logic/adc_capture/sample_count_sync_reg[7]/CLR
                             (recovery check against rising-edge clock clk32  {rise@0.000ns fall@15.625ns period=31.250ns})
   Path Group:             (none)
   Path Type:              Recovery (Max at Slow Process Corner)
-  Data Path Delay:        8.178ns  (logic 1.522ns (18.616%)  route 6.656ns (81.384%))
+  Data Path Delay:        7.365ns  (logic 1.522ns (20.673%)  route 5.842ns (79.327%))
   Logic Levels:           2  (IBUF=1 LUT1=1)
-  Clock Path Skew:        4.494ns (DCD - SCD + CPR)
-    Destination Clock Delay (DCD):    4.494ns
+  Clock Path Skew:        4.490ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    4.490ns
     Source Clock Delay      (SCD):    0.000ns
     Clock Pessimism Removal (CPR):    0.000ns
   Timing Exception:       False Path
@@ -1115,10 +1102,10 @@ Slack:                    inf
     T19                                               0.000     0.000 r  reset_n (IN)
                          net (fo=0)                   0.000     0.000    reset_n
     T19                  IBUF (Prop_ibuf_I_O)         1.417     1.417 r  reset_n_IBUF_inst/O
-                         net (fo=16, routed)          3.302     4.719    analyzer_logic/adc_capture/g_cic_decimator/reset_n_IBUF
-    SLICE_X93Y91         LUT1 (Prop_lut1_I0_O)        0.105     4.824 f  analyzer_logic/adc_capture/g_cic_decimator/warmup_count[1]_i_2/O
-                         net (fo=120, routed)         3.354     8.178    analyzer_logic/adc_capture/g_cic_decimator/reset_n_0
-    SLICE_X100Y99        FDCE                                         f  analyzer_logic/adc_capture/g_cic_decimator/warmup_count_reg[0]/CLR
+                         net (fo=15, routed)          2.310     3.727    analyzer_logic/adc_capture/g_cic_decimator/reset_n_IBUF
+    SLICE_X94Y69         LUT1 (Prop_lut1_I0_O)        0.105     3.832 f  analyzer_logic/adc_capture/g_cic_decimator/mmcm_i_i_1/O
+                         net (fo=120, routed)         3.532     7.365    analyzer_logic/adc_capture/reset
+    SLICE_X92Y59         FDCE                                         f  analyzer_logic/adc_capture/sample_count_sync_reg[7]/CLR
   -------------------------------------------------------------------    -------------------
 
                          (clock clk32 rise edge)      0.000     0.000 r  
@@ -1127,13 +1114,13 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         1.363     1.363 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.701     3.064    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077     3.141 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.386     4.527    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         1.386     4.527    analyzer_logic/adc_clkgen/cfg_clk
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
                                                      -2.915     1.612 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
                          net (fo=1, routed)           1.454     3.066    analyzer_logic/adc_clkgen/clk32
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.077     3.143 r  analyzer_logic/adc_clkgen/clk32_buf_i/O
-                         net (fo=484, routed)         1.350     4.494    analyzer_logic/adc_capture/g_cic_decimator/clk_adc
-    SLICE_X100Y99        FDCE                                         r  analyzer_logic/adc_capture/g_cic_decimator/warmup_count_reg[0]/C
+                         net (fo=418, routed)         1.346     4.490    analyzer_logic/adc_capture/clk_adc
+    SLICE_X92Y59         FDCE                                         r  analyzer_logic/adc_capture/sample_count_sync_reg[7]/C
 
 
 
@@ -1144,27 +1131,27 @@ Min Delay Paths
 Slack:                    inf
   Source:                 reset_n
                             (input port)
-  Destination:            analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[3]/CLR
-                            (removal check against rising-edge clock clk32  {rise@0.000ns fall@15.625ns period=31.250ns})
+  Destination:            analyzer_logic/adc_capture/write_addr_adc_reg[0]/R
+                            (rising edge-triggered cell FDRE clocked by clk32  {rise@0.000ns fall@15.625ns period=31.250ns})
   Path Group:             (none)
-  Path Type:              Removal (Min at Fast Process Corner)
-  Data Path Delay:        1.332ns  (logic 0.299ns (22.471%)  route 1.032ns (77.529%))
-  Logic Levels:           2  (IBUF=1 LUT1=1)
-  Clock Path Skew:        2.126ns (DCD - SCD - CPR)
-    Destination Clock Delay (DCD):    2.126ns
+  Path Type:              Hold (Min at Fast Process Corner)
+  Data Path Delay:        1.538ns  (logic 0.299ns (19.459%)  route 1.239ns (80.541%))
+  Logic Levels:           2  (IBUF=1 LUT4=1)
+  Clock Path Skew:        2.094ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    2.094ns
     Source Clock Delay      (SCD):    0.000ns
     Clock Pessimism Removal (CPR):    -0.000ns
   Timing Exception:       False Path
 
     Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
   -------------------------------------------------------------------    -------------------
-    T19                                               0.000     0.000 r  reset_n (IN)
+    T19                                               0.000     0.000 f  reset_n (IN)
                          net (fo=0)                   0.000     0.000    reset_n
-    T19                  IBUF (Prop_ibuf_I_O)         0.254     0.254 r  reset_n_IBUF_inst/O
-                         net (fo=16, routed)          0.831     1.085    analyzer_logic/adc_capture/g_cic_decimator/reset_n_IBUF
-    SLICE_X112Y92        LUT1 (Prop_lut1_I0_O)        0.045     1.130 f  analyzer_logic/adc_capture/g_cic_decimator/integrator3[23]_i_2/O
-                         net (fo=144, routed)         0.201     1.332    analyzer_logic/adc_capture/g_cic_decimator/integrator3[23]_i_2_n_0
-    SLICE_X112Y94        FDCE                                         f  analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[3]/CLR
+    T19                  IBUF (Prop_ibuf_I_O)         0.254     0.254 f  reset_n_IBUF_inst/O
+                         net (fo=15, routed)          1.051     1.305    analyzer_logic/adc_capture/reset_n_IBUF
+    SLICE_X91Y54         LUT4 (Prop_lut4_I2_O)        0.045     1.350 r  analyzer_logic/adc_capture/write_addr_adc[0]_i_1/O
+                         net (fo=12, routed)          0.188     1.538    analyzer_logic/adc_capture/write_addr_adc[0]_i_1_n_0
+    SLICE_X90Y54         FDRE                                         r  analyzer_logic/adc_capture/write_addr_adc_reg[0]/R
   -------------------------------------------------------------------    -------------------
 
                          (clock clk32 rise edge)      0.000     0.000 r  
@@ -1173,13 +1160,13 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.864     2.078    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         0.864     2.078    analyzer_logic/adc_clkgen/cfg_clk
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
                                                      -1.467     0.611 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
                          net (fo=1, routed)           0.576     1.187    analyzer_logic/adc_clkgen/clk32
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     1.216 r  analyzer_logic/adc_clkgen/clk32_buf_i/O
-                         net (fo=484, routed)         0.910     2.126    analyzer_logic/adc_capture/g_cic_decimator/clk_adc
-    SLICE_X112Y94        FDCE                                         r  analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[3]/C
+                         net (fo=418, routed)         0.878     2.094    analyzer_logic/adc_capture/clk_adc
+    SLICE_X90Y54         FDRE                                         r  analyzer_logic/adc_capture/write_addr_adc_reg[0]/C
 
 
 
@@ -1190,25 +1177,25 @@ Path Group:  (none)
 From Clock:  clk_50m
   To Clock:  clk32
 
-Max Delay            42 Endpoints
-Min Delay            42 Endpoints
+Max Delay            25 Endpoints
+Min Delay            25 Endpoints
 --------------------------------------------------------------------------------------
 
 
 Max Delay Paths
 --------------------------------------------------------------------------------------
 Slack:                    inf
-  Source:                 analyzer_logic/adc_capture/filter_enable_cfg_reg/C
+  Source:                 analyzer_logic/adc_capture/trigger_threshold_cfg_reg[6]/C
                             (rising edge-triggered cell FDCE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
-  Destination:            analyzer_logic/adc_capture/filter_enable_meta_reg/D
+  Destination:            analyzer_logic/adc_capture/trigger_threshold_meta_reg[6]/D
                             (rising edge-triggered cell FDCE clocked by clk32  {rise@0.000ns fall@15.625ns period=31.250ns})
   Path Group:             (none)
   Path Type:              Setup (Max at Slow Process Corner)
-  Data Path Delay:        1.178ns  (logic 0.433ns (36.771%)  route 0.745ns (63.229%))
+  Data Path Delay:        1.571ns  (logic 0.433ns (27.568%)  route 1.138ns (72.432%))
   Logic Levels:           0  
-  Clock Path Skew:        -0.403ns (DCD - SCD + CPR)
-    Destination Clock Delay (DCD):    4.488ns
-    Source Clock Delay      (SCD):    4.890ns
+  Clock Path Skew:        -0.347ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    4.491ns
+    Source Clock Delay      (SCD):    4.837ns
     Clock Pessimism Removal (CPR):    0.000ns
   Clock Uncertainty:      0.136ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
     Total System Jitter     (TSJ):    0.071ns
@@ -1224,12 +1211,12 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         1.429     1.429 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.873     3.302    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085     3.387 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.503     4.890    analyzer_logic/adc_capture/cfg_clk
-    SLICE_X92Y90         FDCE                                         r  analyzer_logic/adc_capture/filter_enable_cfg_reg/C
+                         net (fo=411, routed)         1.450     4.837    analyzer_logic/adc_capture/cfg_clk
+    SLICE_X86Y59         FDCE                                         r  analyzer_logic/adc_capture/trigger_threshold_cfg_reg[6]/C
   -------------------------------------------------------------------    -------------------
-    SLICE_X92Y90         FDCE (Prop_fdce_C_Q)         0.433     5.323 r  analyzer_logic/adc_capture/filter_enable_cfg_reg/Q
-                         net (fo=3, routed)           0.745     6.068    analyzer_logic/adc_capture/filter_enable_cfg
-    SLICE_X97Y86         FDCE                                         r  analyzer_logic/adc_capture/filter_enable_meta_reg/D
+    SLICE_X86Y59         FDCE (Prop_fdce_C_Q)         0.433     5.270 r  analyzer_logic/adc_capture/trigger_threshold_cfg_reg[6]/Q
+                         net (fo=2, routed)           1.138     6.408    analyzer_logic/adc_capture/data2[6]
+    SLICE_X103Y61        FDCE                                         r  analyzer_logic/adc_capture/trigger_threshold_meta_reg[6]/D
   -------------------------------------------------------------------    -------------------
 
                          (clock clk32 rise edge)      0.000     0.000 r  
@@ -1238,13 +1225,13 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         1.363     1.363 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.701     3.064    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077     3.141 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.386     4.527    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         1.386     4.527    analyzer_logic/adc_clkgen/cfg_clk
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
                                                      -2.915     1.612 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
                          net (fo=1, routed)           1.454     3.066    analyzer_logic/adc_clkgen/clk32
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.077     3.143 r  analyzer_logic/adc_clkgen/clk32_buf_i/O
-                         net (fo=484, routed)         1.344     4.488    analyzer_logic/adc_capture/clk_adc
-    SLICE_X97Y86         FDCE                                         r  analyzer_logic/adc_capture/filter_enable_meta_reg/C
+                         net (fo=418, routed)         1.347     4.491    analyzer_logic/adc_capture/clk_adc
+    SLICE_X103Y61        FDCE                                         r  analyzer_logic/adc_capture/trigger_threshold_meta_reg[6]/C
 
 
 
@@ -1259,11 +1246,11 @@ Slack:                    inf
                             (rising edge-triggered cell FDCE clocked by clk32  {rise@0.000ns fall@15.625ns period=31.250ns})
   Path Group:             (none)
   Path Type:              Hold (Min at Fast Process Corner)
-  Data Path Delay:        0.252ns  (logic 0.141ns (55.929%)  route 0.111ns (44.071%))
+  Data Path Delay:        0.283ns  (logic 0.164ns (57.983%)  route 0.119ns (42.017%))
   Logic Levels:           0  
-  Clock Path Skew:        0.521ns (DCD - SCD - CPR)
-    Destination Clock Delay (DCD):    2.067ns
-    Source Clock Delay      (SCD):    1.546ns
+  Clock Path Skew:        0.523ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    2.071ns
+    Source Clock Delay      (SCD):    1.548ns
     Clock Pessimism Removal (CPR):    -0.000ns
   Clock Uncertainty:      0.136ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
     Total System Jitter     (TSJ):    0.071ns
@@ -1279,12 +1266,12 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         0.266     0.266 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.674     0.940    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     0.966 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.580     1.546    analyzer_logic/adc_capture/cfg_clk
-    SLICE_X89Y87         FDCE                                         r  analyzer_logic/adc_capture/sample_count_cfg_reg[1]/C
+                         net (fo=411, routed)         0.582     1.548    analyzer_logic/adc_capture/cfg_clk
+    SLICE_X86Y57         FDCE                                         r  analyzer_logic/adc_capture/sample_count_cfg_reg[1]/C
   -------------------------------------------------------------------    -------------------
-    SLICE_X89Y87         FDCE (Prop_fdce_C_Q)         0.141     1.687 r  analyzer_logic/adc_capture/sample_count_cfg_reg[1]/Q
-                         net (fo=2, routed)           0.111     1.798    analyzer_logic/adc_capture/sample_count_cfg_reg_n_0_[1]
-    SLICE_X86Y87         FDCE                                         r  analyzer_logic/adc_capture/sample_count_meta_reg[1]/D
+    SLICE_X86Y57         FDCE (Prop_fdce_C_Q)         0.164     1.712 r  analyzer_logic/adc_capture/sample_count_cfg_reg[1]/Q
+                         net (fo=2, routed)           0.119     1.831    analyzer_logic/adc_capture/sample_count_cfg_reg_n_0_[1]
+    SLICE_X86Y56         FDCE                                         r  analyzer_logic/adc_capture/sample_count_meta_reg[1]/D
   -------------------------------------------------------------------    -------------------
 
                          (clock clk32 rise edge)      0.000     0.000 r  
@@ -1293,13 +1280,13 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.864     2.078    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         0.864     2.078    analyzer_logic/adc_clkgen/cfg_clk
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
                                                      -1.467     0.611 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
                          net (fo=1, routed)           0.576     1.187    analyzer_logic/adc_clkgen/clk32
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     1.216 r  analyzer_logic/adc_clkgen/clk32_buf_i/O
-                         net (fo=484, routed)         0.851     2.067    analyzer_logic/adc_capture/clk_adc
-    SLICE_X86Y87         FDCE                                         r  analyzer_logic/adc_capture/sample_count_meta_reg[1]/C
+                         net (fo=418, routed)         0.855     2.071    analyzer_logic/adc_capture/clk_adc
+    SLICE_X86Y56         FDCE                                         r  analyzer_logic/adc_capture/sample_count_meta_reg[1]/C
 
 
 
@@ -1310,8 +1297,8 @@ Path Group:  (none)
 From Clock:  
   To Clock:  clk_50m
 
-Max Delay           413 Endpoints
-Min Delay           413 Endpoints
+Max Delay           410 Endpoints
+Min Delay           410 Endpoints
 --------------------------------------------------------------------------------------
 
 
@@ -1320,14 +1307,14 @@ Max Delay Paths
 Slack:                    inf
   Source:                 reset_n
                             (input port)
-  Destination:            analyzer_logic/adc_capture/sample_sum_meta_reg[27]/CLR
+  Destination:            analyzer_logic/adc_capture/abort_toggle_cfg_reg/CLR
                             (recovery check against rising-edge clock clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
   Path Group:             (none)
   Path Type:              Recovery (Max at Slow Process Corner)
-  Data Path Delay:        7.866ns  (logic 1.522ns (19.356%)  route 6.343ns (80.644%))
+  Data Path Delay:        8.189ns  (logic 1.522ns (18.591%)  route 6.667ns (81.409%))
   Logic Levels:           2  (IBUF=1 LUT1=1)
-  Clock Path Skew:        4.488ns (DCD - SCD + CPR)
-    Destination Clock Delay (DCD):    4.488ns
+  Clock Path Skew:        4.433ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    4.433ns
     Source Clock Delay      (SCD):    0.000ns
     Clock Pessimism Removal (CPR):    0.000ns
   Timing Exception:       False Path
@@ -1337,10 +1324,10 @@ Slack:                    inf
     T19                                               0.000     0.000 r  reset_n (IN)
                          net (fo=0)                   0.000     0.000    reset_n
     T19                  IBUF (Prop_ibuf_I_O)         1.417     1.417 r  reset_n_IBUF_inst/O
-                         net (fo=16, routed)          3.302     4.719    analyzer_logic/adc_capture/g_cic_decimator/reset_n_IBUF
-    SLICE_X93Y91         LUT1 (Prop_lut1_I0_O)        0.105     4.824 f  analyzer_logic/adc_capture/g_cic_decimator/warmup_count[1]_i_2/O
-                         net (fo=120, routed)         3.042     7.866    analyzer_logic/adc_capture/reset_n_0
-    SLICE_X95Y96         FDCE                                         f  analyzer_logic/adc_capture/sample_sum_meta_reg[27]/CLR
+                         net (fo=15, routed)          2.310     3.727    analyzer_logic/adc_capture/g_cic_decimator/reset_n_IBUF
+    SLICE_X94Y69         LUT1 (Prop_lut1_I0_O)        0.105     3.832 f  analyzer_logic/adc_capture/g_cic_decimator/mmcm_i_i_1/O
+                         net (fo=120, routed)         4.357     8.189    analyzer_logic/adc_capture/reset
+    SLICE_X84Y62         FDCE                                         f  analyzer_logic/adc_capture/abort_toggle_cfg_reg/CLR
   -------------------------------------------------------------------    -------------------
 
                          (clock clk_50m rise edge)    0.000     0.000 r  
@@ -1349,8 +1336,8 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         1.363     1.363 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.701     3.064    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077     3.141 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.346     4.488    analyzer_logic/adc_capture/cfg_clk
-    SLICE_X95Y96         FDCE                                         r  analyzer_logic/adc_capture/sample_sum_meta_reg[27]/C
+                         net (fo=411, routed)         1.291     4.433    analyzer_logic/adc_capture/cfg_clk
+    SLICE_X84Y62         FDCE                                         r  analyzer_logic/adc_capture/abort_toggle_cfg_reg/C
 
 
 
@@ -1359,27 +1346,29 @@ Slack:                    inf
 Min Delay Paths
 --------------------------------------------------------------------------------------
 Slack:                    inf
-  Source:                 stm32_spi_cs_n
+  Source:                 reset_n
                             (input port)
-  Destination:            analyzer_logic/spi_if/cs_sync_reg[0]/D
-                            (rising edge-triggered cell FDPE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Destination:            analyzer_logic/adc_capture/sample_sum_meta_reg[3]/CLR
+                            (removal check against rising-edge clock clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
   Path Group:             (none)
-  Path Type:              Hold (Min at Fast Process Corner)
-  Data Path Delay:        1.162ns  (logic 0.257ns (22.081%)  route 0.906ns (77.919%))
-  Logic Levels:           1  (IBUF=1)
-  Clock Path Skew:        2.178ns (DCD - SCD - CPR)
-    Destination Clock Delay (DCD):    2.178ns
+  Path Type:              Removal (Min at Fast Process Corner)
+  Data Path Delay:        1.397ns  (logic 0.299ns (21.425%)  route 1.098ns (78.575%))
+  Logic Levels:           2  (IBUF=1 LUT1=1)
+  Clock Path Skew:        2.091ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    2.091ns
     Source Clock Delay      (SCD):    0.000ns
     Clock Pessimism Removal (CPR):    -0.000ns
   Timing Exception:       False Path
 
     Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
   -------------------------------------------------------------------    -------------------
-    K18                                               0.000     0.000 r  stm32_spi_cs_n (IN)
-                         net (fo=0)                   0.000     0.000    stm32_spi_cs_n
-    K18                  IBUF (Prop_ibuf_I_O)         0.257     0.257 r  stm32_spi_cs_n_IBUF_inst/O
-                         net (fo=1, routed)           0.906     1.162    analyzer_logic/spi_if/cs_sync_reg[0]_0[0]
-    SLICE_X96Y100        FDPE                                         r  analyzer_logic/spi_if/cs_sync_reg[0]/D
+    T19                                               0.000     0.000 r  reset_n (IN)
+                         net (fo=0)                   0.000     0.000    reset_n
+    T19                  IBUF (Prop_ibuf_I_O)         0.254     0.254 r  reset_n_IBUF_inst/O
+                         net (fo=15, routed)          0.907     1.162    analyzer_logic/adc_capture/g_cic_decimator/reset_n_IBUF
+    SLICE_X98Y57         LUT1 (Prop_lut1_I0_O)        0.045     1.207 f  analyzer_logic/adc_capture/g_cic_decimator/phase[3]_i_3/O
+                         net (fo=121, routed)         0.190     1.397    analyzer_logic/adc_capture/g_cic_decimator_n_353
+    SLICE_X98Y57         FDCE                                         f  analyzer_logic/adc_capture/sample_sum_meta_reg[3]/CLR
   -------------------------------------------------------------------    -------------------
 
                          (clock clk_50m rise edge)    0.000     0.000 r  
@@ -1388,8 +1377,8 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.964     2.178    analyzer_logic/spi_if/cfg_clk
-    SLICE_X96Y100        FDPE                                         r  analyzer_logic/spi_if/cs_sync_reg[0]/C
+                         net (fo=411, routed)         0.877     2.091    analyzer_logic/adc_capture/cfg_clk
+    SLICE_X98Y57         FDCE                                         r  analyzer_logic/adc_capture/sample_sum_meta_reg[3]/C
 
 
 
@@ -1408,13 +1397,13 @@ Min Delay           121 Endpoints
 Max Delay Paths
 --------------------------------------------------------------------------------------
 Slack:                    inf
-  Source:                 analyzer_logic/adc_capture/captured_count_adc_reg[8]/C
+  Source:                 analyzer_logic/adc_capture/sample_max_adc_reg[6]/C
                             (rising edge-triggered cell FDCE clocked by clk32  {rise@0.000ns fall@15.625ns period=31.250ns})
-  Destination:            analyzer_logic/adc_capture/captured_count_meta_reg[8]/D
+  Destination:            analyzer_logic/adc_capture/sample_max_meta_reg[6]/D
                             (rising edge-triggered cell FDCE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
   Path Group:             (none)
   Path Type:              Setup (Max at Slow Process Corner)
-  Data Path Delay:        1.519ns  (logic 0.379ns (24.952%)  route 1.140ns (75.048%))
+  Data Path Delay:        1.589ns  (logic 0.379ns (23.856%)  route 1.210ns (76.144%))
   Logic Levels:           0  
   Clock Path Skew:        -0.460ns (DCD - SCD + CPR)
     Destination Clock Delay (DCD):    4.430ns
@@ -1434,17 +1423,17 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         1.429     1.429 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.873     3.302    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085     3.387 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.552     4.939    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         1.552     4.939    analyzer_logic/adc_clkgen/cfg_clk
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
                                                      -3.232     1.707 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
                          net (fo=1, routed)           1.597     3.304    analyzer_logic/adc_clkgen/clk32
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.085     3.389 r  analyzer_logic/adc_clkgen/clk32_buf_i/O
-                         net (fo=484, routed)         1.500     4.889    analyzer_logic/adc_capture/clk_adc
-    SLICE_X91Y86         FDCE                                         r  analyzer_logic/adc_capture/captured_count_adc_reg[8]/C
+                         net (fo=418, routed)         1.500     4.889    analyzer_logic/adc_capture/clk_adc
+    SLICE_X103Y66        FDCE                                         r  analyzer_logic/adc_capture/sample_max_adc_reg[6]/C
   -------------------------------------------------------------------    -------------------
-    SLICE_X91Y86         FDCE (Prop_fdce_C_Q)         0.379     5.268 r  analyzer_logic/adc_capture/captured_count_adc_reg[8]/Q
-                         net (fo=4, routed)           1.140     6.408    analyzer_logic/adc_capture/captured_count_adc_reg[8]
-    SLICE_X84Y83         FDCE                                         r  analyzer_logic/adc_capture/captured_count_meta_reg[8]/D
+    SLICE_X103Y66        FDCE (Prop_fdce_C_Q)         0.379     5.268 r  analyzer_logic/adc_capture/sample_max_adc_reg[6]/Q
+                         net (fo=3, routed)           1.210     6.478    analyzer_logic/adc_capture/sample_max_adc_reg_n_0_[6]
+    SLICE_X88Y65         FDCE                                         r  analyzer_logic/adc_capture/sample_max_meta_reg[6]/D
   -------------------------------------------------------------------    -------------------
 
                          (clock clk_50m rise edge)    0.000     0.000 r  
@@ -1453,8 +1442,8 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         1.363     1.363 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.701     3.064    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077     3.141 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.288     4.430    analyzer_logic/adc_capture/cfg_clk
-    SLICE_X84Y83         FDCE                                         r  analyzer_logic/adc_capture/captured_count_meta_reg[8]/C
+                         net (fo=411, routed)         1.288     4.430    analyzer_logic/adc_capture/cfg_clk
+    SLICE_X88Y65         FDCE                                         r  analyzer_logic/adc_capture/sample_max_meta_reg[6]/C
 
 
 
@@ -1463,17 +1452,17 @@ Slack:                    inf
 Min Delay Paths
 --------------------------------------------------------------------------------------
 Slack:                    inf
-  Source:                 analyzer_logic/adc_capture/sample_min_adc_reg[7]/C
-                            (rising edge-triggered cell FDPE clocked by clk32  {rise@0.000ns fall@15.625ns period=31.250ns})
-  Destination:            analyzer_logic/adc_capture/sample_min_meta_reg[7]/D
-                            (rising edge-triggered cell FDPE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Source:                 analyzer_logic/adc_capture/sample_sum_adc_reg[21]/C
+                            (rising edge-triggered cell FDCE clocked by clk32  {rise@0.000ns fall@15.625ns period=31.250ns})
+  Destination:            analyzer_logic/adc_capture/sample_sum_meta_reg[21]/D
+                            (rising edge-triggered cell FDCE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
   Path Group:             (none)
   Path Type:              Hold (Min at Fast Process Corner)
-  Data Path Delay:        0.198ns  (logic 0.128ns (64.722%)  route 0.070ns (35.278%))
+  Data Path Delay:        0.250ns  (logic 0.141ns (56.426%)  route 0.109ns (43.574%))
   Logic Levels:           0  
-  Clock Path Skew:        0.514ns (DCD - SCD - CPR)
-    Destination Clock Delay (DCD):    2.091ns
-    Source Clock Delay      (SCD):    1.577ns
+  Clock Path Skew:        0.512ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    2.085ns
+    Source Clock Delay      (SCD):    1.573ns
     Clock Pessimism Removal (CPR):    -0.000ns
   Clock Uncertainty:      0.136ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
     Total System Jitter     (TSJ):    0.071ns
@@ -1489,17 +1478,17 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         0.266     0.266 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.674     0.940    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     0.966 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.597     1.563    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         0.597     1.563    analyzer_logic/adc_clkgen/cfg_clk
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
                                                      -1.150     0.413 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
                          net (fo=1, routed)           0.529     0.942    analyzer_logic/adc_clkgen/clk32
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.026     0.968 r  analyzer_logic/adc_clkgen/clk32_buf_i/O
-                         net (fo=484, routed)         0.609     1.577    analyzer_logic/adc_capture/clk_adc
-    SLICE_X101Y91        FDPE                                         r  analyzer_logic/adc_capture/sample_min_adc_reg[7]/C
+                         net (fo=418, routed)         0.605     1.573    analyzer_logic/adc_capture/clk_adc
+    SLICE_X97Y65         FDCE                                         r  analyzer_logic/adc_capture/sample_sum_adc_reg[21]/C
   -------------------------------------------------------------------    -------------------
-    SLICE_X101Y91        FDPE (Prop_fdpe_C_Q)         0.128     1.705 r  analyzer_logic/adc_capture/sample_min_adc_reg[7]/Q
-                         net (fo=3, routed)           0.070     1.775    analyzer_logic/adc_capture/sample_min_adc_reg_n_0_[7]
-    SLICE_X100Y91        FDPE                                         r  analyzer_logic/adc_capture/sample_min_meta_reg[7]/D
+    SLICE_X97Y65         FDCE (Prop_fdce_C_Q)         0.141     1.714 r  analyzer_logic/adc_capture/sample_sum_adc_reg[21]/Q
+                         net (fo=2, routed)           0.109     1.823    analyzer_logic/adc_capture/sample_sum_adc_reg[21]
+    SLICE_X95Y65         FDCE                                         r  analyzer_logic/adc_capture/sample_sum_meta_reg[21]/D
   -------------------------------------------------------------------    -------------------
 
                          (clock clk_50m rise edge)    0.000     0.000 r  
@@ -1508,8 +1497,8 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.877     2.091    analyzer_logic/adc_capture/cfg_clk
-    SLICE_X100Y91        FDPE                                         r  analyzer_logic/adc_capture/sample_min_meta_reg[7]/C
+                         net (fo=411, routed)         0.871     2.085    analyzer_logic/adc_capture/cfg_clk
+    SLICE_X95Y65         FDCE                                         r  analyzer_logic/adc_capture/sample_sum_meta_reg[21]/C
 
 
 
@@ -1549,7 +1538,7 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         1.429     5.429 f  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.873     7.302    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085     7.387 f  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.573     8.960    analyzer_logic/dac_clkgen/cfg_clk
+                         net (fo=411, routed)         1.573     8.960    analyzer_logic/dac_clkgen/cfg_clk
     PLLE2_ADV_X1Y0       PLLE2_ADV (Prop_plle2_adv_CLKIN1_CLKOUT0)
                                                      -3.250     5.710 f  analyzer_logic/dac_clkgen/pll_i/CLKOUT0
                          net (fo=1, routed)           1.594     7.304    analyzer_logic/dac_clkgen/clk125
@@ -1592,7 +1581,7 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         0.266     0.266 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.674     0.940    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     0.966 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.602     1.568    analyzer_logic/dac_clkgen/cfg_clk
+                         net (fo=411, routed)         0.602     1.568    analyzer_logic/dac_clkgen/cfg_clk
     PLLE2_ADV_X1Y0       PLLE2_ADV (Prop_plle2_adv_CLKIN1_CLKOUT0)
                                                      -1.169     0.398 r  analyzer_logic/dac_clkgen/pll_i/CLKOUT0
                          net (fo=1, routed)           0.544     0.942    analyzer_logic/dac_clkgen/clk125
@@ -1645,12 +1634,12 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         1.429    17.054 f  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.873    18.927    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085    19.012 f  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.552    20.564    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         1.552    20.564    analyzer_logic/adc_clkgen/cfg_clk
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
                                                      -3.232    17.332 f  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
                          net (fo=1, routed)           1.597    18.929    analyzer_logic/adc_clkgen/clk32
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.085    19.014 f  analyzer_logic/adc_clkgen/clk32_buf_i/O
-                         net (fo=484, routed)         1.603    20.617    analyzer_logic/clk_adc
+                         net (fo=418, routed)         1.603    20.617    analyzer_logic/clk_adc
     OLOGIC_X1Y85         ODDR                                         f  analyzer_logic/adc_clk_oddr/C
   -------------------------------------------------------------------    -------------------
     OLOGIC_X1Y85         ODDR (Prop_oddr_C_Q)         0.418    21.035 r  analyzer_logic/adc_clk_oddr/Q
@@ -1688,12 +1677,12 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         0.266     0.266 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.674     0.940    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     0.966 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.597     1.563    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         0.597     1.563    analyzer_logic/adc_clkgen/cfg_clk
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
                                                      -1.150     0.413 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
                          net (fo=1, routed)           0.529     0.942    analyzer_logic/adc_clkgen/clk32
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.026     0.968 r  analyzer_logic/adc_clkgen/clk32_buf_i/O
-                         net (fo=484, routed)         0.627     1.595    analyzer_logic/clk_adc
+                         net (fo=418, routed)         0.627     1.595    analyzer_logic/clk_adc
     OLOGIC_X1Y85         ODDR                                         r  analyzer_logic/adc_clk_oddr/C
   -------------------------------------------------------------------    -------------------
     OLOGIC_X1Y85         ODDR (Prop_oddr_C_Q)         0.177     1.772 r  analyzer_logic/adc_clk_oddr/Q
@@ -1740,7 +1729,7 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         1.429    11.429 f  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.873    13.302    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085    13.387 f  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.552    14.939    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         1.552    14.939    analyzer_logic/adc_clkgen/cfg_clk
   -------------------------------------------------------------------    -------------------
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKFBOUT)
                                                      -3.232    11.707 f  analyzer_logic/adc_clkgen/mmcm_i/CLKFBOUT
@@ -1777,7 +1766,7 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         0.266     0.266 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.674     0.940    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     0.966 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.597     1.563    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         0.597     1.563    analyzer_logic/adc_clkgen/cfg_clk
   -------------------------------------------------------------------    -------------------
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKFBOUT)
                                                      -1.150     0.413 r  analyzer_logic/adc_clkgen/mmcm_i/CLKFBOUT
@@ -1824,7 +1813,7 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         1.429    11.429 f  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.873    13.302    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085    13.387 f  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.573    14.960    analyzer_logic/dac_clkgen/cfg_clk
+                         net (fo=411, routed)         1.573    14.960    analyzer_logic/dac_clkgen/cfg_clk
   -------------------------------------------------------------------    -------------------
     PLLE2_ADV_X1Y0       PLLE2_ADV (Prop_plle2_adv_CLKIN1_CLKFBOUT)
                                                      -3.250    11.710 f  analyzer_logic/dac_clkgen/pll_i/CLKFBOUT
@@ -1861,7 +1850,7 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         0.266     0.266 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.674     0.940    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     0.966 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.602     1.568    analyzer_logic/dac_clkgen/cfg_clk
+                         net (fo=411, routed)         0.602     1.568    analyzer_logic/dac_clkgen/cfg_clk
   -------------------------------------------------------------------    -------------------
     PLLE2_ADV_X1Y0       PLLE2_ADV (Prop_plle2_adv_CLKIN1_CLKFBOUT)
                                                      -1.169     0.398 r  analyzer_logic/dac_clkgen/pll_i/CLKFBOUT
@@ -1894,7 +1883,7 @@ Slack:                    inf
                             (rising edge-triggered cell ODDR clocked by clk125  {rise@0.000ns fall@4.000ns period=8.000ns})
   Path Group:             (none)
   Path Type:              Setup (Max at Slow Process Corner)
-  Data Path Delay:        2.223ns  (logic 0.105ns (4.724%)  route 2.118ns (95.276%))
+  Data Path Delay:        2.213ns  (logic 0.105ns (4.744%)  route 2.108ns (95.256%))
   Logic Levels:           1  (LUT2=1)
   Clock Uncertainty:      0.123ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
     Total System Jitter     (TSJ):    0.050ns
@@ -1904,9 +1893,9 @@ Slack:                    inf
     Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
   -------------------------------------------------------------------    -------------------
     PLLE2_ADV_X1Y0       PLLE2_ADV                    0.000     0.000 f  analyzer_logic/dac_clkgen/pll_i/LOCKED
-                         net (fo=1, routed)           0.983     0.983    analyzer_logic/dac_clkgen/dac_pll_locked
-    SLICE_X113Y67        LUT2 (Prop_lut2_I0_O)        0.105     1.088 r  analyzer_logic/dac_clkgen/dac_clk_oddr_i_1/O
-                         net (fo=1, routed)           1.134     2.223    analyzer_logic/R0
+                         net (fo=1, routed)           0.957     0.957    analyzer_logic/dac_clkgen/dac_pll_locked
+    SLICE_X113Y64        LUT2 (Prop_lut2_I0_O)        0.105     1.062 r  analyzer_logic/dac_clkgen/dac_clk_oddr_i_1/O
+                         net (fo=1, routed)           1.152     2.213    analyzer_logic/R0
     OLOGIC_X1Y86         ODDR                                         r  analyzer_logic/dac_clk_oddr/R
   -------------------------------------------------------------------    -------------------
 
@@ -1916,7 +1905,7 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         1.363     1.363 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.701     3.064    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077     3.141 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.405     4.546    analyzer_logic/dac_clkgen/cfg_clk
+                         net (fo=411, routed)         1.405     4.546    analyzer_logic/dac_clkgen/cfg_clk
     PLLE2_ADV_X1Y0       PLLE2_ADV (Prop_plle2_adv_CLKIN1_CLKOUT0)
                                                      -2.931     1.615 r  analyzer_logic/dac_clkgen/pll_i/CLKOUT0
                          net (fo=1, routed)           1.451     3.066    analyzer_logic/dac_clkgen/clk125
@@ -1937,7 +1926,7 @@ Slack:                    inf
                             (rising edge-triggered cell ODDR clocked by clk125  {rise@0.000ns fall@4.000ns period=8.000ns})
   Path Group:             (none)
   Path Type:              Hold (Min at Fast Process Corner)
-  Data Path Delay:        1.107ns  (logic 0.045ns (4.066%)  route 1.062ns (95.934%))
+  Data Path Delay:        1.109ns  (logic 0.045ns (4.056%)  route 1.064ns (95.944%))
   Logic Levels:           1  (LUT2=1)
   Clock Uncertainty:      0.123ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
     Total System Jitter     (TSJ):    0.050ns
@@ -1947,9 +1936,9 @@ Slack:                    inf
     Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
   -------------------------------------------------------------------    -------------------
     PLLE2_ADV_X1Y0       PLLE2_ADV                    0.000     0.000 f  analyzer_logic/dac_clkgen/pll_i/LOCKED
-                         net (fo=1, routed)           0.488     0.488    analyzer_logic/dac_clkgen/dac_pll_locked
-    SLICE_X113Y67        LUT2 (Prop_lut2_I0_O)        0.045     0.533 r  analyzer_logic/dac_clkgen/dac_clk_oddr_i_1/O
-                         net (fo=1, routed)           0.573     1.107    analyzer_logic/R0
+                         net (fo=1, routed)           0.476     0.476    analyzer_logic/dac_clkgen/dac_pll_locked
+    SLICE_X113Y64        LUT2 (Prop_lut2_I0_O)        0.045     0.521 r  analyzer_logic/dac_clkgen/dac_clk_oddr_i_1/O
+                         net (fo=1, routed)           0.589     1.109    analyzer_logic/R0
     OLOGIC_X1Y86         ODDR                                         r  analyzer_logic/dac_clk_oddr/R
   -------------------------------------------------------------------    -------------------
 
@@ -1959,7 +1948,7 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.869     2.083    analyzer_logic/dac_clkgen/cfg_clk
+                         net (fo=411, routed)         0.869     2.083    analyzer_logic/dac_clkgen/cfg_clk
     PLLE2_ADV_X1Y0       PLLE2_ADV (Prop_plle2_adv_CLKIN1_CLKOUT0)
                                                      -1.488     0.595 r  analyzer_logic/dac_clkgen/pll_i/CLKOUT0
                          net (fo=1, routed)           0.592     1.187    analyzer_logic/dac_clkgen/clk125
@@ -1976,8 +1965,8 @@ Path Group:  (none)
 From Clock:  
   To Clock:  clk32
 
-Max Delay           224 Endpoints
-Min Delay           224 Endpoints
+Max Delay           191 Endpoints
+Min Delay           191 Endpoints
 --------------------------------------------------------------------------------------
 
 
@@ -1986,12 +1975,12 @@ Max Delay Paths
 Slack:                    inf
   Source:                 analyzer_logic/adc_clkgen/mmcm_i/LOCKED
                             (internal pin)
-  Destination:            analyzer_logic/adc_capture/sample_min_adc_reg[15]/CE
-                            (rising edge-triggered cell FDCE clocked by clk32  {rise@0.000ns fall@15.625ns period=31.250ns})
+  Destination:            analyzer_logic/adc_capture/sample_min_adc_reg[10]/CE
+                            (rising edge-triggered cell FDPE clocked by clk32  {rise@0.000ns fall@15.625ns period=31.250ns})
   Path Group:             (none)
   Path Type:              Setup (Max at Slow Process Corner)
-  Data Path Delay:        7.098ns  (logic 0.315ns (4.438%)  route 6.783ns (95.562%))
-  Logic Levels:           3  (LUT4=1 LUT6=2)
+  Data Path Delay:        5.830ns  (logic 0.318ns (5.455%)  route 5.512ns (94.545%))
+  Logic Levels:           3  (LUT3=1 LUT5=1 LUT6=1)
   Clock Uncertainty:      0.130ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
     Total System Jitter     (TSJ):    0.050ns
     Discrete Jitter          (DJ):    0.078ns
@@ -2000,14 +1989,14 @@ Slack:                    inf
     Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
   -------------------------------------------------------------------    -------------------
     MMCME2_ADV_X1Y0      MMCME2_ADV                   0.000     0.000 r  analyzer_logic/adc_clkgen/mmcm_i/LOCKED
-                         net (fo=15, routed)          3.070     3.070    analyzer_logic/adc_capture/locked
-    SLICE_X101Y86        LUT4 (Prop_lut4_I2_O)        0.105     3.175 r  analyzer_logic/adc_capture/start_toggle_seen_i_1/O
-                         net (fo=42, routed)          1.614     4.789    analyzer_logic/adc_capture/start_toggle_seen_i_1_n_0
-    SLICE_X86Y85         LUT6 (Prop_lut6_I0_O)        0.105     4.894 r  analyzer_logic/adc_capture/sample_min_adc[15]_i_3/O
-                         net (fo=2, routed)           1.066     5.960    analyzer_logic/adc_capture/g_cic_decimator/sample_max_adc_reg[0]_0
-    SLICE_X100Y87        LUT6 (Prop_lut6_I4_O)        0.105     6.065 r  analyzer_logic/adc_capture/g_cic_decimator/sample_min_adc[15]_i_1/O
-                         net (fo=16, routed)          1.033     7.098    analyzer_logic/adc_capture/g_cic_decimator_n_76
-    SLICE_X100Y95        FDCE                                         r  analyzer_logic/adc_capture/sample_min_adc_reg[15]/CE
+                         net (fo=14, routed)          2.759     2.759    analyzer_logic/adc_capture/locked
+    SLICE_X99Y60         LUT5 (Prop_lut5_I2_O)        0.105     2.864 r  analyzer_logic/adc_capture/sample_count_latched[12]_i_1/O
+                         net (fo=24, routed)          0.849     3.713    analyzer_logic/adc_capture/sample_count_latched[12]_i_1_n_0
+    SLICE_X94Y53         LUT6 (Prop_lut6_I0_O)        0.105     3.818 r  analyzer_logic/adc_capture/sample_min_adc[15]_i_3/O
+                         net (fo=2, routed)           0.930     4.748    analyzer_logic/adc_capture/g_cic_decimator/sample_max_adc_reg[0]
+    SLICE_X102Y65        LUT3 (Prop_lut3_I1_O)        0.108     4.856 r  analyzer_logic/adc_capture/g_cic_decimator/sample_min_adc[15]_i_1/O
+                         net (fo=16, routed)          0.974     5.830    analyzer_logic/adc_capture/g_cic_decimator_n_78
+    SLICE_X98Y63         FDPE                                         r  analyzer_logic/adc_capture/sample_min_adc_reg[10]/CE
   -------------------------------------------------------------------    -------------------
 
                          (clock clk32 rise edge)      0.000     0.000 r  
@@ -2016,13 +2005,13 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         1.363     1.363 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.701     3.064    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077     3.141 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.386     4.527    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         1.386     4.527    analyzer_logic/adc_clkgen/cfg_clk
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
                                                      -2.915     1.612 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
                          net (fo=1, routed)           1.454     3.066    analyzer_logic/adc_clkgen/clk32
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.077     3.143 r  analyzer_logic/adc_clkgen/clk32_buf_i/O
-                         net (fo=484, routed)         1.350     4.494    analyzer_logic/adc_capture/clk_adc
-    SLICE_X100Y95        FDCE                                         r  analyzer_logic/adc_capture/sample_min_adc_reg[15]/C
+                         net (fo=418, routed)         1.346     4.490    analyzer_logic/adc_capture/clk_adc
+    SLICE_X98Y63         FDPE                                         r  analyzer_logic/adc_capture/sample_min_adc_reg[10]/C
 
 
 
@@ -2033,12 +2022,12 @@ Min Delay Paths
 Slack:                    inf
   Source:                 analyzer_logic/adc_clkgen/mmcm_i/LOCKED
                             (internal pin)
-  Destination:            analyzer_logic/adc_capture/abort_toggle_seen_reg/D
+  Destination:            analyzer_logic/adc_capture/completion_toggle_adc_reg/D
                             (rising edge-triggered cell FDCE clocked by clk32  {rise@0.000ns fall@15.625ns period=31.250ns})
   Path Group:             (none)
   Path Type:              Hold (Min at Fast Process Corner)
-  Data Path Delay:        1.499ns  (logic 0.045ns (3.001%)  route 1.454ns (96.999%))
-  Logic Levels:           1  (LUT3=1)
+  Data Path Delay:        1.219ns  (logic 0.045ns (3.691%)  route 1.174ns (96.309%))
+  Logic Levels:           1  (LUT6=1)
   Clock Uncertainty:      0.130ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
     Total System Jitter     (TSJ):    0.050ns
     Discrete Jitter          (DJ):    0.078ns
@@ -2047,10 +2036,10 @@ Slack:                    inf
     Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
   -------------------------------------------------------------------    -------------------
     MMCME2_ADV_X1Y0      MMCME2_ADV                   0.000     0.000 r  analyzer_logic/adc_clkgen/mmcm_i/LOCKED
-                         net (fo=15, routed)          1.454     1.454    analyzer_logic/adc_capture/locked
-    SLICE_X100Y87        LUT3 (Prop_lut3_I0_O)        0.045     1.499 r  analyzer_logic/adc_capture/abort_toggle_seen_i_1/O
-                         net (fo=1, routed)           0.000     1.499    analyzer_logic/adc_capture/abort_toggle_seen_i_1_n_0
-    SLICE_X100Y87        FDCE                                         r  analyzer_logic/adc_capture/abort_toggle_seen_reg/D
+                         net (fo=14, routed)          1.174     1.174    analyzer_logic/adc_capture/g_cic_decimator/locked
+    SLICE_X104Y57        LUT6 (Prop_lut6_I0_O)        0.045     1.219 r  analyzer_logic/adc_capture/g_cic_decimator/completion_toggle_adc_i_1/O
+                         net (fo=1, routed)           0.000     1.219    analyzer_logic/adc_capture/g_cic_decimator_n_351
+    SLICE_X104Y57        FDCE                                         r  analyzer_logic/adc_capture/completion_toggle_adc_reg/D
   -------------------------------------------------------------------    -------------------
 
                          (clock clk32 rise edge)      0.000     0.000 r  
@@ -2059,13 +2048,13 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.864     2.078    analyzer_logic/adc_clkgen/cfg_clk
+                         net (fo=411, routed)         0.864     2.078    analyzer_logic/adc_clkgen/cfg_clk
     MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
                                                      -1.467     0.611 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
                          net (fo=1, routed)           0.576     1.187    analyzer_logic/adc_clkgen/clk32
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     1.216 r  analyzer_logic/adc_clkgen/clk32_buf_i/O
-                         net (fo=484, routed)         0.876     2.092    analyzer_logic/adc_capture/clk_adc
-    SLICE_X100Y87        FDCE                                         r  analyzer_logic/adc_capture/abort_toggle_seen_reg/C
+                         net (fo=418, routed)         0.880     2.096    analyzer_logic/adc_capture/clk_adc
+    SLICE_X104Y57        FDCE                                         r  analyzer_logic/adc_capture/completion_toggle_adc_reg/C
 
 
 
@@ -2090,8 +2079,8 @@ Slack:                    inf
                             (rising edge-triggered cell FDCE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
   Path Group:             (none)
   Path Type:              Setup (Max at Slow Process Corner)
-  Data Path Delay:        4.670ns  (logic 0.210ns (4.497%)  route 4.460ns (95.503%))
-  Logic Levels:           2  (LUT5=1 LUT6=1)
+  Data Path Delay:        4.453ns  (logic 0.210ns (4.716%)  route 4.243ns (95.284%))
+  Logic Levels:           2  (LUT6=2)
   Clock Uncertainty:      0.025ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
     Total System Jitter     (TSJ):    0.050ns
     Total Input Jitter      (TIJ):    0.000ns
@@ -2101,12 +2090,12 @@ Slack:                    inf
     Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
   -------------------------------------------------------------------    -------------------
     MMCME2_ADV_X1Y0      MMCME2_ADV                   0.000     0.000 r  analyzer_logic/adc_clkgen/mmcm_i/LOCKED
-                         net (fo=15, routed)          3.909     3.909    analyzer_logic/adc_capture/locked
-    SLICE_X92Y87         LUT5 (Prop_lut5_I3_O)        0.105     4.014 r  analyzer_logic/adc_capture/read_snapshot[0]_i_2/O
-                         net (fo=1, routed)           0.551     4.565    analyzer_logic/spi_if/read_snapshot_reg[0]_0
-    SLICE_X92Y87         LUT6 (Prop_lut6_I0_O)        0.105     4.670 r  analyzer_logic/spi_if/read_snapshot[0]_i_1/O
-                         net (fo=1, routed)           0.000     4.670    analyzer_logic/spi_if/read_snapshot[0]_i_1_n_0
-    SLICE_X92Y87         FDCE                                         r  analyzer_logic/spi_if/read_snapshot_reg[0]/D
+                         net (fo=14, routed)          3.198     3.198    analyzer_logic/spi_if/led
+    SLICE_X91Y57         LUT6 (Prop_lut6_I5_O)        0.105     3.303 r  analyzer_logic/spi_if/read_snapshot[0]_i_2/O
+                         net (fo=1, routed)           1.044     4.348    analyzer_logic/spi_if/read_snapshot[0]_i_2_n_0
+    SLICE_X85Y62         LUT6 (Prop_lut6_I0_O)        0.105     4.453 r  analyzer_logic/spi_if/read_snapshot[0]_i_1/O
+                         net (fo=1, routed)           0.000     4.453    analyzer_logic/spi_if/spi_rdata[0]
+    SLICE_X85Y62         FDCE                                         r  analyzer_logic/spi_if/read_snapshot_reg[0]/D
   -------------------------------------------------------------------    -------------------
 
                          (clock clk_50m rise edge)    0.000     0.000 r  
@@ -2115,8 +2104,8 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         1.363     1.363 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           1.701     3.064    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077     3.141 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         1.342     4.484    analyzer_logic/spi_if/cfg_clk
-    SLICE_X92Y87         FDCE                                         r  analyzer_logic/spi_if/read_snapshot_reg[0]/C
+                         net (fo=411, routed)         1.291     4.433    analyzer_logic/spi_if/cfg_clk
+    SLICE_X85Y62         FDCE                                         r  analyzer_logic/spi_if/read_snapshot_reg[0]/C
 
 
 
@@ -2131,8 +2120,8 @@ Slack:                    inf
                             (rising edge-triggered cell FDCE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
   Path Group:             (none)
   Path Type:              Hold (Min at Fast Process Corner)
-  Data Path Delay:        2.158ns  (logic 0.090ns (4.171%)  route 2.068ns (95.829%))
-  Logic Levels:           2  (LUT5=1 LUT6=1)
+  Data Path Delay:        2.200ns  (logic 0.090ns (4.091%)  route 2.110ns (95.909%))
+  Logic Levels:           2  (LUT6=2)
   Clock Uncertainty:      0.025ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
     Total System Jitter     (TSJ):    0.050ns
     Total Input Jitter      (TIJ):    0.000ns
@@ -2142,12 +2131,12 @@ Slack:                    inf
     Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
   -------------------------------------------------------------------    -------------------
     MMCME2_ADV_X1Y0      MMCME2_ADV                   0.000     0.000 r  analyzer_logic/adc_clkgen/mmcm_i/LOCKED
-                         net (fo=15, routed)          1.845     1.845    analyzer_logic/adc_capture/locked
-    SLICE_X92Y87         LUT5 (Prop_lut5_I3_O)        0.045     1.890 r  analyzer_logic/adc_capture/read_snapshot[0]_i_2/O
-                         net (fo=1, routed)           0.223     2.113    analyzer_logic/spi_if/read_snapshot_reg[0]_0
-    SLICE_X92Y87         LUT6 (Prop_lut6_I0_O)        0.045     2.158 r  analyzer_logic/spi_if/read_snapshot[0]_i_1/O
-                         net (fo=1, routed)           0.000     2.158    analyzer_logic/spi_if/read_snapshot[0]_i_1_n_0
-    SLICE_X92Y87         FDCE                                         r  analyzer_logic/spi_if/read_snapshot_reg[0]/D
+                         net (fo=14, routed)          1.614     1.614    analyzer_logic/spi_if/led
+    SLICE_X91Y57         LUT6 (Prop_lut6_I5_O)        0.045     1.659 r  analyzer_logic/spi_if/read_snapshot[0]_i_2/O
+                         net (fo=1, routed)           0.495     2.155    analyzer_logic/spi_if/read_snapshot[0]_i_2_n_0
+    SLICE_X85Y62         LUT6 (Prop_lut6_I0_O)        0.045     2.200 r  analyzer_logic/spi_if/read_snapshot[0]_i_1/O
+                         net (fo=1, routed)           0.000     2.200    analyzer_logic/spi_if/spi_rdata[0]
+    SLICE_X85Y62         FDCE                                         r  analyzer_logic/spi_if/read_snapshot_reg[0]/D
   -------------------------------------------------------------------    -------------------
 
                          (clock clk_50m rise edge)    0.000     0.000 r  
@@ -2156,8 +2145,8 @@ Slack:                    inf
     U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
                          net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
     BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
-                         net (fo=414, routed)         0.872     2.086    analyzer_logic/spi_if/cfg_clk
-    SLICE_X92Y87         FDCE                                         r  analyzer_logic/spi_if/read_snapshot_reg[0]/C
+                         net (fo=411, routed)         0.848     2.062    analyzer_logic/spi_if/cfg_clk
+    SLICE_X85Y62         FDCE                                         r  analyzer_logic/spi_if/read_snapshot_reg[0]/C
 
 
 

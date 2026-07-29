@@ -38,7 +38,7 @@ extern SPI_HandleTypeDef hspi2;
 
 /* USER CODE END Private defines */
 
-void MX_SPI2_Init(void);
+HAL_StatusTypeDef MX_SPI2_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 

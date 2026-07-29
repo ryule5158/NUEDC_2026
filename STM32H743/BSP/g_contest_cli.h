@@ -16,4 +16,10 @@ void GContestCli_Poll(void);
  */
 uint8_t GContestCli_TakeMeasurementRequest(uint8_t *waveform_cycles);
 
+/* Return non-zero once for each Q command accepted in CAL mode. */
+uint8_t GContestCli_TakeCalibrationRequest(void);
+
+/* Non-zero while USART1 raw DC calibration mode owns the ADC. */
+uint8_t GContestCli_IsCalibrationMode(void);
+
 #endif /* G_CONTEST_CLI_H */

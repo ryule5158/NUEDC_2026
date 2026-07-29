@@ -14,13 +14,16 @@
 | 固件输出 | `output/STM32H743.hex`、`output/STM32H743.axf` |
 
 ```powershell
-cd D:\NUEDC\省赛\Integrated_Project\STM32H743
+Set-Location C:\Users\21274\Documents\省赛\d_repo_latest_precision\STM32H743
 .\build_keil.ps1
 ```
 
-## USART1 测试命令
+## 默认串口屏与 USART1 测试命令
 
-当前不使用串口屏。串口助手连接 USART1（115200、8 数据位、无校验、1 停止位）。正常测试只需要发送一个数字：
+陶晶驰串口屏是默认交互入口，连接 USART2（PA2 TX、PA3 RX，115200-8-N-1）。
+屏幕按钮发送 `G1`、`G3`、`GS`，分别请求 1 周期波形、3 周期波形和频谱页面。
+USART1 串口助手与屏幕同时保持可用，不需要改宏或重新编译；连接 PA9 TX、PA10 RX
+（115200-8-N-1）后，正常测试只需发送一个数字：
 
 ```text
 1         采集分析一次，打印 1 个完整周期，然后自动打印测量值和频谱
@@ -31,10 +34,34 @@ cd D:\NUEDC\省赛\Integrated_Project\STM32H743
 
 辅助诊断命令 `HELP`、`INFO`、`STATUS`、`PING` 仍然可用，文字命令需要以回车或换行结束；它们不启动采集。
 
+### 原始 Q8.8 两点电压标定
+
+串口助手还提供独立的直流标定模式，所有文字命令均以回车或换行结束：
+
+```text
+CAL       进入标定模式
+Q         连续采集 16 帧，每帧 4096 点，打印原始 Q8.8 统计值
+EXIT      退出标定模式，恢复 1/3 正常测量
+```
+
+进入后先把稳定直流加到 AD9280 S2，并用万用表在 S2 实测电压，再发送 `Q`。最终
+`[CAL] RESULT Q=...` 是 16 个帧均值的中值，`pooled_Q` 是 65536 点合并平均值，
+`frame_span_Q` 用来观察漂移。该路径直接读取 FPGA 的整数累加和、最小值、最大值
+和 OTR，不进行名义伏特换算、CIC 频响补偿或经验校准，也不搬运 16×4096 个波形点。
+只有 `clip=0`、`overrange=0` 且帧间跨度稳定的结果可用于
+
+```text
+a = (VH - VL) / (QH - QL)
+b = VL - a * QL
+V = aQ + b
+```
+
+当前固件只负责可靠打印 Q，不会自动保存或启用尚未复核的 `a`、`b`。
+
 上电初始化成功后会收到：
 
 ```text
-[CLI] READY USART1 115200 8N1; send 1 or 3
+[CLI] READY USART1 115200 8N1; send 1/3, or CAL for raw Q
 ```
 
 发送 `1` 后输出顺序固定为：
@@ -48,6 +75,7 @@ cd D:\NUEDC\省赛\Integrated_Project\STM32H743
 ...
 [WAVE] end
 [MEAS] Vpp=...mV RMS=...mV F0=...Hz residual_RMS=...mV clip=...
+[REJECT] expected=1000000Hz detected=... frequency=...Hz post_dsp_peak=...mV post_dsp_rms=...mV
 [SPEC] begin band=10000..500000Hz count=... columns=...
 SPEC,谐波序号,频率_Hz,峰值幅度_mV,分量峰峰值_mV
 ...
@@ -60,25 +88,37 @@ SPEC,谐波序号,频率_Hz,峰值幅度_mV,分量峰峰值_mV
 ### 精度与校准状态
 
 - 当前明确关闭频率响应幅相校准表：`cal_count = 0`。启动日志会打印
-  `frequency_response_calibration=OFF`。
+  `empirical_frequency_calibration=OFF analytic_response_compensation=ON
+  voltage_transfer=nominal`。
 - AD9280 的物理分辨率仍是 8 位，名义物理步长为
   `10 V / 256 = 39.0625 mV/code`。FPGA CIC3/R16 的输出改为 signed Q8.8，
   传输步长为 `10 V / 65536 = 0.152588 mV`，保留 16 次过采样产生的亚码信息。
   这不会把 ADC 变成真正的 16 位器件。
-- FPGA/STM32 协议固定为 `0x00010003`。旧 8 位位流会被明确拒绝并打印
-  `SAMPLE_FORMAT`，因此更新时必须同时烧写 FPGA 和 STM32。
+- FPGA/STM32 协议固定为 v1.4（`0x00010004`），数字响应 profile 固定为
+  CIC3/R16（`0x00030010`）。驱动还会核对只读抽取元数据必须为 `16`；
+  任一项不匹配都明确返回 `SAMPLE_FORMAT`，因此 FPGA 与 STM32 必须配套更新。
 - 当前伏特换算仍使用模块名义 `±5 V` 量程，启动日志标记为
-  `voltage_transfer=nominal`；它不是实测增益校准表。
+  `voltage_transfer=nominal`。当前实物信号在采集前没有放大，程序报告的是
+  AD9280 模块输入端的名义电压；`0 V` 附近对应居中的 signed Q8.8 数据。
 - 4096 点数据先由 FFT 找候选谱线，再对全部有效谐波做双精度联合最小二乘。
   基频通过多级、受频带约束的残差最小化继续细化，最终幅值、相位、RMS 和重建
   波形都使用同一组联合拟合参数。
-- 在完成整机扫频和幅值标定前，程序不会自动补偿模拟前端或 FPGA 滤波器的真实
-  增益误差。
+- CIC3/R16 的幅值与线性相位是确定的，AD9280 后端按精确解析式向分析器提供
+  `|H(f)|` 和 `arg H(f)`，分析器对每条拟合谱线施加复数逆响应。该步骤会撤销
+  10 kHz～500 kHz 内的 CIC 幅相变化，不依赖经验校准表。
+- 1 MHz 抗干扰不是对采样数据做低通或陷波。分析器在所有联合最小二乘中加入
+  一个不参与被测结果的 nuisance 正弦分量；在 2 MSPS 的精确奈奎斯特点只加入
+  可观测的交替序列列。这样被测分量仍按原频率拟合，关闭/开启且没有干扰时结果
+  保持一致。`[REJECT]` 只报告被分离出的干扰，不加入 10～500 kHz 频谱。
+  其中 `post_dsp_peak/rms` 是 CIC 输出采样域诊断值，不做 CIC 逆响应或经验
+  校准；精确 1 MHz 时只代表实际可观测的奈奎斯特交替投影。
+- 在整机扫频和幅值标定完成前，程序不会猜测模拟链路、ADC 模块增益和非线性；
+  削顶、混叠和模拟误差也不能由软件补偿消除。
 
 ### ADC 后端切换
 
 G 题业务层只依赖 [`BSP/signal_adc.h`](BSP/signal_adc.h)，接收单位为伏特的
-`float` 数据和该帧真实采样率。当前唯一参与编译的实现是
+`float` 数据、该帧真实采样率以及后端声明的确定性数字幅相响应。当前唯一参与编译的实现是
 [`BSP/signal_adc_ad9280.c`](BSP/signal_adc_ad9280.c)，AD9280 的 8 位物理码、
 32 MSPS、FPGA signed Q8.8 传输、CIC3/R16、名义电压换算和削顶阈值都只存在
 于这个后端及其底层驱动中。
@@ -86,14 +126,17 @@ G 题业务层只依赖 [`BSP/signal_adc.h`](BSP/signal_adc.h)，接收单位为
 更换 ACM9238/AD9238 时，新建 `signal_adc_acm9238.c` 并实现同一组
 `SignalAdc_*` 函数，然后在 Keil 工程中用它替换
 `signal_adc_ad9280.c`。两个适配器不能同时参与编译；DSP、串口命令和
-`g_contest_app.c` 不需要修改。若新 ADC 的并行位宽、时序或满量程不同，还需
-增加对应的 FPGA 输入适配和底层寄存器驱动，但这些变化不进入分析器业务层。
+`g_contest_app.c` 不需要修改。新后端必须如实填写物理采样率、输出采样率、
+码宽、传输 LSB、原始统计采集、削顶条件及覆盖 10～500 kHz 的确定性数字响应回调；如果新链路
+在该频带内是平坦直通，可返回单位幅值和零相位。若并行位宽、时序或满量程不同，
+还需增加对应的 FPGA 输入适配和底层寄存器驱动，但这些变化不进入分析器业务层。
 
 ## G 题接线与信号路径
 
 ```text
-被测电压（无模拟放大） -> 8位 AD9280 -> FPGA CIC3/16倍抽取
-FPGA signed Q8.8 4096点缓存 -> SPI2 -> STM32 FFT/谐波分析 -> USART1
+被测电压（当前无模拟放大） -> 8位 AD9280 -> FPGA 固定 CIC3/R16
+FPGA signed Q8.8 4096点缓存 -> SPI2 -> STM32 解析幅相补偿
+-> FFT/联合谐波与1MHz nuisance拟合 -> USART2串口屏 + USART1串口助手
 ```
 
 ### STM32 与 BX71
@@ -106,7 +149,8 @@ FPGA signed Q8.8 4096点缓存 -> SPI2 -> STM32 FFT/谐波分析 -> USART1
 | PE8 / GPIO | P2-34 / K18 | 低有效片选 |
 | GND | 任一 GND | 必须共地 |
 
-调试串口为 USART1：PA9 TX、PA10 RX、115200-8-N-1。
+默认串口屏为 USART2：PA2 TX、PA3 RX；调试串口为 USART1：PA9 TX、PA10 RX；
+两路均为 115200-8-N-1。
 
 ### 模拟输入安全
 
@@ -157,9 +201,9 @@ if (AD603_Init(&ad603, &ad603_cfg) == AD603_OK) {
     (void)AD603_SetGainMdb(&ad603, 10000L);
 }
 
-/* FPGA 高速 ADC：采集 1024 点，不抽取，超时 100 ms。 */
+/* FPGA 高速 ADC：固定 CIC3/R16，采集 1024 点，超时 100 ms。 */
 if (AD9280_AppInit() == AD9280_OK) {
-    (void)AD9280_AppCapture(1024U, 1U, 100U);
+    (void)AD9280_AppCapture(1024U, AD9280_DECIMATION_FIXED, 100U);
 }
 ```
 
@@ -195,12 +239,13 @@ NAND 驱动包含坏块检查和硬件 ECC，但不包含 FTL 或文件系统。
 - SPI2：PI1 SCK、PB15 MOSI、PI2 MISO；
 - FPGA 片选：PE8，初始高电平；
 - AD5687 片选：PE4，初始高电平；
-- STM32 只通过 SPI2 读取 FPGA 已完成抽取的 4096 点数据。
+- STM32 只通过 SPI2 读取 FPGA 已完成固定 CIC3/R16 抽取的 4096 点数据。
 
 以下是保留在源码中的手工板级配置，不能由当前 `.ioc` 完整再生：
 
-- AD9280 原始 32 MSPS 数据由 FPGA 完成 CIC3/16 倍抽取；
-- STM32 负责电压换算、FFT、谐波拟合和串口输出。
+- AD9280 原始 32 MSPS 数据由 FPGA 完成固定 CIC3/R16 抽取；
+- STM32 负责名义电压换算、CIC 解析幅相补偿、FFT、谐波/1 MHz 联合拟合、
+  串口屏显示和串口助手输出。
 - SDRAM、NAND、QSPI。
 
 因此不要直接让 CubeMX 覆盖生成。若必须生成，先备份并复核

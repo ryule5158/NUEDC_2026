@@ -49,5 +49,8 @@ run_legacy_test $root_dir legacy_adc_sim tb_ad9280_capture_core \
 run_legacy_test $root_dir legacy_dac_sim tb_ad9708_level_scaling \
     ad9708_wave_core.v tb_ad9708_level_scaling.v \
     "TEST_PASS: Q8.8 scaling plus hardware AM/FM"
+run_legacy_test $root_dir legacy_spi_sim tb_stm32_spi_reg_slave \
+    stm32_spi_reg_slave.v tb_stm32_spi_reg_slave.v \
+    "STM32_SPI_REG_SLAVE_TEST_PASS"
 
 puts "LEGACY_SIM_PASS"

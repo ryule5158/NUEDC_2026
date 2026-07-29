@@ -9,7 +9,6 @@ extern "C" {
 #include <stdint.h>
 
 #define AD9280_APP_DEFAULT_SAMPLES     1024U /* 默认一次采集点数。 */
-#define AD9280_APP_DEFAULT_DECIMATION  1U    /* 默认不抽取。 */
 #define AD9280_APP_DEFAULT_TIMEOUT_MS  100U  /* 默认阻塞采集超时时间。 */
 
 /* AD9280模块输入电压两点校准数据。 */
@@ -48,10 +47,19 @@ typedef struct
 /* 初始化高速ADC应用层并核验STM32-FPGA-AD9280链路。 */
 AD9280_StatusTypeDef AD9280_AppInit(void);
 
-/* 立即触发并阻塞采集，点数1~4096，抽取倍数1~65535。 */
+/* 立即触发并阻塞采集，点数1~4096；decimation必须为固定值16。 */
 AD9280_StatusTypeDef AD9280_AppCapture(uint16_t sample_count,
                                        uint16_t decimation,
                                        uint32_t timeout_ms);
+
+/*
+ * Capture only FPGA statistics. The sample RAM is not transferred, so
+ * repeated DC-calibration frames retain exact Q8.8 sum/min/max data without
+ * spending time copying 4096 samples over SPI.
+ */
+AD9280_StatusTypeDef AD9280_AppCaptureStats(uint16_t sample_count,
+                                            uint16_t decimation,
+                                            uint32_t timeout_ms);
 
 /* 按输入电压阈值触发并阻塞采集，不提供触发前数据。 */
 AD9280_StatusTypeDef AD9280_AppCaptureTriggered(

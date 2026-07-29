@@ -85,7 +85,7 @@ set_input_delay -clock [get_clocks ad9280_aclock] -min 0.000 \
 
 # 配置量与采集统计量使用两级同步；仅忽略跨时钟域第一级的时序。
 set_false_path -to [get_pins -hier -regexp \
-    {.*adc_capture/(sample_count_meta_reg|decimation_meta_reg|trigger_mode_meta_reg|trigger_threshold_meta_reg|filter_enable_meta_reg|start_toggle_sync_reg\[0\]|abort_toggle_sync_reg\[0\])(\[[0-9]+\])?/D}]
+    {.*adc_capture/(sample_count_meta_reg|trigger_mode_meta_reg|trigger_threshold_meta_reg|start_toggle_sync_reg\[0\]|abort_toggle_sync_reg\[0\])(\[[0-9]+\])?/D}]
 set_false_path -to [get_pins -hier -regexp \
     {.*adc_capture/(busy_sync_reg\[0\]|triggered_sync_reg\[0\]|overrange_sync_reg\[0\]|completion_toggle_sync_reg\[0\]|captured_count_meta_reg|overrange_count_meta_reg|sample_sum_meta_reg|sample_min_meta_reg|sample_max_meta_reg|latest_sample_meta_reg)(\[[0-9]+\])?/D}]
 

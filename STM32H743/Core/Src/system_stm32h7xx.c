@@ -64,6 +64,14 @@
   #define HSI_VALUE    ((uint32_t)64000000) /*!< Value of the Internal oscillator in Hz*/
 #endif /* HSI_VALUE */
 
+/*
+ * ExitRun0Mode() runs before the C runtime, HAL, SysTick and UART exist.
+ * Never allow a failed/incorrect power-supply configuration to trap the CPU
+ * forever before main() can print a diagnostic.  At the reset HSI clock this
+ * limit is intentionally much longer than the normal regulator settling time.
+ */
+#define EXIT_RUN0_READY_SPIN_LIMIT ((uint32_t)1000000U)
+
 
 /**
   * @}
@@ -473,6 +481,17 @@ void SystemCoreClockUpdate (void)
   * @param  None
   * @retval None
   */
+static void ExitRun0ModeWaitReady(void)
+{
+  uint32_t remaining = EXIT_RUN0_READY_SPIN_LIMIT;
+
+  while (((PWR->CSR1 & PWR_CSR1_ACTVOSRDY) == 0U) &&
+         (remaining != 0U))
+  {
+    remaining--;
+  }
+}
+
 void ExitRun0Mode(void)
 {
 #if defined(USE_PWR_LDO_SUPPLY)
@@ -483,9 +502,7 @@ void ExitRun0Mode(void)
     /* Enable LDO mode */
     PWR->CR3 |= PWR_CR3_LDOEN;
   #endif /* SMPS */
-  /* Wait till voltage level flag is set */
-  while ((PWR->CSR1 & PWR_CSR1_ACTVOSRDY) == 0U)
-  {}
+  ExitRun0ModeWaitReady();
 #elif defined(USE_PWR_EXTERNAL_SOURCE_SUPPLY)
   #if defined(SMPS)
     /* Exit Run* mode */
@@ -493,51 +510,35 @@ void ExitRun0Mode(void)
   #else
     PWR->CR3 = (PWR->CR3 & ~(PWR_CR3_LDOEN)) | PWR_CR3_BYPASS;
   #endif /* SMPS */
-  /* Wait till voltage level flag is set */
-  while ((PWR->CSR1 & PWR_CSR1_ACTVOSRDY) == 0U)
-  {}
+  ExitRun0ModeWaitReady();
 #elif defined(USE_PWR_DIRECT_SMPS_SUPPLY) && defined(SMPS)
   /* Exit Run* mode */
   PWR->CR3 &= ~(PWR_CR3_LDOEN);
-  /* Wait till voltage level flag is set */
-  while ((PWR->CSR1 & PWR_CSR1_ACTVOSRDY) == 0U)
-  {}
+  ExitRun0ModeWaitReady();
 #elif defined(USE_PWR_SMPS_1V8_SUPPLIES_LDO) && defined(SMPS)
   /* Exit Run* mode */
   PWR->CR3 |= PWR_CR3_SMPSLEVEL_0 | PWR_CR3_SMPSEN | PWR_CR3_LDOEN;
-  /* Wait till voltage level flag is set */
-  while ((PWR->CSR1 & PWR_CSR1_ACTVOSRDY) == 0U)
-  {}
+  ExitRun0ModeWaitReady();
 #elif defined(USE_PWR_SMPS_2V5_SUPPLIES_LDO) && defined(SMPS)
   /* Exit Run* mode */
   PWR->CR3 |= PWR_CR3_SMPSLEVEL_1 | PWR_CR3_SMPSEN | PWR_CR3_LDOEN;
-  /* Wait till voltage level flag is set */
-  while ((PWR->CSR1 & PWR_CSR1_ACTVOSRDY) == 0U)
-  {}
+  ExitRun0ModeWaitReady();
 #elif defined(USE_PWR_SMPS_1V8_SUPPLIES_EXT_AND_LDO) && defined(SMPS)
   /* Exit Run* mode */
   PWR->CR3 |= PWR_CR3_SMPSLEVEL_0 | PWR_CR3_SMPSEXTHP | PWR_CR3_SMPSEN | PWR_CR3_LDOEN;
-  /* Wait till voltage level flag is set */
-  while ((PWR->CSR1 & PWR_CSR1_ACTVOSRDY) == 0U)
-  {}
+  ExitRun0ModeWaitReady();
 #elif defined(USE_PWR_SMPS_2V5_SUPPLIES_EXT_AND_LDO) && defined(SMPS)
   /* Exit Run* mode */
   PWR->CR3 |= PWR_CR3_SMPSLEVEL_1 | PWR_CR3_SMPSEXTHP | PWR_CR3_SMPSEN | PWR_CR3_LDOEN;
-  /* Wait till voltage level flag is set */
-  while ((PWR->CSR1 & PWR_CSR1_ACTVOSRDY) == 0U)
-  {}
+  ExitRun0ModeWaitReady();
 #elif defined(USE_PWR_SMPS_1V8_SUPPLIES_EXT) && defined(SMPS)
   /* Exit Run* mode */
   PWR->CR3 = (PWR->CR3 & ~(PWR_CR3_LDOEN)) | PWR_CR3_SMPSLEVEL_0 | PWR_CR3_SMPSEXTHP | PWR_CR3_SMPSEN | PWR_CR3_BYPASS;
-  /* Wait till voltage level flag is set */
-  while ((PWR->CSR1 & PWR_CSR1_ACTVOSRDY) == 0U)
-  {}
+  ExitRun0ModeWaitReady();
 #elif defined(USE_PWR_SMPS_2V5_SUPPLIES_EXT) && defined(SMPS)
   /* Exit Run* mode */
   PWR->CR3 = (PWR->CR3 & ~(PWR_CR3_LDOEN)) | PWR_CR3_SMPSLEVEL_1 | PWR_CR3_SMPSEXTHP | PWR_CR3_SMPSEN | PWR_CR3_BYPASS;
-  /* Wait till voltage level flag is set */
-  while ((PWR->CSR1 & PWR_CSR1_ACTVOSRDY) == 0U)
-  {}
+  ExitRun0ModeWaitReady();
 #else
   /* No system power supply configuration is selected at exit Run* mode */
 #endif /* USE_PWR_LDO_SUPPLY */

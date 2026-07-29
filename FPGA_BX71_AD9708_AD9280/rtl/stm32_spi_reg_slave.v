@@ -17,13 +17,18 @@ module stm32_spi_reg_slave(
     input  wire [31:0] reg_rdata
 );
 
-    /* 用50 MHz控制时钟同步异步SPI输入。 */
+    /*
+     * Synchronize asynchronous SPI inputs before the glitch filter.  The
+     * first synchronizer stage never fans out into protocol logic.
+     */
     (* ASYNC_REG = "TRUE" *)
-    reg [2:0] sck_sync;
+    reg [1:0] sck_sync;
     (* ASYNC_REG = "TRUE" *)
-    reg [2:0] cs_sync;
+    reg [1:0] cs_sync;
     (* ASYNC_REG = "TRUE" *)
     reg [1:0] mosi_sync;
+    reg [2:0] sck_filter;
+    reg [2:0] cs_filter;
     reg sck_level;
     reg sck_level_d;
     reg cs_level;
@@ -60,33 +65,40 @@ module stm32_spi_reg_slave(
 
     assign spi_miso = cs_active ? miso_byte[3'd7 - bit_cnt] : 1'bz;
 
-    /* 过采样并滤除短毛刺；SPI SCK应低于控制时钟的四分之一。 */
+    /*
+     * The production SPI link is below 1 MHz.  Three samples of the already
+     * synchronized SCK/CS level must agree before the decoded level changes.
+     */
     always @(posedge clk or negedge reset_n) begin
         if (!reset_n) begin
-            sck_sync <= 3'b000;
-            cs_sync <= 3'b111;
+            sck_sync <= 2'b00;
+            cs_sync <= 2'b11;
             mosi_sync <= 2'b00;
+            sck_filter <= 3'b000;
+            cs_filter <= 3'b111;
             sck_level <= 1'b0;
             sck_level_d <= 1'b0;
             cs_level <= 1'b1;
             cs_level_d <= 1'b1;
         end else begin
-            sck_sync <= {sck_sync[1:0], spi_sck};
-            cs_sync <= {cs_sync[1:0], spi_cs_n};
+            sck_sync <= {sck_sync[0], spi_sck};
+            cs_sync <= {cs_sync[0], spi_cs_n};
             mosi_sync <= {mosi_sync[0], spi_mosi};
+            sck_filter <= {sck_filter[1:0], sck_sync[1]};
+            cs_filter <= {cs_filter[1:0], cs_sync[1]};
             sck_level_d <= sck_level;
             cs_level_d <= cs_level;
 
-            /* 连续三个采样一致才更新电平，滤除跳线上的短毛刺。 */
-            if (&sck_sync) begin
+            /* 连续三个安全域采样一致才更新电平。 */
+            if (&sck_filter) begin
                 sck_level <= 1'b1;
-            end else if (~|sck_sync) begin
+            end else if (~|sck_filter) begin
                 sck_level <= 1'b0;
             end
 
-            if (&cs_sync) begin
+            if (&cs_filter) begin
                 cs_level <= 1'b1;
-            end else if (~|cs_sync) begin
+            end else if (~|cs_filter) begin
                 cs_level <= 1'b0;
             end
         end
