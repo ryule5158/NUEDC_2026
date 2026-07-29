@@ -1,9 +1,9 @@
 @echo off
 setlocal
 rem One-click persistent release flow:
-rem 1. Clean rebuild from the current G-analyzer sources.
-rem 2. Reject timing/DRC/stale-artifact failures.
-rem 3. Package FSBL + fresh bitstream.
+rem 1. Discover every current RTL/XDC/IP input and record a SHA-256 snapshot.
+rem 2. Clean rebuild; reject input changes, timing/DRC, or stale artifacts.
+rem 3. Package the matching FSBL + fresh bitstream.
 rem 4. Require hardware JTAG boot mode.
 rem 5. Program QSPI at offset 0 and readback-verify it.
 
@@ -16,7 +16,7 @@ set "PROGRAM_RESULT=%ERRORLEVEL%"
 if not "%PROGRAM_RESULT%"=="0" goto :program_failed
 
 echo.
-echo Fresh G-analyzer project was built, programmed to QSPI, and verified.
+echo Fresh discovered G-analyzer sources were built, programmed to QSPI, and verified.
 echo Power off, select QSPI boot mode, then power on for the cold-boot test.
 pause
 endlocal

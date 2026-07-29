@@ -1,5 +1,5 @@
 # Build a clean PS7-integrated image for the 2026 G signal analyzer.
-# Only explicitly listed, reviewed G-path RTL is allowed into this release.
+# The release top stays fixed, while RTL/XDC/IP inputs are discovered on every run.
 
 set script_path [file normalize [info script]]
 set script_dir [file dirname $script_path]
@@ -8,17 +8,50 @@ set project_name "BX71_G_ANALYZER_PS7"
 set vivado_dir [file join $root_dir "Vivado"]
 set project_dir [file join $vivado_dir $project_name]
 set bd_file [file join $root_dir "ps7" "sys.bd"]
-set xdc_file [file join $root_dir "constraints" "ad9708_gpio1_spi_gpio0.xdc"]
+set top_name "g_analyzer_zynq_top"
 set top_file [file join $root_dir "rtl_ps7" "g_analyzer_zynq_top.v"]
-set rtl_files [list \
-    [file join $root_dir "rtl" "stm32_spi_reg_slave.v"] \
-    [file join $root_dir "rtl" "ad9280_clkgen.v"] \
-    [file join $root_dir "rtl" "ad9708_clkgen.v"] \
-    [file join $root_dir "rtl" "cic3_decimator_16.v"] \
-    [file join $root_dir "rtl" "ad9280_capture_core.v"] \
-    [file join $root_dir "rtl" "g_analyzer_top.v"]]
 
-foreach required_file [concat $rtl_files [list $top_file $bd_file $xdc_file]] {
+proc collect_design_files {directory patterns} {
+    if {![file isdirectory $directory]} {
+        return [list]
+    }
+    set result [list]
+    foreach pattern $patterns {
+        foreach candidate [glob -nocomplain -types f -directory $directory $pattern] {
+            lappend result [file normalize $candidate]
+        }
+    }
+    foreach child [glob -nocomplain -types d -directory $directory *] {
+        set result [concat $result [collect_design_files $child $patterns]]
+    }
+    return [lsort -unique $result]
+}
+
+set rtl_patterns [list *.v *.sv *.vhd *.vhdl *.vh *.svh]
+set rtl_files [list]
+foreach source_dir [list \
+        [file join $root_dir "rtl"] \
+        [file join $root_dir "rtl_ps7"]] {
+    set rtl_files [concat $rtl_files \
+        [collect_design_files $source_dir $rtl_patterns]]
+}
+set rtl_files [lsort -unique $rtl_files]
+set constraint_files [collect_design_files \
+    [file join $root_dir "constraints"] [list *.xdc]]
+set ip_files [collect_design_files \
+    [file join $root_dir "ip"] [list *.xci *.xcix *.dcp *.edf *.edif]]
+
+if {[llength $rtl_files] == 0} {
+    error "No RTL sources were discovered under rtl/ or rtl_ps7/"
+}
+if {[lsearch -exact $rtl_files [file normalize $top_file]] < 0} {
+    error "Release top is not part of the discovered RTL set: $top_file"
+}
+if {[llength $constraint_files] == 0} {
+    error "No XDC constraints were discovered under constraints/"
+}
+
+foreach required_file [concat $rtl_files $ip_files [list $bd_file] $constraint_files] {
     if {![file exists $required_file]} {
         error "Required G-analyzer source is missing: $required_file"
     }
@@ -39,10 +72,19 @@ set_property target_language Verilog [current_project]
 set_property XPM_LIBRARIES {XPM_FIFO} [current_project]
 
 add_files -norecurse $rtl_files
-add_files -norecurse $top_file
+if {[llength $ip_files] > 0} {
+    add_files -norecurse $ip_files
+}
 add_files -norecurse $bd_file
-add_files -fileset constrs_1 -norecurse $xdc_file
-set_property top g_analyzer_zynq_top [get_filesets sources_1]
+add_files -fileset constrs_1 -norecurse $constraint_files
+set_property top $top_name [get_filesets sources_1]
+puts "DISCOVERED_RTL_COUNT=[llength $rtl_files]"
+puts "DISCOVERED_IP_COUNT=[llength $ip_files]"
+puts "DISCOVERED_XDC_COUNT=[llength $constraint_files]"
+foreach discovered_file [concat $rtl_files $ip_files [list $bd_file] $constraint_files] {
+    puts "DISCOVERED_INPUT=$discovered_file"
+}
+catch { reset_target all [get_files $bd_file] }
 generate_target all [get_files $bd_file]
 update_compile_order -fileset sources_1
 

@@ -93,9 +93,10 @@ NCO 只在 FIFO 输出有效样本时推进，因此相位增量按实际 ADC �
 
 ## 构建与固化
 
-双击 `scripts/Build-QspiBoot.cmd`，脚本会在 `Vivado/BX71_G_ANALYZER_PS7/`
-创建干净工程，构建 G 题 PS7 集成位流并生成
-`output/BOOT_G_ANALYZER.bin`。
+双击 `scripts/Build-QspiBoot.cmd`，脚本会递归发现当前 RTL/XDC/IP 输入，在
+`Vivado/BX71_G_ANALYZER_PS7/` 创建干净工程，构建 G 题 PS7 集成位流，并生成
+`output/BOOT_G_ANALYZER.bin` 与 `output/SOURCE_SNAPSHOT_G_QSPI.txt`。
+支持范围和必须重新签核的结构变化见 `ONE_CLICK_QSPI_CHANGE_COVERAGE.md`。
 
 JTAG 临时调试应下载最终的 `output/BX71_G_ANALYZER_PS7.bit`。掉电保存使用以下任一入口，不需要打开 SDK、不需要 SDK workspace，也不需要导入 HDF：
 
