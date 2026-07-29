@@ -12,6 +12,10 @@ proc run_legacy_test {root_dir project_name top_name rtl_file tb_file} {
     set project_dir [file join $root_dir "Vivado" "Simulation" $project_name]
     file mkdir $project_dir
     create_project -force $project_name $project_dir -part xc7z020clg400-2
+    if {$top_name eq "tb_ad9280_capture_core"} {
+        add_files -norecurse [file join $root_dir "rtl" \
+            "cic3_decimator_16.v"]
+    }
     add_files -norecurse [file join $root_dir "rtl" $rtl_file]
     add_files -fileset sim_1 -norecurse [file join $root_dir "sim" $tb_file]
     set_property top $top_name [get_filesets sim_1]

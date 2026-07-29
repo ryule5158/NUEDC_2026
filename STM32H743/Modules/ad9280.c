@@ -15,9 +15,12 @@
 #define AD9280_REG_MIN_MAX             0x2CU /* 样本最小值和最大值地址。 */
 #define AD9280_REG_SUM                 0x2DU /* 样本累加和地址。 */
 #define AD9280_REG_LATEST              0x2EU /* 最近物理采样码地址。 */
+#define AD9280_REG_FILTER              0x2FU /* bit0 enables the G-mode CIC3/R16 filter. */
 
 #define AD9280_DEVICE_ID               0xAD928001UL /* 预期FPGA采集单元标识。 */
 #define AD9280_FIRMWARE_VERSION        0x00010001UL /* 当前支持的采集协议版本。 */
+#define AD9280_FIRMWARE_MIN_VERSION    0x00010001UL
+#define AD9280_FIRMWARE_CIC3_VERSION   0x00010002UL
 #define AD9280_CONTROL_START           0x00000001UL /* 启动一次采集的控制位。 */
 #define AD9280_CONTROL_ABORT           0x00000002UL /* 终止当前采集的控制位。 */
 #define AD9280_STATUS_READY            0x00000001UL /* ADC采样时钟锁定状态位。 */
@@ -121,7 +124,8 @@ AD9280_StatusTypeDef AD9280_Init(SPI_HandleTypeDef *hspi)
   status = AD9280_ReadReg(AD9280_REG_FIRMWARE_VERSION,
                           &s_ad9280_data.firmware_version);
   if ((status != AD9280_OK) ||
-      (s_ad9280_data.firmware_version != AD9280_FIRMWARE_VERSION))
+      (s_ad9280_data.firmware_version < AD9280_FIRMWARE_MIN_VERSION) ||
+      (s_ad9280_data.firmware_version > AD9280_FIRMWARE_CIC3_VERSION))
   {
     return AD9280_Return((status == AD9280_OK) ?
                          AD9280_ERROR_DEVICE : status);
@@ -464,6 +468,31 @@ AD9280_StatusTypeDef AD9280_AbortCapture(void)
   return AD9280_Return(status);
 }
 
+
+AD9280_StatusTypeDef AD9280_SetCic3Filter(uint8_t enable)
+{
+  AD9280_StatusTypeDef status;
+
+  status = AD9280_RequireInit();
+  if (status != AD9280_OK)
+  {
+    return AD9280_Return(status);
+  }
+  if (enable > 1U)
+  {
+    return AD9280_Return(AD9280_ERROR_PARAM);
+  }
+  if ((enable != 0U) &&
+      (s_ad9280_data.firmware_version < AD9280_FIRMWARE_CIC3_VERSION))
+  {
+    return AD9280_Return(AD9280_ERROR_DEVICE);
+  }
+
+  status = AD9280_WriteVerify(AD9280_REG_FILTER,
+                              (uint32_t)enable,
+                              0x00000001UL);
+  return AD9280_Return(status);
+}
 /************************************************************
  * Function :       AD9280_GetData
  * Comment  :       返回AD9280底层运行数据的只读指针

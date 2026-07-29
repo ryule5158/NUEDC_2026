@@ -103,6 +103,10 @@ AD9280_StatusTypeDef AD9280_GetCaptureInfo(AD9280_CaptureInfoTypeDef *info);
 
 /* 终止正在等待触发或正在进行的采集。 */
 AD9280_StatusTypeDef AD9280_AbortCapture(void);
+/* Enable the FPGA CIC3/R16 anti-alias decimator (firmware 1.2+ only). */
+AD9280_StatusTypeDef AD9280_SetCic3Filter(uint8_t enable);
+
+
 
 /* 获取AD9280底层运行数据，只读使用。 */
 const AD9280_DataTypeDef *AD9280_GetData(void);

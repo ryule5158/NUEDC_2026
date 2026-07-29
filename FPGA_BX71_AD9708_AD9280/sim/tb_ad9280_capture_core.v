@@ -13,6 +13,8 @@ module tb_ad9280_capture_core;
     localparam REG_OVERRANGE_COUNT = 7'h28; /* 越界采样时钟计数地址。 */
     localparam REG_MIN_MAX        = 7'h2C; /* 样本最小值和最大值地址。 */
     localparam REG_SUM            = 7'h2D; /* 样本累加和地址。 */
+    localparam REG_FIRMWARE_VERSION = 7'h2B;
+    localparam REG_FILTER         = 7'h2F;
 
     /* 仿真时钟、复位、ADC数据和寄存器总线信号。 */
     reg cfg_clk = 1'b0;
@@ -221,6 +223,33 @@ module tb_ad9280_capture_core;
         #1;
         if ((bus_rdata[1] != 1'b0) || (bus_rdata[2] != 1'b0)) begin
             $fatal(1, "Abort state mismatch");
+        end
+
+        /* G-mode integration: CIC3/R16 keeps a constant offset-binary code. */
+        ramp_enable = 1'b0;
+        adc_data = 8'd128;
+        bus_addr = REG_FIRMWARE_VERSION;
+        #1;
+        if (bus_rdata != 32'h00010002) begin
+            $fatal(1, "G capture firmware version mismatch");
+        end
+        WriteReg(REG_FILTER, 32'd1);
+        bus_addr = REG_FILTER;
+        #1;
+        if (bus_rdata[0] != 1'b1) begin
+            $fatal(1, "G CIC enable readback mismatch");
+        end
+        WriteReg(REG_SAMPLE_COUNT, 32'd4);
+        WriteReg(REG_DECIMATION, 32'd16);
+        WriteReg(REG_TRIGGER, 32'd0);
+        WriteReg(REG_CONTROL, 32'd1);
+        WaitDone();
+        WriteReg(REG_READ_ADDR, 32'd0);
+        for (index = 0; index < 4; index = index + 1) begin
+            ReadSample(index, sample_now);
+            if (sample_now != 8'd128) begin
+                $fatal(1, "G CIC constant-code mismatch index=%0d value=%0d", index, sample_now);
+            end
         end
 
         $display("AD9280_CAPTURE_TEST_PASS");
