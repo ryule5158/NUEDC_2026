@@ -1,0 +1,12 @@
+# Keil自动生成的编译和本机调试文件。
+MDK-ARM/NUEDC_MAIN(NO_RTOS)/
+MDK-ARM/DebugConfig/
+MDK-ARM/*.log
+MDK-ARM/EventRecorderStub.scvd
+MDK-ARM/*.uvguix.*
+MDK-ARM/*.bak
+/DebugConfig/
+/RTE/
+
+# AD9238 target build directory (reproducible from the uvprojx).
+MDK-ARM/STM32H743_AD9238/
