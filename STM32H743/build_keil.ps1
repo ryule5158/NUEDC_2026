@@ -1,14 +1,30 @@
+param(
+    [string]$KeilUv4Path = $env:NUEDC_KEIL_UV4
+)
+
 $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $keilRoot = Join-Path $projectRoot "MDK-ARM"
-$uv4 = "C:\Users\LENOVO\AppData\Local\Keil_v5\UV4\uVision.com"
 $project = Join-Path $keilRoot "STM32H743.uvprojx"
 $log = Join-Path $keilRoot "build.log"
 $output = Join-Path $projectRoot "output"
 
-if (-not (Test-Path -LiteralPath $uv4)) {
-    throw "Keil uVision not found: $uv4"
+if ([string]::IsNullOrWhiteSpace($KeilUv4Path)) {
+    $uv4Candidates = @(
+        (Join-Path $env:LOCALAPPDATA "Keil_MDK\UV4\uVision.com"),
+        (Join-Path $env:LOCALAPPDATA "Keil_v5\UV4\uVision.com"),
+        "C:\Keil_v5\UV4\uVision.com",
+        "C:\Keil_v5\UV4\UV4.exe"
+    )
+    $KeilUv4Path = $uv4Candidates |
+        Where-Object { Test-Path -LiteralPath $_ } |
+        Select-Object -First 1
+}
+
+if ([string]::IsNullOrWhiteSpace($KeilUv4Path) -or
+    (-not (Test-Path -LiteralPath $KeilUv4Path))) {
+    throw "Keil uVision not found. Set NUEDC_KEIL_UV4 or pass -KeilUv4Path."
 }
 
 if (-not (Test-Path -LiteralPath $project)) {
@@ -20,8 +36,10 @@ try {
     if (Test-Path -LiteralPath $log) {
         Remove-Item -LiteralPath $log
     }
-    & $uv4 -r $project -j0 -o $log
-    $uvExitCode = $LASTEXITCODE
+    $process = Start-Process -FilePath $KeilUv4Path `
+        -ArgumentList '-r "STM32H743.uvprojx" -j0 -o "build.log"' `
+        -WindowStyle Hidden -Wait -PassThru
+    $uvExitCode = $process.ExitCode
     if (($uvExitCode -ne 0) -and (-not (Test-Path -LiteralPath $log))) {
         throw "Keil rebuild failed before producing a log (exit $uvExitCode)."
     }

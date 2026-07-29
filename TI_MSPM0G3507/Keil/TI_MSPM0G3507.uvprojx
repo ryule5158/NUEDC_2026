@@ -10,7 +10,7 @@
       <TargetName>TI_MSPM0G3507</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6240000::V6.24::ARMCLANG</pCCUsed>
+      <pCCUsed>6230000::V6.23::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
@@ -658,6 +658,16 @@
               <FileName>ad5687_app.h</FileName>
               <FileType>5</FileType>
               <FilePath>../Modules/ad5687_app.h</FilePath>
+            </File>
+            <File>
+              <FileName>ad603.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Modules/ad603.c</FilePath>
+            </File>
+            <File>
+              <FileName>ad603.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>../Modules/ad603.h</FilePath>
             </File>
             <File>
               <FileName>ad9910.c</FileName>

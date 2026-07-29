@@ -24,6 +24,17 @@ typedef struct
   uint8_t valid;           /* 1表示当前校准参数有效。 */
 } AD9280_VoltageCalibrationTypeDef;
 
+/* Capture phase retained when a blocking capture returns an error. */
+typedef enum
+{
+  AD9280_APP_CAPTURE_IDLE = 0,
+  AD9280_APP_CAPTURE_START,
+  AD9280_APP_CAPTURE_WAIT,
+  AD9280_APP_CAPTURE_READ,
+  AD9280_APP_CAPTURE_STATUS,
+  AD9280_APP_CAPTURE_COMPLETE
+} AD9280_AppCaptureStageTypeDef;
+
 /* AD9280应用层最近一次采集结果。 */
 typedef struct
 {
@@ -31,6 +42,7 @@ typedef struct
   AD9280_CaptureInfoTypeDef capture; /* 最近一次FPGA采集状态。 */
   uint16_t sample_count;             /* 应用层缓存中的有效点数。 */
   uint8_t initialized;               /* 应用层初始化标志。 */
+  AD9280_AppCaptureStageTypeDef capture_stage;
 } AD9280_AppDataTypeDef;
 
 /* 初始化高速ADC应用层并核验STM32-FPGA-AD9280链路。 */
@@ -59,8 +71,8 @@ AD9280_StatusTypeDef AD9280_AppSetVoltageCalibration(
 /* 将一个8位原始采样码换算为校准后的模块输入电压。 */
 float AD9280_AppCodeToVoltage(uint8_t code);
 
-/* 获取应用层4096点原始采样缓存，只读使用。 */
-const uint8_t *AD9280_AppGetSamples(void);
+/* 获取应用层4096点 signed Q8.8 采样缓存，只读使用。 */
+const AD9280_SampleTypeDef *AD9280_AppGetSamples(void);
 
 /* 获取应用层缓存中的有效采样点数。 */
 uint16_t AD9280_AppGetSampleCount(void);

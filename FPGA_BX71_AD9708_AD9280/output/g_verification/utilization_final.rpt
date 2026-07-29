@@ -1,0 +1,35 @@
+Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
+| Date         : Wed Jul 29 13:46:11 2026
+| Host         : FYH2005 running 64-bit major release  (build 9200)
+| Command      : report_utilization -hierarchical -file C:/Users/21274/AppData/Local/Temp/NF/Vivado/BX71_G_ANALYZER_PL/BX71_G_ANALYZER_PL.runs/impl_1/g_analyzer_utilization_final.rpt
+| Design       : g_analyzer_top
+| Device       : 7z020clg400-2
+| Design State : Routed
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Utilization Design Information
+
+Table of Contents
+-----------------
+1. Utilization by Hierarchy
+
+1. Utilization by Hierarchy
+---------------------------
+
++---------------------+---------------------+------------+------------+---------+------+-----+--------+--------+--------------+
+|       Instance      |        Module       | Total LUTs | Logic LUTs | LUTRAMs | SRLs | FFs | RAMB36 | RAMB18 | DSP48 Blocks |
++---------------------+---------------------+------------+------------+---------+------+-----+--------+--------+--------------+
+| g_analyzer_top      |               (top) |        845 |        845 |       0 |    0 | 882 |      2 |      0 |            0 |
+|   (g_analyzer_top)  |               (top) |          0 |          0 |       0 |    0 |   0 |      0 |      0 |            0 |
+|   adc_capture       | ad9280_capture_core |        716 |        716 |       0 |    0 | 782 |      2 |      0 |            0 |
+|     (adc_capture)   | ad9280_capture_core |        172 |        172 |       0 |    0 | 615 |      2 |      0 |            0 |
+|     g_cic_decimator |   cic3_decimator_16 |        544 |        544 |       0 |    0 | 167 |      0 |      0 |            0 |
+|   adc_clkgen        |       ad9280_clkgen |          2 |          2 |       0 |    0 |   0 |      0 |      0 |            0 |
+|   dac_clkgen        |       ad9708_clkgen |          1 |          1 |       0 |    0 |   0 |      0 |      0 |            0 |
+|   spi_if            | stm32_spi_reg_slave |        126 |        126 |       0 |    0 | 100 |      0 |      0 |            0 |
++---------------------+---------------------+------------+------------+---------+------+-----+--------+--------+--------------+
+* Note: The sum of lower-level cells may be larger than their parent cells total, due to cross-hierarchy LUT combining
+
+

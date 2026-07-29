@@ -405,29 +405,9 @@
               <FilePath>../Core/Src/gpio.c</FilePath>
             </File>
             <File>
-              <FileName>adc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Core/Src/adc.c</FilePath>
-            </File>
-            <File>
-              <FileName>dma.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Core/Src/dma.c</FilePath>
-            </File>
-            <File>
-              <FileName>dac.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Core/Src/dac.c</FilePath>
-            </File>
-            <File>
               <FileName>spi.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/spi.c</FilePath>
-            </File>
-            <File>
-              <FileName>tim.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Core/Src/tim.c</FilePath>
             </File>
             <File>
               <FileName>usart.c</FileName>
@@ -579,6 +559,26 @@
               <FileType>1</FileType>
               <FilePath>../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart_ex.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32h7xx_hal_nand.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_nand.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32h7xx_hal_qspi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_qspi.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32h7xx_hal_sdram.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sdram.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32h7xx_ll_fmc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_fmc.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -678,6 +678,16 @@
               <FileName>ad5687_app.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\Modules\ad5687_app.h</FilePath>
+            </File>
+            <File>
+              <FileName>ad603.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Modules\ad603.c</FilePath>
+            </File>
+            <File>
+              <FileName>ad603.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Modules\ad603.h</FilePath>
             </File>
             <File>
               <FileName>dac8831.c</FileName>
@@ -795,44 +805,49 @@
               <FilePath>..\BSP\BSP_Header.h</FilePath>
             </File>
             <File>
-              <FileName>adc_app.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\BSP\adc_app.c</FilePath>
-            </File>
-            <File>
-              <FileName>adc_app.h</FileName>
+              <FileName>signal_adc.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\BSP\adc_app.h</FilePath>
+              <FilePath>..\BSP\signal_adc.h</FilePath>
             </File>
             <File>
-              <FileName>adc_dual_capture.c</FileName>
+              <FileName>signal_adc_ad9280.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\BSP\adc_dual_capture.c</FilePath>
+              <FilePath>..\BSP\signal_adc_ad9280.c</FilePath>
             </File>
             <File>
-              <FileName>adc_dual_capture.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\BSP\adc_dual_capture.h</FilePath>
-            </File>
-            <File>
-              <FileName>fpga_boot_restore.c</FileName>
+              <FileName>g_contest_app.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\BSP\fpga_boot_restore.c</FilePath>
+              <FilePath>..\BSP\g_contest_app.c</FilePath>
             </File>
             <File>
-              <FileName>fpga_boot_restore.h</FileName>
+              <FileName>g_contest_app.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\BSP\fpga_boot_restore.h</FilePath>
+              <FilePath>..\BSP\g_contest_app.h</FilePath>
             </File>
             <File>
-              <FileName>pll_test_app.c</FileName>
+              <FileName>g_contest_cli.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\BSP\pll_test_app.c</FilePath>
+              <FilePath>..\BSP\g_contest_cli.c</FilePath>
             </File>
             <File>
-              <FileName>pll_test_app.h</FileName>
+              <FileName>g_contest_cli.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\BSP\pll_test_app.h</FilePath>
+              <FilePath>..\BSP\g_contest_cli.h</FilePath>
+            </File>
+            <File>
+              <FileName>g_tjc_ui.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\g_tjc_ui.c</FilePath>
+            </File>
+            <File>
+              <FileName>g_tjc_ui.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\BSP\g_tjc_ui.h</FilePath>
+            </File>
+            <File>
+              <FileName>g_contest_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Core\Inc\g_contest_config.h</FilePath>
             </File>
             <File>
               <FileName>Serial_Buffer.c</FileName>
@@ -843,6 +858,56 @@
               <FileName>Serial_Buffer.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\BSP\Serial_Buffer.h</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_storage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\bsp_storage.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_storage.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\BSP\bsp_storage.h</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_sdram.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\bsp_sdram.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_sdram.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\BSP\bsp_sdram.h</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_nand.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\bsp_nand.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_nand.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\BSP\bsp_nand.h</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_qspi_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\bsp_qspi_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_qspi_flash.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\BSP\bsp_qspi_flash.h</FilePath>
+            </File>
+            <File>
+              <FileName>storage_test.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\storage_test.c</FilePath>
+            </File>
+            <File>
+              <FileName>storage_test.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\BSP\storage_test.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -863,16 +928,6 @@
               <FileName>FFT.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\DSP\FFT.h</FilePath>
-            </File>
-            <File>
-              <FileName>ADC_FFT.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\DSP\ADC_FFT.c</FilePath>
-            </File>
-            <File>
-              <FileName>ADC_FFT.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\DSP\ADC_FFT.h</FilePath>
             </File>
             <File>
               <FileName>Filter.c</FileName>
@@ -983,6 +1038,16 @@
               <FileName>ModelFit.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\DSP\ModelFit.h</FilePath>
+            </File>
+            <File>
+              <FileName>periodic_analyzer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\DSP\periodic_analyzer.c</FilePath>
+            </File>
+            <File>
+              <FileName>periodic_analyzer.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\DSP\periodic_analyzer.h</FilePath>
             </File>
           </Files>
         </Group>

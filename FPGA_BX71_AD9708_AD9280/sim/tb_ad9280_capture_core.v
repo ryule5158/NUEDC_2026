@@ -2,19 +2,21 @@
 
 module tb_ad9280_capture_core;
 
-    localparam REG_CONTROL        = 7'h20; /* 采集控制寄存器地址。 */
-    localparam REG_STATUS         = 7'h21; /* 采集状态寄存器地址。 */
-    localparam REG_SAMPLE_COUNT   = 7'h22; /* 保存点数寄存器地址。 */
-    localparam REG_DECIMATION     = 7'h23; /* 抽取倍数寄存器地址。 */
-    localparam REG_TRIGGER        = 7'h24; /* 触发配置寄存器地址。 */
-    localparam REG_READ_ADDR      = 7'h25; /* 缓存读地址寄存器地址。 */
-    localparam REG_READ_DATA      = 7'h26; /* 缓存读数据寄存器地址。 */
-    localparam REG_CAPTURED_COUNT = 7'h27; /* 实际保存点数寄存器地址。 */
-    localparam REG_OVERRANGE_COUNT = 7'h28; /* 越界采样时钟计数地址。 */
-    localparam REG_MIN_MAX        = 7'h2C; /* 样本最小值和最大值地址。 */
-    localparam REG_SUM            = 7'h2D; /* 样本累加和地址。 */
+    localparam REG_CONTROL          = 7'h20;
+    localparam REG_STATUS           = 7'h21;
+    localparam REG_SAMPLE_COUNT     = 7'h22;
+    localparam REG_DECIMATION       = 7'h23;
+    localparam REG_TRIGGER          = 7'h24;
+    localparam REG_READ_ADDR        = 7'h25;
+    localparam REG_READ_DATA        = 7'h26;
+    localparam REG_CAPTURED_COUNT   = 7'h27;
+    localparam REG_OVERRANGE_COUNT  = 7'h28;
+    localparam REG_FIRMWARE_VERSION = 7'h2B;
+    localparam REG_MIN_MAX          = 7'h2C;
+    localparam REG_SUM              = 7'h2D;
+    localparam REG_LATEST           = 7'h2E;
+    localparam REG_FILTER           = 7'h2F;
 
-    /* 仿真时钟、复位、ADC数据和寄存器总线信号。 */
     reg cfg_clk = 1'b0;
     reg adc_clk = 1'b0;
     reg reset_n = 1'b0;
@@ -29,23 +31,20 @@ module tb_ad9280_capture_core;
     wire bus_select;
     wire [31:0] bus_rdata;
 
-    /* 仿真检查使用的采样值和循环变量。 */
-    reg [7:0] sample_now;
-    reg [7:0] sample_previous;
-    reg [7:0] sample_min;
-    reg [7:0] sample_max;
-    reg [31:0] sample_sum;
+    reg signed [15:0] sample_now;
+    reg signed [15:0] sample_previous;
+    reg signed [15:0] sample_min;
+    reg signed [15:0] sample_max;
+    reg signed [31:0] sample_sum;
     integer index;
     integer timeout_count;
 
     always #10 cfg_clk = ~cfg_clk;
     always #15.625 adc_clk = ~adc_clk;
 
-    /* 在ADC下降沿更新输入，保证上升沿采样数据稳定。 */
     always @(negedge adc_clk) begin
-        if (ramp_enable) begin
+        if (ramp_enable)
             adc_data <= adc_data + 1'b1;
-        end
     end
 
     ad9280_capture_core dut (
@@ -63,7 +62,15 @@ module tb_ad9280_capture_core;
         .bus_rdata(bus_rdata)
     );
 
-    /* 模拟STM32写一个FPGA寄存器。 */
+    function signed [15:0] CodeToQ8_8;
+        input [7:0] code;
+        reg signed [8:0] centered;
+        begin
+            centered = $signed({1'b0, code}) - 9'sd128;
+            CodeToQ8_8 = {centered[7:0], 8'h00};
+        end
+    endfunction
+
     task WriteReg;
         input [6:0] addr;
         input [31:0] value;
@@ -77,32 +84,37 @@ module tb_ad9280_capture_core;
         end
     endtask
 
-    /* 等待FPGA完成当前采集并限制仿真超时。 */
     task WaitDone;
         begin
             bus_addr = REG_STATUS;
             timeout_count = 0;
-            while ((bus_rdata[2] == 1'b0) && (timeout_count < 10000)) begin
+            while ((bus_rdata[2] == 1'b0) &&
+                   (timeout_count < 10000)) begin
                 @(posedge cfg_clk);
                 timeout_count = timeout_count + 1;
             end
-            if (timeout_count >= 10000) begin
+            if (timeout_count >= 10000)
                 $fatal(1, "AD9280 capture timeout");
-            end
         end
     endtask
 
-    /* 读取一个缓存样本并提交自动地址递增。 */
+    /*
+     * Protocol v1.3:
+     *   bits 31:28 = zero
+     *   bits 27:16 = 12-bit address tag
+     *   bits 15:0  = signed two's-complement Q8.8 sample
+     */
     task ReadSample;
         input [11:0] expected_addr;
-        output [7:0] value;
+        output signed [15:0] value;
         begin
             bus_addr = REG_READ_DATA;
             repeat (2) @(posedge cfg_clk);
-            if (bus_rdata[19:8] != expected_addr) begin
+            if (bus_rdata[31:28] != 4'd0)
+                $fatal(1, "READ_DATA reserved bits are nonzero");
+            if (bus_rdata[27:16] != expected_addr)
                 $fatal(1, "Read address tag mismatch");
-            end
-            value = bus_rdata[7:0];
+            value = $signed(bus_rdata[15:0]);
             @(negedge cfg_clk);
             bus_read_commit = 1'b1;
             @(negedge cfg_clk);
@@ -111,13 +123,68 @@ module tb_ad9280_capture_core;
         end
     endtask
 
+    task CheckRawConstant;
+        input [7:0] code;
+        input signed [15:0] expected_q8_8;
+        begin
+            ramp_enable = 1'b0;
+            adc_data = code;
+            WriteReg(REG_FILTER, 32'd0);
+            WriteReg(REG_SAMPLE_COUNT, 32'd4);
+            WriteReg(REG_DECIMATION, 32'd1);
+            WriteReg(REG_TRIGGER, 32'd0);
+            WriteReg(REG_CONTROL, 32'd1);
+            WaitDone();
+            WriteReg(REG_READ_ADDR, 32'd0);
+            for (index = 0; index < 4; index = index + 1) begin
+                ReadSample(index[11:0], sample_now);
+                if ($signed(sample_now) !== expected_q8_8) begin
+                    $fatal(1,
+                           "Raw Q8.8 mismatch code=%0d actual=%0d expected=%0d",
+                           code, $signed(sample_now), expected_q8_8);
+                end
+            end
+
+            bus_addr = REG_MIN_MAX;
+            repeat (2) @(posedge cfg_clk);
+            if (($signed(bus_rdata[15:0]) !== expected_q8_8) ||
+                ($signed(bus_rdata[31:16]) !== expected_q8_8))
+                $fatal(1, "Raw signed MIN/MAX mismatch");
+
+            bus_addr = REG_SUM;
+            #1;
+            if ($signed(bus_rdata) !==
+                (4 * $signed(expected_q8_8)))
+                $fatal(1, "Raw signed SUM mismatch");
+
+            bus_addr = REG_LATEST;
+            repeat (2) @(posedge cfg_clk);
+            if ($signed(bus_rdata[15:0]) !== expected_q8_8)
+                $fatal(1, "Raw signed LATEST mismatch");
+        end
+    endtask
+
     initial begin
         repeat (5) @(posedge cfg_clk);
         reset_n = 1'b1;
         repeat (5) @(posedge cfg_clk);
 
-        /* 用8点、2倍抽取验证缓存点数和抽取间隔。 */
+        bus_addr = REG_FIRMWARE_VERSION;
+        #1;
+        if (bus_rdata != 32'h00010003)
+            $fatal(1, "G capture protocol version mismatch");
+
+        /*
+         * Raw bypass uses the same centered signed Q8.8 format.  These checks
+         * also prove the READ_DATA address shift and high-byte/low-byte order.
+         */
+        CheckRawConstant(8'd160, 16'sh2000);
+        CheckRawConstant(8'd96, -16'sh2000);
+
+        /* Eight samples with R=2 must advance by two ADC codes = 0x0200. */
+        adc_data = 8'd20;
         ramp_enable = 1'b1;
+        WriteReg(REG_FILTER, 32'd0);
         WriteReg(REG_SAMPLE_COUNT, 32'd8);
         WriteReg(REG_DECIMATION, 32'd2);
         WriteReg(REG_TRIGGER, 32'd0);
@@ -125,9 +192,8 @@ module tb_ad9280_capture_core;
         WaitDone();
         bus_addr = REG_CAPTURED_COUNT;
         #1;
-        if (bus_rdata[12:0] != 13'd8) begin
+        if (bus_rdata[12:0] != 13'd8)
             $fatal(1, "Immediate capture count mismatch");
-        end
 
         WriteReg(REG_READ_ADDR, 32'd0);
         ReadSample(12'd0, sample_previous);
@@ -135,28 +201,29 @@ module tb_ad9280_capture_core;
         sample_max = sample_previous;
         sample_sum = sample_previous;
         for (index = 1; index < 8; index = index + 1) begin
-            ReadSample(index, sample_now);
-            if ((sample_now - sample_previous) != 8'd2) begin
-                $fatal(1, "Decimation interval mismatch");
-            end
-            if (sample_now < sample_min) sample_min = sample_now;
-            if (sample_now > sample_max) sample_max = sample_now;
+            ReadSample(index[11:0], sample_now);
+            if (($signed(sample_now) -
+                 $signed(sample_previous)) != 16'sd512)
+                $fatal(1, "Raw Q8.8 decimation interval mismatch");
+            if ($signed(sample_now) < $signed(sample_min))
+                sample_min = sample_now;
+            if ($signed(sample_now) > $signed(sample_max))
+                sample_max = sample_now;
             sample_sum = sample_sum + sample_now;
             sample_previous = sample_now;
         end
+
         bus_addr = REG_MIN_MAX;
         repeat (2) @(posedge cfg_clk);
-        if ((bus_rdata[7:0] != sample_min) ||
-            (bus_rdata[15:8] != sample_max)) begin
-            $fatal(1, "Min/max statistics mismatch");
-        end
+        if (($signed(bus_rdata[15:0]) !== $signed(sample_min)) ||
+            ($signed(bus_rdata[31:16]) !== $signed(sample_max)))
+            $fatal(1, "Signed Q8.8 min/max statistics mismatch");
         bus_addr = REG_SUM;
         #1;
-        if (bus_rdata != sample_sum) begin
-            $fatal(1, "Sample sum mismatch");
-        end
+        if ($signed(bus_rdata) !== $signed(sample_sum))
+            $fatal(1, "Signed Q8.8 sum statistics mismatch");
 
-        /* 保持90码，确认上升阈值触发前不会写入缓存。 */
+        /* A rising trigger stores the threshold-crossing raw sample in Q8.8. */
         ramp_enable = 1'b0;
         adc_data = 8'd90;
         WriteReg(REG_SAMPLE_COUNT, 32'd4);
@@ -165,19 +232,18 @@ module tb_ad9280_capture_core;
         WriteReg(REG_CONTROL, 32'd1);
         bus_addr = REG_STATUS;
         repeat (20) @(posedge cfg_clk);
-        if ((bus_rdata[5] == 1'b0) || (bus_rdata[2] != 1'b0)) begin
+        if ((bus_rdata[5] == 1'b0) || (bus_rdata[2] != 1'b0))
             $fatal(1, "Rising trigger wait state mismatch");
-        end
 
         ramp_enable = 1'b1;
         WaitDone();
         WriteReg(REG_READ_ADDR, 32'd0);
         ReadSample(12'd0, sample_now);
-        if (sample_now != 8'd100) begin
+        if ($signed(sample_now) !==
+            $signed(CodeToQ8_8(8'd100)))
             $fatal(1, "Rising trigger first sample mismatch");
-        end
 
-        /* 验证下降沿触发能把跨阈值样本作为首个缓存点。 */
+        /* Falling trigger stores the crossing sample in the same format. */
         ramp_enable = 1'b0;
         adc_data = 8'd110;
         WriteReg(REG_SAMPLE_COUNT, 32'd4);
@@ -189,11 +255,11 @@ module tb_ad9280_capture_core;
         WaitDone();
         WriteReg(REG_READ_ADDR, 32'd0);
         ReadSample(12'd0, sample_now);
-        if (sample_now != 8'd90) begin
+        if ($signed(sample_now) !==
+            $signed(CodeToQ8_8(8'd90)))
             $fatal(1, "Falling trigger first sample mismatch");
-        end
 
-        /* 验证OTR在完整采集窗口内按物理采样时钟计数。 */
+        /* OTR is still counted on every physical ADC sample. */
         adc_otr = 1'b1;
         WriteReg(REG_TRIGGER, 32'd0);
         WriteReg(REG_CONTROL, 32'd1);
@@ -201,16 +267,14 @@ module tb_ad9280_capture_core;
         adc_otr = 1'b0;
         bus_addr = REG_STATUS;
         repeat (2) @(posedge cfg_clk);
-        if (bus_rdata[4] != 1'b1) begin
+        if (bus_rdata[4] != 1'b1)
             $fatal(1, "Overrange status mismatch");
-        end
         bus_addr = REG_OVERRANGE_COUNT;
         #1;
-        if (bus_rdata != 32'd4) begin
+        if (bus_rdata != 32'd4)
             $fatal(1, "Overrange count mismatch");
-        end
 
-        /* 验证等待触发期间可以主动终止，且不会留下伪完成状态。 */
+        /* Waiting for a trigger may be aborted without a stale done token. */
         adc_data = 8'd80;
         WriteReg(REG_TRIGGER, {22'd0, 2'd1, 8'd200});
         WriteReg(REG_CONTROL, 32'd1);
@@ -219,12 +283,33 @@ module tb_ad9280_capture_core;
         repeat (20) @(posedge cfg_clk);
         bus_addr = REG_STATUS;
         #1;
-        if ((bus_rdata[1] != 1'b0) || (bus_rdata[2] != 1'b0)) begin
+        if ((bus_rdata[1] != 1'b0) || (bus_rdata[2] != 1'b0))
             $fatal(1, "Abort state mismatch");
+
+        /* CIC mode retains a non-zero DC level as signed Q8.8. */
+        ramp_enable = 1'b0;
+        adc_data = 8'd160;
+        WriteReg(REG_FILTER, 32'd1);
+        bus_addr = REG_FILTER;
+        #1;
+        if (bus_rdata[0] != 1'b1)
+            $fatal(1, "G CIC enable readback mismatch");
+        WriteReg(REG_SAMPLE_COUNT, 32'd4);
+        WriteReg(REG_DECIMATION, 32'd16);
+        WriteReg(REG_TRIGGER, 32'd0);
+        WriteReg(REG_CONTROL, 32'd1);
+        WaitDone();
+        WriteReg(REG_READ_ADDR, 32'd0);
+        for (index = 0; index < 4; index = index + 1) begin
+            ReadSample(index[11:0], sample_now);
+            if ($signed(sample_now) !== 16'sh2000) begin
+                $fatal(1,
+                       "G CIC Q8.8 DC mismatch index=%0d value=%0d",
+                       index, $signed(sample_now));
+            end
         end
 
         $display("AD9280_CAPTURE_TEST_PASS");
         $finish;
     end
-
 endmodule

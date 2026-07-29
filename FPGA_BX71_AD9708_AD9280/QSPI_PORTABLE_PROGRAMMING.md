@@ -27,7 +27,7 @@ Vivado/SDK 可以装在不同盘符和不同父目录。脚本会依次从以下
 1. 断电，把 BX71 启动模式切到 JTAG。
 2. 连接 JTAG 和电源并开机。
 3. 双击 `scripts/Program-Qspi.cmd`。
-4. 看到 `QSPI PROGRAMMING PASSED` 后才能断电。
+4. 看到 `QSPI PROGRAMMING AND READBACK VERIFY PASSED` 后才能断电。
 5. 断电，把启动模式切到 QSPI。
 6. 再次上电，进行真实冷启动功能检查。
 
@@ -41,7 +41,7 @@ Flash。
 2. 双击 `scripts/Build-And-Program-Qspi.cmd`。
 3. 脚本会依次完成：
    - 构建含 BX71 PS7 配置的位流；
-   - 用工程内 FSBL 打包 `output/BOOT_PS7.bin`；
+   - 用工程内 FSBL 打包 `output/BOOT_G_ANALYZER.bin`；
    - 自动连接或启动 `hw_server`；
    - 确认 JTAG 链中存在 XC7Z020；
    - 写入 `qspi-x1-single`、Offset 0；
@@ -57,7 +57,7 @@ SDK 图形界面的 `Program Flash` 需要 workspace 中存在 Hardware Platform
 
 命令行 `program_flash.bat` 只需要：
 
-- 完整的 `BOOT_PS7.bin`；
+- 完整的 `BOOT_G_ANALYZER.bin`；
 - 可执行的 `FSBL.elf`；
 - Flash 类型；
 - JTAG 目标。
@@ -68,13 +68,13 @@ workspace 无关。HDF 仍可用于建立 SDK 软件工程，但不是本工程�
 
 ## 输出和证据
 
-- `output/BOOT_PS7.bin`：写入 QSPI 的完整启动镜像。
-- `output/SHA256SUMS.txt`：位流和启动镜像的 SHA-256。
-- `output/program_qspi_*.log`：本机烧录日志。
-- `output/LAST_PROGRAMMED.txt`：最后一次烧录的时间、目标、长度、哈希和
+- `output/BOOT_G_ANALYZER.bin`：写入 QSPI 的完整启动镜像。
+- `output/SHA256SUMS_G_QSPI.txt`：位流和启动镜像的 SHA-256。
+- `output/program_g_qspi_*.log`：本机烧录日志。
+- `output/LAST_PROGRAMMED_G_QSPI.txt`：最后一次烧录的时间、目标、长度、哈希和
   Verify 状态。
 
-日志和 `LAST_PROGRAMMED.txt` 是本机运行证据，不上传 Git。
+日志和 `LAST_PROGRAMMED_G_QSPI.txt` 是本机运行证据，不上传 Git。
 
 ## 非常规安装目录
 

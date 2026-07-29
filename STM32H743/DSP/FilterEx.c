@@ -246,6 +246,88 @@ void FilterEx_RMSProcessBlock(FilterEx_RMS_t *filter,
     }
 }
 
+/* ========================================================================== */
+/* Fractional delay                                                          */
+/* ========================================================================== */
+
+/* 初始化分数延时器。 */
+FilterEx_Status_t FilterEx_FractionalDelayInit(
+    FilterEx_FractionalDelay_t *delay,
+    float *storage,
+    uint32_t storage_length)
+{
+    if (delay == NULL || storage == NULL) return FILTEREX_ERROR_NULL;
+    if (storage_length < 2u) return FILTEREX_ERROR_CAPACITY;
+
+    delay->ring = storage;
+    delay->capacity = storage_length;
+    delay->integer_delay = 0u;
+    delay->fraction = 0.0f;
+    FilterEx_FractionalDelayReset(delay);
+    return FILTEREX_OK;
+}
+
+/* 直接设置分数延时。 */
+FilterEx_Status_t FilterEx_FractionalDelaySetSamples(
+    FilterEx_FractionalDelay_t *delay,
+    float delay_samples)
+{
+    if (delay == NULL || delay->ring == NULL) return FILTEREX_ERROR_NULL;
+    if (delay->capacity < 2u || !FilterEx_IsFinite(delay_samples)
+        || delay_samples < 0.0f) {
+        return FILTEREX_ERROR_PARAMETER;
+    }
+    if (delay_samples > (float)(delay->capacity - 2u)) {
+        return FILTEREX_ERROR_CAPACITY;
+    }
+
+    delay->integer_delay = (uint32_t)floorf(delay_samples);
+    delay->fraction = delay_samples - (float)delay->integer_delay;
+    return FILTEREX_OK;
+}
+
+/* 按采样率、点频和目标相移设置分数延时。 */
+FilterEx_Status_t FilterEx_FractionalDelaySetPhase(
+    FilterEx_FractionalDelay_t *delay,
+    float sample_rate_hz,
+    float frequency_hz,
+    float phase_deg)
+{
+    float delay_samples;
+
+    if (delay == NULL || delay->ring == NULL) return FILTEREX_ERROR_NULL;
+    if (!FilterEx_IsValidFrequency(sample_rate_hz, frequency_hz)
+        || !FilterEx_IsFinite(phase_deg)
+        || phase_deg < 0.0f || phase_deg > 180.0f) {
+        return FILTEREX_ERROR_PARAMETER;
+    }
+
+    delay_samples = sample_rate_hz * phase_deg
+                  / (360.0f * frequency_hz);
+    return FilterEx_FractionalDelaySetSamples(delay, delay_samples);
+}
+
+/* 清空分数延时器历史数据。 */
+void FilterEx_FractionalDelayReset(FilterEx_FractionalDelay_t *delay)
+{
+    if (delay == NULL || delay->ring == NULL || delay->capacity < 2u) return;
+    memset(delay->ring, 0, delay->capacity * sizeof(float));
+    delay->write_index = 0u;
+}
+
+/* 批量处理分数延时输入。 */
+void FilterEx_FractionalDelayProcessBlock(
+    FilterEx_FractionalDelay_t *delay,
+    const float *input,
+    float *output,
+    uint32_t length)
+{
+    if (delay == NULL || input == NULL || output == NULL) return;
+    for (uint32_t i = 0u; i < length; ++i) {
+        output[i] = FilterEx_FractionalDelayProcess(delay, input[i]);
+    }
+}
+
 /* 按奇数窗口长度初始化中值滤波器。 */
 FilterEx_Status_t FilterEx_MedianInit(FilterEx_Median_t *filter, uint32_t window)
 {

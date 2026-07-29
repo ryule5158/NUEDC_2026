@@ -1,0 +1,6 @@
+PASS mid_3lines         f0=123472.914Hz rms=0.077821V vpp=0.216329V
+PASS low_edge_2lines    f0=10048.783Hz rms=0.020805V vpp=0.063262V
+PASS high_edge_3lines   f0=166446.219Hz rms=0.028920V vpp=0.090301V
+PASS weak_fundamental   f0=70037.875Hz rms=0.059567V vpp=0.201308V
+PASS near_500k_2lines   f0=249898.563Hz rms=0.060194V vpp=0.189973V
+PERIODIC_ANALYZER_HOST_MATRIX_PASS

@@ -1,178 +1,89 @@
-/* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2026 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
-/* USER CODE END Header */
-/* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "adc.h"
-#include "dma.h"
 #include "spi.h"
-#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-#include "fpga_boot_restore.h"
-#include "pll_selftest_config.h"
-#include "pll_test_app.h"
-#include <string.h>
-/* USER CODE END Includes */
+#include "g_contest_app.h"
+#include "g_contest_cli.h"
+#include "g_tjc_ui.h"
 
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-static FpgaBootRestore_Config s_fpga_boot_config;
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-/* USER CODE BEGIN PFP */
-static void App_FpgaBootLog(void *user, const char *message);
-/* USER CODE END PFP */
 
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-/*
- * 启动恢复日志走 USART1(PA9/PA10)。回调只同步使用 message，
- * 因此恢复模块可以安全复用自己的格式化缓冲区。
- */
-static void App_FpgaBootLog(void *user, const char *message)
-{
-  size_t length;
-
-  (void)user;
-  if (message == NULL)
-  {
-    return;
-  }
-
-  length = strlen(message);
-  if (length > 0xFFFFU)
-  {
-    length = 0xFFFFU;
-  }
-  (void)HAL_UART_Transmit(&huart1,
-                          (const uint8_t *)message,
-                          (uint16_t)length,
-                          30U);
-}
-/* USER CODE END 0 */
-
-/**
-  * @brief  通用库工程入口。
-  * @retval 正常运行时不返回。
-  */
 int main(void)
 {
-
-  /* USER CODE BEGIN 1 */
-#if PLL_SELFTEST_ENABLE
-  /* DMA buffers are explicitly cache-maintained by pll_test_app.c. */
   SCB_EnableICache();
   SCB_EnableDCache();
-#endif
-  /* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
-  /* Configure the system clock */
   SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_USART3_UART_Init();
-#if PLL_SELFTEST_ENABLE
-  MX_ADC2_Init();
-#endif
-  MX_ADC1_Init();
   MX_SPI2_Init();
-  MX_TIM3_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
-#if PLL_SELFTEST_ENABLE
-  MX_TIM6_Init();
-#endif
-  /* USER CODE BEGIN 2 */
-  /*
-   * FPGA 的 QSPI 只恢复 bitstream；FIR、DDC 和运行寄存器仍会掉电丢失。
-   * 这里只启动非阻塞状态机，待 QSPI 配置稳定后自动执行完整恢复序列。
-   */
-  FpgaBootRestore_GetDefaultConfig(&s_fpga_boot_config);
-  s_fpga_boot_config.log = App_FpgaBootLog;
-  if (FpgaBootRestore_Start(&s_fpga_boot_config) != FPGA_PROMAX_OK)
-  {
-    Error_Handler();
-  }
-  /* 首次大批量 SPI 下发必须在 ADC DMA 启动前完成，避免制造采集溢出。 */
-  if (FpgaBootRestore_WaitReady(
-        0U, FPGA_BOOT_POST_READY_GUARD_MS) != FPGA_PROMAX_OK)
-  {
-    Error_Handler();
-  }
-#if PLL_SELFTEST_ENABLE
-  if (PllTest_Init() != HAL_OK) Error_Handler();
-#endif
-  /* USER CODE END 2 */
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+  if (GContest_Init() != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (GContestCli_Init() != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (G_TjcUi_Init() != HAL_OK)
+  {
+    Error_Handler();
+  }
+
   while (1)
   {
-    FpgaBootRestore_Process();
-#if PLL_SELFTEST_ENABLE
-    PllTest_Process();
-#endif
-    
-    /* USER CODE END WHILE */
+    G_TjcUiMode display_mode;
+    uint8_t waveform_cycles = 1U;
+    uint8_t measurement_requested = 0U;
 
-    /* USER CODE BEGIN 3 */
+    GContestCli_Poll();
+    if (G_TjcUi_TakeRequest(&display_mode) != 0U)
+    {
+      waveform_cycles =
+          (display_mode == G_TJC_MODE_WAVE_3T) ? 3U : 1U;
+      measurement_requested = 1U;
+    }
+    else if (GContestCli_TakeMeasurementRequest(&waveform_cycles) != 0U)
+    {
+      display_mode = (waveform_cycles == 3U) ?
+                     G_TJC_MODE_WAVE_3T :
+                     G_TJC_MODE_WAVE_1T;
+      measurement_requested = 1U;
+    }
+
+    if (measurement_requested != 0U)
+    {
+      const uint32_t previous_frame = GContest_GetFrameNumber();
+      const PeriodicAnalyzer_Result *result;
+
+      (void)G_TjcUi_ShowAcquiring(display_mode);
+      GContest_Process(waveform_cycles);
+      result = GContest_GetLastResult();
+      if ((GContest_GetFrameNumber() != previous_frame) &&
+          (result != NULL) &&
+          (result->valid != 0U) &&
+          (result->status == PERIODIC_ANALYZER_OK))
+      {
+        (void)G_TjcUi_Publish(result, display_mode);
+      }
+      else if ((result != NULL) &&
+               (result->status == PERIODIC_ANALYZER_E_NO_SIGNAL))
+      {
+        (void)G_TjcUi_ShowError("NO SIGNAL");
+      }
+      else
+      {
+        (void)G_TjcUi_ShowError("MEASURE ERROR");
+      }
+    }
   }
-  /* USER CODE END 3 */
 }
 
-/**
-  * @brief  配置STM32H743系统时钟。
-  * @retval 无。
-  */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};

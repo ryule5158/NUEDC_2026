@@ -1,13 +1,13 @@
 Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
-| Date         : Mon Jul 27 13:18:03 2026
-| Host         : LAPTOP-9SJO8I4N running 64-bit major release  (build 9200)
-| Command      : report_utilization -hierarchical -file C:/Users/LENOVO/Desktop/2023C/FPGA_BX71_AD9708_AD9280/Vivado/BX71_AD9708_AD9280_PS7/BX71_AD9708_AD9280_PS7.runs/impl_1/ad9708_ps7_utilization_final.rpt
-| Design       : ad9708_zynq_top
+| Date         : Wed Jul 29 14:15:38 2026
+| Host         : FYH2005 running 64-bit major release  (build 9200)
+| Command      : report_utilization -hierarchical -file C:/Users/21274/AppData/Local/Temp/NF/Vivado/BX71_AD9708_AD9280_PS7/BX71_AD9708_AD9280_PS7.runs/impl_1/ad9708_ps7_utilization_final.rpt
+| Design       : g_analyzer_zynq_top
 | Device       : 7z020clg400-2
 | Design State : Routed
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Utilization Design Information
 
@@ -18,169 +18,24 @@ Table of Contents
 1. Utilization by Hierarchy
 ---------------------------
 
-+--------------------------------------------------------+-----------------------------------------------------------------------+------------+------------+---------+------+-------+--------+--------+--------------+
-|                        Instance                        |                                 Module                                | Total LUTs | Logic LUTs | LUTRAMs | SRLs |  FFs  | RAMB36 | RAMB18 | DSP48 Blocks |
-+--------------------------------------------------------+-----------------------------------------------------------------------+------------+------------+---------+------+-------+--------+--------+--------------+
-| ad9708_zynq_top                                        |                                                                 (top) |      34086 |      33882 |     204 |    0 | 31587 |      1 |      0 |          163 |
-|   (ad9708_zynq_top)                                    |                                                                 (top) |          1 |          1 |       0 |    0 |     1 |      0 |      0 |            0 |
-|   ad9708_logic                                         |                                                        ad9708_spi_top |      34085 |      33881 |     204 |    0 | 31586 |      1 |      0 |          163 |
-|     (ad9708_logic)                                     |                                                        ad9708_spi_top |          3 |          3 |       0 |    0 |   418 |      0 |      0 |            0 |
-|     adc_capture                                        |                                                   ad9280_capture_core |        237 |        237 |       0 |    0 |   554 |      1 |      0 |            0 |
-|     adc_clkgen                                         |                                                         ad9280_clkgen |          3 |          3 |       0 |    0 |     0 |      0 |      0 |            0 |
-|     clkgen                                             |                                                         ad9708_clkgen |          2 |          2 |       0 |    0 |     0 |      0 |      0 |            0 |
-|     dsp_core                                           |                                                    ad9280_promax_core |      32163 |      32151 |      12 |    0 | 29972 |      0 |      0 |          160 |
-|       (dsp_core)                                       |                                                    ad9280_promax_core |        341 |        341 |       0 |    0 |  1119 |      0 |      0 |            0 |
-|       adc_async_fifo                                   |                                                        xpm_fifo_async |         81 |         69 |      12 |    0 |   137 |      0 |      0 |            0 |
-|         gnuram_async_fifo.xpm_fifo_base_inst           |                                                         xpm_fifo_base |         81 |         69 |      12 |    0 |   137 |      0 |      0 |            0 |
-|           (gnuram_async_fifo.xpm_fifo_base_inst)       |                                                         xpm_fifo_base |          0 |          0 |       0 |    0 |    10 |      0 |      0 |            0 |
-|           gen_cdc_pntr.rd_pntr_cdc_inst                |                                                          xpm_cdc_gray |          6 |          6 |       0 |    0 |    15 |      0 |      0 |            0 |
-|           gen_cdc_pntr.rpw_gray_reg                    |                                                      xpm_fifo_reg_vec |          3 |          3 |       0 |    0 |     5 |      0 |      0 |            0 |
-|           gen_cdc_pntr.wpr_gray_reg                    |                                                   xpm_fifo_reg_vec_80 |          1 |          1 |       0 |    0 |     5 |      0 |      0 |            0 |
-|           gen_cdc_pntr.wpr_gray_reg_dc                 |                                   xpm_fifo_reg_vec__parameterized0_81 |          6 |          6 |       0 |    0 |     6 |      0 |      0 |            0 |
-|           gen_cdc_pntr.wr_pntr_cdc_dc_inst             |                                       xpm_cdc_gray__parameterized0__2 |          8 |          8 |       0 |    0 |    18 |      0 |      0 |            0 |
-|           gen_cdc_pntr.wr_pntr_cdc_inst                |                                                       xpm_cdc_gray__2 |          6 |          6 |       0 |    0 |    15 |      0 |      0 |            0 |
-|           gen_sdpram.xpm_memory_base_inst              |                                                       xpm_memory_base |         12 |          0 |      12 |    0 |    18 |      0 |      0 |            0 |
-|           rdp_inst                                     |                                                      xpm_counter_updn |          8 |          8 |       0 |    0 |     6 |      0 |      0 |            0 |
-|           rdpp1_inst                                   |                                      xpm_counter_updn__parameterized0 |          7 |          7 |       0 |    0 |     5 |      0 |      0 |            0 |
-|           rst_d1_inst                                  |                                                      xpm_fifo_reg_bit |          0 |          0 |       0 |    0 |     1 |      0 |      0 |            0 |
-|           wrp_inst                                     |                                                   xpm_counter_updn_82 |          5 |          5 |       0 |    0 |     6 |      0 |      0 |            0 |
-|           wrpp1_inst                                   |                                   xpm_counter_updn__parameterized0_83 |          4 |          4 |       0 |    0 |     5 |      0 |      0 |            0 |
-|           wrpp2_inst                                   |                                      xpm_counter_updn__parameterized1 |          4 |          4 |       0 |    0 |     5 |      0 |      0 |            0 |
-|           xpm_fifo_rst_inst                            |                                                          xpm_fifo_rst |         11 |         11 |       0 |    0 |    17 |      0 |      0 |            0 |
-|             (xpm_fifo_rst_inst)                        |                                                          xpm_fifo_rst |         11 |         11 |       0 |    0 |    13 |      0 |      0 |            0 |
-|             gen_rst_ic.rrst_wr_inst                    |                                                      xpm_cdc_sync_rst |          0 |          0 |       0 |    0 |     2 |      0 |      0 |            0 |
-|             gen_rst_ic.wrst_rd_inst                    |                                                   xpm_cdc_sync_rst__2 |          0 |          0 |       0 |    0 |     2 |      0 |      0 |            0 |
-|       realtime_dsp                                     |                                                  dsp_promax_benchmark |      31228 |      31228 |       0 |    0 | 28202 |      0 |      0 |          160 |
-|         (realtime_dsp)                                 |                                                  dsp_promax_benchmark |          1 |          1 |       0 |    0 |   296 |      0 |      0 |            0 |
-|         gen_band_power[0].u_i_channel_filter           |                                                     dsp_cic_decimator |        483 |        483 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           (gen_band_power[0].u_i_channel_filter)       |                                                     dsp_cic_decimator |        369 |        369 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           u_gain_scale                                 |                                                      dsp_round_sat_44 |        114 |        114 |       0 |    0 |     0 |      0 |      0 |            0 |
-|         gen_band_power[0].u_i_power                    |                                                       dsp_power_meter |        126 |        126 |       0 |    0 |    93 |      0 |      0 |            1 |
-|         gen_band_power[0].u_q_channel_filter           |                                                   dsp_cic_decimator_0 |        483 |        483 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           (gen_band_power[0].u_q_channel_filter)       |                                                   dsp_cic_decimator_0 |        369 |        369 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           u_gain_scale                                 |                                                      dsp_round_sat_43 |        114 |        114 |       0 |    0 |     0 |      0 |      0 |            0 |
-|         gen_band_power[0].u_q_power                    |                                                     dsp_power_meter_1 |         91 |         91 |       0 |    0 |    93 |      0 |      0 |            1 |
-|         gen_band_power[1].u_i_channel_filter           |                                                   dsp_cic_decimator_2 |        484 |        484 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           (gen_band_power[1].u_i_channel_filter)       |                                                   dsp_cic_decimator_2 |        370 |        370 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           u_gain_scale                                 |                                                      dsp_round_sat_42 |        114 |        114 |       0 |    0 |     0 |      0 |      0 |            0 |
-|         gen_band_power[1].u_i_power                    |                                                     dsp_power_meter_3 |        130 |        130 |       0 |    0 |    93 |      0 |      0 |            1 |
-|         gen_band_power[1].u_q_channel_filter           |                                                   dsp_cic_decimator_4 |        491 |        491 |       0 |    0 |   444 |      0 |      0 |            0 |
-|           (gen_band_power[1].u_q_channel_filter)       |                                                   dsp_cic_decimator_4 |        377 |        377 |       0 |    0 |   444 |      0 |      0 |            0 |
-|           u_gain_scale                                 |                                                      dsp_round_sat_41 |        114 |        114 |       0 |    0 |     0 |      0 |      0 |            0 |
-|         gen_band_power[1].u_q_power                    |                                                     dsp_power_meter_5 |         93 |         93 |       0 |    0 |    93 |      0 |      0 |            1 |
-|         gen_band_power[2].u_i_channel_filter           |                                                   dsp_cic_decimator_6 |        482 |        482 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           (gen_band_power[2].u_i_channel_filter)       |                                                   dsp_cic_decimator_6 |        368 |        368 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           u_gain_scale                                 |                                                      dsp_round_sat_40 |        114 |        114 |       0 |    0 |     0 |      0 |      0 |            0 |
-|         gen_band_power[2].u_i_power                    |                                                     dsp_power_meter_7 |        127 |        127 |       0 |    0 |    93 |      0 |      0 |            1 |
-|         gen_band_power[2].u_q_channel_filter           |                                                   dsp_cic_decimator_8 |        484 |        484 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           (gen_band_power[2].u_q_channel_filter)       |                                                   dsp_cic_decimator_8 |        370 |        370 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           u_gain_scale                                 |                                                      dsp_round_sat_39 |        114 |        114 |       0 |    0 |     0 |      0 |      0 |            0 |
-|         gen_band_power[2].u_q_power                    |                                                     dsp_power_meter_9 |         90 |         90 |       0 |    0 |    93 |      0 |      0 |            1 |
-|         gen_band_power[3].u_i_channel_filter           |                                                  dsp_cic_decimator_10 |        483 |        483 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           (gen_band_power[3].u_i_channel_filter)       |                                                  dsp_cic_decimator_10 |        369 |        369 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           u_gain_scale                                 |                                                      dsp_round_sat_38 |        114 |        114 |       0 |    0 |     0 |      0 |      0 |            0 |
-|         gen_band_power[3].u_i_power                    |                                                    dsp_power_meter_11 |        126 |        126 |       0 |    0 |    93 |      0 |      0 |            1 |
-|         gen_band_power[3].u_q_channel_filter           |                                                  dsp_cic_decimator_12 |        485 |        485 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           (gen_band_power[3].u_q_channel_filter)       |                                                  dsp_cic_decimator_12 |        371 |        371 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           u_gain_scale                                 |                                                      dsp_round_sat_37 |        114 |        114 |       0 |    0 |     0 |      0 |      0 |            0 |
-|         gen_band_power[3].u_q_power                    |                                                    dsp_power_meter_13 |        112 |        112 |       0 |    0 |    93 |      0 |      0 |            1 |
-|         gen_band_power[4].u_i_channel_filter           |                                                  dsp_cic_decimator_14 |        484 |        484 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           (gen_band_power[4].u_i_channel_filter)       |                                                  dsp_cic_decimator_14 |        370 |        370 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           u_gain_scale                                 |                                                      dsp_round_sat_36 |        114 |        114 |       0 |    0 |     0 |      0 |      0 |            0 |
-|         gen_band_power[4].u_i_power                    |                                                    dsp_power_meter_15 |        128 |        128 |       0 |    0 |    93 |      0 |      0 |            1 |
-|         gen_band_power[4].u_q_channel_filter           |                                                  dsp_cic_decimator_16 |        484 |        484 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           (gen_band_power[4].u_q_channel_filter)       |                                                  dsp_cic_decimator_16 |        370 |        370 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           u_gain_scale                                 |                                                      dsp_round_sat_35 |        114 |        114 |       0 |    0 |     0 |      0 |      0 |            0 |
-|         gen_band_power[4].u_q_power                    |                                                    dsp_power_meter_17 |         90 |         90 |       0 |    0 |    93 |      0 |      0 |            1 |
-|         gen_band_power[5].u_i_channel_filter           |                                                  dsp_cic_decimator_18 |        484 |        484 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           (gen_band_power[5].u_i_channel_filter)       |                                                  dsp_cic_decimator_18 |        370 |        370 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           u_gain_scale                                 |                                                      dsp_round_sat_34 |        114 |        114 |       0 |    0 |     0 |      0 |      0 |            0 |
-|         gen_band_power[5].u_i_power                    |                                                    dsp_power_meter_19 |        124 |        124 |       0 |    0 |    93 |      0 |      0 |            1 |
-|         gen_band_power[5].u_q_channel_filter           |                                                  dsp_cic_decimator_20 |        485 |        485 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           (gen_band_power[5].u_q_channel_filter)       |                                                  dsp_cic_decimator_20 |        371 |        371 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           u_gain_scale                                 |                                                      dsp_round_sat_33 |        114 |        114 |       0 |    0 |     0 |      0 |      0 |            0 |
-|         gen_band_power[5].u_q_power                    |                                                    dsp_power_meter_21 |         89 |         89 |       0 |    0 |    93 |      0 |      0 |            1 |
-|         gen_band_power[6].u_i_channel_filter           |                                                  dsp_cic_decimator_22 |        484 |        484 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           (gen_band_power[6].u_i_channel_filter)       |                                                  dsp_cic_decimator_22 |        370 |        370 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           u_gain_scale                                 |                                                      dsp_round_sat_32 |        114 |        114 |       0 |    0 |     0 |      0 |      0 |            0 |
-|         gen_band_power[6].u_i_power                    |                                                    dsp_power_meter_23 |        126 |        126 |       0 |    0 |    93 |      0 |      0 |            1 |
-|         gen_band_power[6].u_q_channel_filter           |                                                  dsp_cic_decimator_24 |        485 |        485 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           (gen_band_power[6].u_q_channel_filter)       |                                                  dsp_cic_decimator_24 |        371 |        371 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           u_gain_scale                                 |                                                      dsp_round_sat_31 |        114 |        114 |       0 |    0 |     0 |      0 |      0 |            0 |
-|         gen_band_power[6].u_q_power                    |                                                    dsp_power_meter_25 |         88 |         88 |       0 |    0 |    93 |      0 |      0 |            1 |
-|         gen_band_power[7].u_i_channel_filter           |                                                  dsp_cic_decimator_26 |        483 |        483 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           (gen_band_power[7].u_i_channel_filter)       |                                                  dsp_cic_decimator_26 |        369 |        369 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           u_gain_scale                                 |                                                      dsp_round_sat_30 |        114 |        114 |       0 |    0 |     0 |      0 |      0 |            0 |
-|         gen_band_power[7].u_i_power                    |                                                    dsp_power_meter_27 |        126 |        126 |       0 |    0 |    93 |      0 |      0 |            1 |
-|         gen_band_power[7].u_q_channel_filter           |                                                  dsp_cic_decimator_28 |        484 |        484 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           (gen_band_power[7].u_q_channel_filter)       |                                                  dsp_cic_decimator_28 |        370 |        370 |       0 |    0 |   441 |      0 |      0 |            0 |
-|           u_gain_scale                                 |                                                         dsp_round_sat |        114 |        114 |       0 |    0 |     0 |      0 |      0 |            0 |
-|         gen_band_power[7].u_q_power                    |                                                    dsp_power_meter_29 |         91 |         91 |       0 |    0 |    93 |      0 |      0 |            1 |
-|         u_matched_peak_capture                         |                                              dsp_matched_peak_capture |        549 |        549 |       0 |    0 |   450 |      0 |      0 |            0 |
-|         u_parallel_ddc                                 |                                                          dsp_ddc_bank |      17556 |      17556 |       0 |    0 | 10508 |      0 |      0 |           16 |
-|           (u_parallel_ddc)                             |                                                          dsp_ddc_bank |        446 |        446 |       0 |    0 |   326 |      0 |      0 |            0 |
-|           gen_ddc_channel[0].u_iq_mixer                |                                                          dsp_iq_mixer |        206 |        206 |       0 |    0 |    73 |      0 |      0 |            2 |
-|             (gen_ddc_channel[0].u_iq_mixer)            |                                                          dsp_iq_mixer |         72 |         72 |       0 |    0 |    73 |      0 |      0 |            2 |
-|             u_round_i                                  |                                      dsp_round_sat__parameterized0_78 |         67 |         67 |       0 |    0 |     0 |      0 |      0 |            0 |
-|             u_round_q                                  |                                      dsp_round_sat__parameterized0_79 |         67 |         67 |       0 |    0 |     0 |      0 |      0 |            0 |
-|           gen_ddc_channel[0].u_nco                     |                                                        dsp_nco_cordic |       1899 |       1899 |       0 |    0 |  1199 |      0 |      0 |            0 |
-|           gen_ddc_channel[1].u_iq_mixer                |                                                       dsp_iq_mixer_51 |        206 |        206 |       0 |    0 |    73 |      0 |      0 |            2 |
-|             (gen_ddc_channel[1].u_iq_mixer)            |                                                       dsp_iq_mixer_51 |         72 |         72 |       0 |    0 |    73 |      0 |      0 |            2 |
-|             u_round_i                                  |                                      dsp_round_sat__parameterized0_76 |         67 |         67 |       0 |    0 |     0 |      0 |      0 |            0 |
-|             u_round_q                                  |                                      dsp_round_sat__parameterized0_77 |         67 |         67 |       0 |    0 |     0 |      0 |      0 |            0 |
-|           gen_ddc_channel[1].u_nco                     |                                                     dsp_nco_cordic_52 |       1896 |       1896 |       0 |    0 |  1199 |      0 |      0 |            0 |
-|           gen_ddc_channel[2].u_iq_mixer                |                                                       dsp_iq_mixer_53 |        207 |        207 |       0 |    0 |    73 |      0 |      0 |            2 |
-|             (gen_ddc_channel[2].u_iq_mixer)            |                                                       dsp_iq_mixer_53 |         73 |         73 |       0 |    0 |    73 |      0 |      0 |            2 |
-|             u_round_i                                  |                                      dsp_round_sat__parameterized0_74 |         67 |         67 |       0 |    0 |     0 |      0 |      0 |            0 |
-|             u_round_q                                  |                                      dsp_round_sat__parameterized0_75 |         67 |         67 |       0 |    0 |     0 |      0 |      0 |            0 |
-|           gen_ddc_channel[2].u_nco                     |                                                     dsp_nco_cordic_54 |       1913 |       1913 |       0 |    0 |  1203 |      0 |      0 |            0 |
-|           gen_ddc_channel[3].u_iq_mixer                |                                                       dsp_iq_mixer_55 |        206 |        206 |       0 |    0 |    73 |      0 |      0 |            2 |
-|             (gen_ddc_channel[3].u_iq_mixer)            |                                                       dsp_iq_mixer_55 |         72 |         72 |       0 |    0 |    73 |      0 |      0 |            2 |
-|             u_round_i                                  |                                      dsp_round_sat__parameterized0_72 |         67 |         67 |       0 |    0 |     0 |      0 |      0 |            0 |
-|             u_round_q                                  |                                      dsp_round_sat__parameterized0_73 |         67 |         67 |       0 |    0 |     0 |      0 |      0 |            0 |
-|           gen_ddc_channel[3].u_nco                     |                                                     dsp_nco_cordic_56 |       1896 |       1896 |       0 |    0 |  1199 |      0 |      0 |            0 |
-|           gen_ddc_channel[4].u_iq_mixer                |                                                       dsp_iq_mixer_57 |        206 |        206 |       0 |    0 |    73 |      0 |      0 |            2 |
-|             (gen_ddc_channel[4].u_iq_mixer)            |                                                       dsp_iq_mixer_57 |         72 |         72 |       0 |    0 |    73 |      0 |      0 |            2 |
-|             u_round_i                                  |                                      dsp_round_sat__parameterized0_70 |         67 |         67 |       0 |    0 |     0 |      0 |      0 |            0 |
-|             u_round_q                                  |                                      dsp_round_sat__parameterized0_71 |         67 |         67 |       0 |    0 |     0 |      0 |      0 |            0 |
-|           gen_ddc_channel[4].u_nco                     |                                                     dsp_nco_cordic_58 |       1898 |       1898 |       0 |    0 |  1199 |      0 |      0 |            0 |
-|           gen_ddc_channel[5].u_iq_mixer                |                                                       dsp_iq_mixer_59 |        207 |        207 |       0 |    0 |    73 |      0 |      0 |            2 |
-|             (gen_ddc_channel[5].u_iq_mixer)            |                                                       dsp_iq_mixer_59 |         73 |         73 |       0 |    0 |    73 |      0 |      0 |            2 |
-|             u_round_i                                  |                                      dsp_round_sat__parameterized0_68 |         67 |         67 |       0 |    0 |     0 |      0 |      0 |            0 |
-|             u_round_q                                  |                                      dsp_round_sat__parameterized0_69 |         67 |         67 |       0 |    0 |     0 |      0 |      0 |            0 |
-|           gen_ddc_channel[5].u_nco                     |                                                     dsp_nco_cordic_60 |       1899 |       1899 |       0 |    0 |  1199 |      0 |      0 |            0 |
-|           gen_ddc_channel[6].u_iq_mixer                |                                                       dsp_iq_mixer_61 |        206 |        206 |       0 |    0 |    73 |      0 |      0 |            2 |
-|             (gen_ddc_channel[6].u_iq_mixer)            |                                                       dsp_iq_mixer_61 |         72 |         72 |       0 |    0 |    73 |      0 |      0 |            2 |
-|             u_round_i                                  |                                      dsp_round_sat__parameterized0_66 |         67 |         67 |       0 |    0 |     0 |      0 |      0 |            0 |
-|             u_round_q                                  |                                      dsp_round_sat__parameterized0_67 |         67 |         67 |       0 |    0 |     0 |      0 |      0 |            0 |
-|           gen_ddc_channel[6].u_nco                     |                                                     dsp_nco_cordic_62 |       1898 |       1898 |       0 |    0 |  1199 |      0 |      0 |            0 |
-|           gen_ddc_channel[7].u_iq_mixer                |                                                       dsp_iq_mixer_63 |        206 |        206 |       0 |    0 |    73 |      0 |      0 |            2 |
-|             (gen_ddc_channel[7].u_iq_mixer)            |                                                       dsp_iq_mixer_63 |         72 |         72 |       0 |    0 |    73 |      0 |      0 |            2 |
-|             u_round_i                                  |                                         dsp_round_sat__parameterized0 |         67 |         67 |       0 |    0 |     0 |      0 |      0 |            0 |
-|             u_round_q                                  |                                      dsp_round_sat__parameterized0_65 |         67 |         67 |       0 |    0 |     0 |      0 |      0 |            0 |
-|           gen_ddc_channel[7].u_nco                     |                                                     dsp_nco_cordic_64 |       2164 |       2164 |       0 |    0 |  1201 |      0 |      0 |            0 |
-|         u_parallel_matched_filter                      |                                           dsp_parallel_matched_filter |       3619 |       3619 |       0 |    0 |  8401 |      0 |      0 |          128 |
-|           (u_parallel_matched_filter)                  |                                           dsp_parallel_matched_filter |          0 |          0 |       0 |    0 |     0 |      0 |      0 |          124 |
-|           gen_matched_filter_bank[0].u_matched_fir     |                                                    dsp_fir_transposed |        906 |        906 |       0 |    0 |  2101 |      0 |      0 |            1 |
-|             (gen_matched_filter_bank[0].u_matched_fir) |                                                    dsp_fir_transposed |        797 |        797 |       0 |    0 |  2101 |      0 |      0 |            1 |
-|             u_output_round                             |                                      dsp_round_sat__parameterized1_50 |        109 |        109 |       0 |    0 |     0 |      0 |      0 |            0 |
-|           gen_matched_filter_bank[1].u_matched_fir     |                                                 dsp_fir_transposed_45 |        904 |        904 |       0 |    0 |  2100 |      0 |      0 |            1 |
-|             (gen_matched_filter_bank[1].u_matched_fir) |                                                 dsp_fir_transposed_45 |        795 |        795 |       0 |    0 |  2100 |      0 |      0 |            1 |
-|             u_output_round                             |                                      dsp_round_sat__parameterized1_49 |        109 |        109 |       0 |    0 |     0 |      0 |      0 |            0 |
-|           gen_matched_filter_bank[2].u_matched_fir     |                                                 dsp_fir_transposed_46 |        904 |        904 |       0 |    0 |  2100 |      0 |      0 |            1 |
-|             (gen_matched_filter_bank[2].u_matched_fir) |                                                 dsp_fir_transposed_46 |        795 |        795 |       0 |    0 |  2100 |      0 |      0 |            1 |
-|             u_output_round                             |                                      dsp_round_sat__parameterized1_48 |        109 |        109 |       0 |    0 |     0 |      0 |      0 |            0 |
-|           gen_matched_filter_bank[3].u_matched_fir     |                                                 dsp_fir_transposed_47 |        905 |        905 |       0 |    0 |  2100 |      0 |      0 |            1 |
-|             (gen_matched_filter_bank[3].u_matched_fir) |                                                 dsp_fir_transposed_47 |        796 |        796 |       0 |    0 |  2100 |      0 |      0 |            1 |
-|             u_output_round                             |                                         dsp_round_sat__parameterized1 |        109 |        109 |       0 |    0 |     0 |      0 |      0 |            0 |
-|       wave_stats                                       |                                                      dsp_stream_stats |        514 |        514 |       0 |    0 |   514 |      0 |      0 |            0 |
-|     spi_if                                             |                                                   stm32_spi_reg_slave |        851 |        851 |       0 |    0 |   148 |      0 |      0 |            0 |
-|     wave_core                                          |                                                      ad9708_wave_core |        826 |        634 |     192 |    0 |   494 |      0 |      0 |            3 |
-|   ps7_board_config                                     |                                                                   sys |          0 |          0 |       0 |    0 |     0 |      0 |      0 |            0 |
-|     processing_system7_0                               |                                            sys_processing_system7_0_0 |          0 |          0 |       0 |    0 |     0 |      0 |      0 |            0 |
-|       (processing_system7_0)                           |                                            sys_processing_system7_0_0 |          0 |          0 |       0 |    0 |     0 |      0 |      0 |            0 |
-|       inst                                             | sys_processing_system7_0_0_processing_system7_v5_5_processing_system7 |          0 |          0 |       0 |    0 |     0 |      0 |      0 |            0 |
-+--------------------------------------------------------+-----------------------------------------------------------------------+------------+------------+---------+------+-------+--------+--------+--------------+
++------------------------------+-----------------------------------------------------------------------+------------+------------+---------+------+-----+--------+--------+--------------+
+|           Instance           |                                 Module                                | Total LUTs | Logic LUTs | LUTRAMs | SRLs | FFs | RAMB36 | RAMB18 | DSP48 Blocks |
++------------------------------+-----------------------------------------------------------------------+------------+------------+---------+------+-----+--------+--------+--------------+
+| g_analyzer_zynq_top          |                                                                 (top) |        845 |        845 |       0 |    0 | 882 |      2 |      0 |            0 |
+|   (g_analyzer_zynq_top)      |                                                                 (top) |          0 |          0 |       0 |    0 |   0 |      0 |      0 |            0 |
+|   g_logic                    |                                                        g_analyzer_top |        845 |        845 |       0 |    0 | 882 |      2 |      0 |            0 |
+|     (g_logic)                |                                                        g_analyzer_top |          0 |          0 |       0 |    0 |   0 |      0 |      0 |            0 |
+|     adc_capture              |                                                   ad9280_capture_core |        717 |        717 |       0 |    0 | 782 |      2 |      0 |            0 |
+|       (adc_capture)          |                                                   ad9280_capture_core |        197 |        197 |       0 |    0 | 615 |      2 |      0 |            0 |
+|       g_cic_decimator        |                                                     cic3_decimator_16 |        543 |        543 |       0 |    0 | 167 |      0 |      0 |            0 |
+|     adc_clkgen               |                                                         ad9280_clkgen |          1 |          1 |       0 |    0 |   0 |      0 |      0 |            0 |
+|     dac_clkgen               |                                                         ad9708_clkgen |          1 |          1 |       0 |    0 |   0 |      0 |      0 |            0 |
+|     spi_if                   |                                                   stm32_spi_reg_slave |        126 |        126 |       0 |    0 | 100 |      0 |      0 |            0 |
+|   ps7_board_config           |                                                                   sys |          0 |          0 |       0 |    0 |   0 |      0 |      0 |            0 |
+|     processing_system7_0     |                                            sys_processing_system7_0_0 |          0 |          0 |       0 |    0 |   0 |      0 |      0 |            0 |
+|       (processing_system7_0) |                                            sys_processing_system7_0_0 |          0 |          0 |       0 |    0 |   0 |      0 |      0 |            0 |
+|       inst                   | sys_processing_system7_0_0_processing_system7_v5_5_processing_system7 |          0 |          0 |       0 |    0 |   0 |      0 |      0 |            0 |
++------------------------------+-----------------------------------------------------------------------+------------+------------+---------+------+-----+--------+--------+--------------+
 * Note: The sum of lower-level cells may be larger than their parent cells total, due to cross-hierarchy LUT combining
 
 

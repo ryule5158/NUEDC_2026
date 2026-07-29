@@ -18,7 +18,16 @@ Desktop.ini
 *.tmp
 *.swp
 *~
+*.obj
+__pycache__/
+*.py[cod]
+STM32H743/tests/build/
 
 # Keil debugger and one-off rebuild logs
 TI_MSPM0G3507/Keil/EventRecorderStub.scvd
 TI_MSPM0G3507/Keil/*_rebuild.log
+FPGA_BX71_AD9708_AD9280/Vivado/BX71_G_ANALYZER_PS7/
+vivado*.log
+vivado*.jou
+FPGA_BX71_AD9708_AD9280/output/program_g_qspi_*.log
+FPGA_BX71_AD9708_AD9280/output/LAST_PROGRAMMED_G_QSPI.txt

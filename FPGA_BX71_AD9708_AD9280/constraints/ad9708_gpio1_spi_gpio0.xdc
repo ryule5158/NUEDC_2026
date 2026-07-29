@@ -85,14 +85,9 @@ set_input_delay -clock [get_clocks ad9280_aclock] -min 0.000 \
 
 # 配置量与采集统计量使用两级同步；仅忽略跨时钟域第一级的时序。
 set_false_path -to [get_pins -hier -regexp \
-    {.*adc_capture/(sample_count_meta_reg|decimation_meta_reg|trigger_mode_meta_reg|trigger_threshold_meta_reg|start_toggle_sync_reg\[0\]|abort_toggle_sync_reg\[0\])(\[[0-9]+\])?/D}]
+    {.*adc_capture/(sample_count_meta_reg|decimation_meta_reg|trigger_mode_meta_reg|trigger_threshold_meta_reg|filter_enable_meta_reg|start_toggle_sync_reg\[0\]|abort_toggle_sync_reg\[0\])(\[[0-9]+\])?/D}]
 set_false_path -to [get_pins -hier -regexp \
     {.*adc_capture/(busy_sync_reg\[0\]|triggered_sync_reg\[0\]|overrange_sync_reg\[0\]|completion_toggle_sync_reg\[0\]|captured_count_meta_reg|overrange_count_meta_reg|sample_sum_meta_reg|sample_min_meta_reg|sample_max_meta_reg|latest_sample_meta_reg)(\[[0-9]+\])?/D}]
-
-# ProMax通过XPM异步FIFO传递样本；状态位和清零翻转量均由两级同步器接收。
-# 只忽略第一级触发器的跨域路径，第二级仍由正常时序约束检查。
-set_false_path -to [get_pins -hier -regexp \
-    {.*dsp_core/(fifo_clear_toggle_adc_reg\[0\]|fifo_overflow_sync_reg\[0\]|fifo_full_sync_reg\[0\]|fifo_write_busy_sync_reg\[0\]|adc_ready_sync_reg\[0\])/D}]
 
 # STM32 SPI link on BX71-V4 P2; MOSI uses spare L19 because J19 did not follow PI3 in boundary-scan tests.
 # P2-31/K19=SCK, P2-37/L19=MOSI, P2-33/K17=MISO,

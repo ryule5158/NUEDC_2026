@@ -2,6 +2,7 @@
 #define __MODULES_HEADER_H__
 
 #include "ad9910_app.h"
+#include "ad603.h"
 #include "ad9708_app.h"
 #include "ad9280_app.h"
 #include "ad5687_app.h"
