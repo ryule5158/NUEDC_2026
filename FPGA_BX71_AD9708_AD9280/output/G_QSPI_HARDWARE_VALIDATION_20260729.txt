@@ -1,0 +1,52 @@
+BX71 G-ANALYZER PERSISTENT QSPI VALIDATION
+=========================================
+
+Build time: 2026-07-29 11:32:03 +08:00
+Program time: 2026-07-29 12:21 +08:00
+
+Release top:
+  rtl_ps7/g_analyzer_zynq_top.v
+
+Structural gates:
+  PS7_COUNT=1
+  G_CAPTURE_CORE_COUNT=1
+  EXPERIMENTAL_AD9708_WAVE_CORE_COUNT=0
+
+Routed timing:
+  FINAL_SETUP_SLACK=+1.008 ns
+  FINAL_HOLD_SLACK=+0.109 ns
+  ADC_SETUP_SLACK=+1.008 ns
+  ADC_HOLD_SLACK=+1.518 ns
+  DRC_ERROR_COUNT=0
+  AD9708 data is intentionally constant midscale in this ADC-only image.
+
+Artifacts:
+  BX71_G_ANALYZER_PS7.bit
+    Length: 623457 bytes
+    SHA256: 2A91F4F3F144670CDEBF6236FE209BDE33EDB1B1A7C94505A085064D871F7B5B
+  BOOT_G_ANALYZER.bin
+    Length: 727584 bytes
+    SHA256: D982171D02B7BC9939BBF8C5CE689FBF31315C655738DBF60A5446FF876EC938
+
+Hardware programming:
+  Device: XC7Z020 + W25Q128
+  Boot mode before write: F800025C=0x00000000 (JTAG)
+  Flash type: qspi-x1-single
+  Offset: 0
+  Erase: PASS
+  Program: PASS
+  Full Xilinx readback compare: PASS
+  Final tool markers:
+    Verify Operation successful.
+    Flash Operation Successful
+
+Cold power-cycle:
+  Boot switch mode: QSPI
+  F800025C=0x00000001
+  XSDB state: FPGA is configured
+  Result: persistent QSPI boot PASS
+
+Validation boundary:
+  This proves the exact image above was built, written, read back, and restored
+  after a real power cycle. It does not by itself prove external AD9280 analog
+  signal integrity, STM32 SPI transactions, or measurement accuracy.

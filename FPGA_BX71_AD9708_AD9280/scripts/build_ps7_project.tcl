@@ -1,75 +1,63 @@
-# 使用官方PS7板级配置构建BX71高速AD/DA掉电启动工程。
+# Build a clean PS7-integrated image for the 2026 G signal analyzer.
+# Only explicitly listed, reviewed G-path RTL is allowed into this release.
 
-# 解析脚本位置，得到工程、PS7设计和输出目录。
-set script_path [info script]
-if {[file pathtype $script_path] eq "absolute"} {
-    set script_dir [file dirname $script_path]
-} else {
-    set script_dir [file join [pwd] [file dirname $script_path]]
-}
+set script_path [file normalize [info script]]
+set script_dir [file dirname $script_path]
 set root_dir [file dirname $script_dir]
-set project_name "BX71_AD9708_AD9280_PS7"
-set project_dir [file join $root_dir "Vivado" $project_name]
-set project_file [file join $project_dir "${project_name}.xpr"]
+set project_name "BX71_G_ANALYZER_PS7"
+set vivado_dir [file join $root_dir "Vivado"]
+set project_dir [file join $vivado_dir $project_name]
 set bd_file [file join $root_dir "ps7" "sys.bd"]
-set verilog_files [glob [file join $root_dir "rtl" "*.v"]]
-set systemverilog_files [concat \
-    [glob -nocomplain [file join $root_dir "rtl" "*.sv"]] \
-    [glob -nocomplain [file join $root_dir "rtl" "promax" "*.sv"]]]
+set xdc_file [file join $root_dir "constraints" "ad9708_gpio1_spi_gpio0.xdc"]
+set top_file [file join $root_dir "rtl_ps7" "g_analyzer_zynq_top.v"]
+set rtl_files [list \
+    [file join $root_dir "rtl" "stm32_spi_reg_slave.v"] \
+    [file join $root_dir "rtl" "ad9280_clkgen.v"] \
+    [file join $root_dir "rtl" "ad9708_clkgen.v"] \
+    [file join $root_dir "rtl" "cic3_decimator_16.v"] \
+    [file join $root_dir "rtl" "ad9280_capture_core.v"] \
+    [file join $root_dir "rtl" "g_analyzer_top.v"]]
 
-# PS7块设计是生成可启动位流的必要输入。
-if {![file exists $bd_file]} {
-    error "Official BX71 PS7 block design is missing: $bd_file"
-}
-
-# 首次运行创建工程；后续运行直接复用已有工程。
-if {![file exists $project_file]} {
-    file mkdir $project_dir
-    create_project $project_name $project_dir -part xc7z020clg400-2 -force
-    set_property target_language Verilog [current_project]
-    add_files -norecurse $verilog_files
-    add_files -norecurse $systemverilog_files
-    set_property file_type SystemVerilog [get_files $systemverilog_files]
-    add_files -norecurse [file join $root_dir "rtl_ps7" "ad9708_zynq_top.v"]
-    add_files -norecurse $bd_file
-    add_files -fileset constrs_1 -norecurse \
-        [file join $root_dir "constraints" "ad9708_gpio1_spi_gpio0.xdc"]
-    set_property top ad9708_zynq_top [get_filesets sources_1]
-    generate_target all [get_files $bd_file]
-    update_compile_order -fileset sources_1
-} else {
-    open_project $project_file
-}
-set_property XPM_LIBRARIES {XPM_FIFO} [current_project]
-
-# 复用旧工程时只补入新增RTL，避免重复添加同一个源文件。
-foreach rtl_file [concat $verilog_files $systemverilog_files] {
-    if {[llength [get_files -quiet $rtl_file]] == 0} {
-        add_files -norecurse $rtl_file
+foreach required_file [concat $rtl_files [list $top_file $bd_file $xdc_file]] {
+    if {![file exists $required_file]} {
+        error "Required G-analyzer source is missing: $required_file"
     }
 }
-set_property file_type SystemVerilog [get_files $systemverilog_files]
-set_property top ad9708_zynq_top [get_filesets sources_1]
+
+# A new project is created every run. This prevents stale run databases or
+# accidentally retained sources from being packaged as the latest design.
+file mkdir $vivado_dir
+if {[file exists $project_dir]} {
+    if {([file dirname $project_dir] ne $vivado_dir) ||
+        ([file tail $project_dir] ne $project_name)} {
+        error "Refusing to clean unexpected project directory: $project_dir"
+    }
+    file delete -force $project_dir
+}
+create_project $project_name $project_dir -part xc7z020clg400-2 -force
+set_property target_language Verilog [current_project]
+set_property XPM_LIBRARIES {XPM_FIFO} [current_project]
+
+add_files -norecurse $rtl_files
+add_files -norecurse $top_file
+add_files -norecurse $bd_file
+add_files -fileset constrs_1 -norecurse $xdc_file
+set_property top g_analyzer_zynq_top [get_filesets sources_1]
+generate_target all [get_files $bd_file]
 update_compile_order -fileset sources_1
 
-# 先综合PS7输出产物，避免Vivado 2018.3并发创建临时目录时发生竞争。
+# Build the PS7 output product first to avoid Vivado 2018.3 directory races.
 set_property synth_checkpoint_mode Hierarchical [get_files $bd_file]
 set ip_run [get_runs -quiet sys_processing_system7_0_0_synth_1]
 if {[llength $ip_run] == 1} {
+    launch_runs $ip_run -jobs 1
+    wait_on_run $ip_run
     set ip_status [get_property STATUS $ip_run]
     if {![string match "*Complete*" $ip_status]} {
-        reset_run $ip_run
-        launch_runs $ip_run -jobs 1
-        wait_on_run $ip_run
-        set ip_status [get_property STATUS $ip_run]
-        if {![string match "*Complete*" $ip_status]} {
-            error "PS7 IP synthesis failed: $ip_status"
-        }
+        error "PS7 IP synthesis failed: $ip_status"
     }
 }
 
-# 重新执行顶层综合并确认综合完成。
-reset_run synth_1
 launch_runs synth_1 -jobs 8
 wait_on_run synth_1
 set synth_status [get_property STATUS [get_runs synth_1]]
@@ -77,19 +65,38 @@ if {![string match "*Complete*" $synth_status]} {
     error "Synthesis failed: $synth_status"
 }
 
-# 执行实现和位流生成，并确认实现完成。
-launch_runs impl_1 -to_step write_bitstream -jobs 8
+launch_runs impl_1 -to_step route_design -jobs 8
 wait_on_run impl_1
 set impl_status [get_property STATUS [get_runs impl_1]]
 if {![string match "*Complete*" $impl_status]} {
     error "Implementation failed: $impl_status"
 }
 
-# 打开已布线设计，确认PS7和AD/DA时钟约束均有效。
 open_run impl_1
-set report_dir [get_property DIRECTORY [get_runs impl_1]]
-if {[llength [get_cells -hier -quiet -filter {REF_NAME == PS7}]] == 0} {
-    error "PS7 was optimized out of the implemented design"
+set output_dir [file join $root_dir "output"]
+set verification_dir [file join $output_dir "g_qspi_verification"]
+if {[file exists $verification_dir]} {
+    file delete -force $verification_dir
+}
+file mkdir $verification_dir
+
+# Structural release gates: persistent boot needs PS7, this image must contain
+# exactly one G capture core, and the experimental AM/FM core must be absent.
+set ps7_count [llength [get_cells -hier -quiet -filter {REF_NAME == PS7}]]
+set capture_count [llength [get_cells -hier -quiet -filter {NAME =~ */adc_capture}]]
+set experimental_count \
+    [llength [get_cells -hier -quiet -filter {REF_NAME == ad9708_wave_core}]]
+puts "PS7_COUNT=$ps7_count"
+puts "G_CAPTURE_CORE_COUNT=$capture_count"
+puts "EXPERIMENTAL_AD9708_WAVE_CORE_COUNT=$experimental_count"
+if {$ps7_count < 1} {
+    error "PS7 was optimized out; this image cannot boot persistently from QSPI"
+}
+if {$capture_count != 1} {
+    error "Expected exactly one G capture core, found $capture_count"
+}
+if {$experimental_count != 0} {
+    error "Experimental AD9708 AM/FM core leaked into the G release"
 }
 if {[llength [get_clocks -quiet ad9708_dclock]] != 1} {
     error "AD9708 forwarded-clock constraint is missing"
@@ -98,88 +105,63 @@ if {[llength [get_clocks -quiet ad9280_aclock]] != 1} {
     error "AD9280 forwarded-clock constraint is missing"
 }
 
-# 生成时序汇总和DRC报告。
 report_timing_summary -delay_type min_max -report_unconstrained \
-    -file [file join $report_dir "ad9708_ps7_timing_final.rpt"]
-report_drc -file [file join $report_dir "ad9708_ps7_drc_final.rpt"]
-report_cdc -details -file [file join $report_dir "ad9708_ps7_cdc_final.rpt"]
-# 单独核查ProMax的32 MHz ADC域和50 MHz配置域，避免全局异步复位掩盖真实跨域结果。
-report_cdc -details -from [get_clocks clk32] -to [get_clocks clk_50m] \
-    -file [file join $report_dir "ad9708_ps7_cdc_adc_to_cfg.rpt"]
-report_cdc -details -from [get_clocks clk_50m] -to [get_clocks clk32] \
-    -file [file join $report_dir "ad9708_ps7_cdc_cfg_to_adc.rpt"]
+    -file [file join $verification_dir "timing_final.rpt"]
+report_drc -file [file join $verification_dir "drc_final.rpt"]
+report_cdc -details -file [file join $verification_dir "cdc_final.rpt"]
 report_utilization -hierarchical \
-    -file [file join $report_dir "ad9708_ps7_utilization_final.rpt"]
+    -file [file join $verification_dir "utilization_final.rpt"]
 
-# 163个DSP48由ProMax实时档160个和原AD9708缩放3个组成。
-set dsp_count [llength [get_cells -hier -quiet -filter {REF_NAME == DSP48E1}]]
-puts "FINAL_DSP48_COUNT=$dsp_count"
-if {$dsp_count < 163} {
-    error "ProMax datapath was optimized out: DSP48 count is $dsp_count"
-}
-
-# 提取全局、DAC输出和ADC输入的最差建立/保持路径。
 set setup_path [get_timing_paths -delay_type max -max_paths 1]
 set hold_path [get_timing_paths -delay_type min -max_paths 1]
-set dac_setup_path [get_timing_paths -delay_type max \
-    -to [get_ports {ad9708_data_o[*]}] -max_paths 1]
-set dac_hold_path [get_timing_paths -delay_type min \
-    -to [get_ports {ad9708_data_o[*]}] -max_paths 1]
 set adc_setup_path [get_timing_paths -delay_type max \
     -from [get_ports {ad9280_data_i[*] ad9280_otr_i}] -max_paths 1]
 set adc_hold_path [get_timing_paths -delay_type min \
     -from [get_ports {ad9280_data_i[*] ad9280_otr_i}] -max_paths 1]
-if {([llength $dac_setup_path] == 0) || ([llength $dac_hold_path] == 0)} {
-    error "AD9708 output timing paths are missing"
-}
-if {([llength $adc_setup_path] == 0) || ([llength $adc_hold_path] == 0)} {
-    error "AD9280 input timing paths are missing"
+foreach {path_name path_value} [list \
+    GLOBAL_SETUP $setup_path \
+    GLOBAL_HOLD $hold_path \
+    ADC_SETUP $adc_setup_path \
+    ADC_HOLD $adc_hold_path] {
+    if {[llength $path_value] == 0} {
+        error "$path_name timing path is missing"
+    }
 }
 
-# 读取各关键路径余量并输出到构建日志。
 set setup_slack [get_property SLACK $setup_path]
 set hold_slack [get_property SLACK $hold_path]
-set dac_setup_slack [get_property SLACK $dac_setup_path]
-set dac_hold_slack [get_property SLACK $dac_hold_path]
 set adc_setup_slack [get_property SLACK $adc_setup_path]
 set adc_hold_slack [get_property SLACK $adc_hold_path]
 puts "FINAL_SETUP_SLACK=$setup_slack"
 puts "FINAL_HOLD_SLACK=$hold_slack"
-puts "DAC_SETUP_SLACK=$dac_setup_slack"
-puts "DAC_HOLD_SLACK=$dac_hold_slack"
+puts "DAC_DATA_MODE=CONSTANT_MIDSCALE_NO_DATA_TIMING_PATH"
 puts "ADC_SETUP_SLACK=$adc_setup_slack"
 puts "ADC_HOLD_SLACK=$adc_hold_slack"
-# 任一关键路径余量为负即判定构建失败。
 if {($setup_slack < 0.0) || ($hold_slack < 0.0) ||
-    ($dac_setup_slack < 0.0) || ($dac_hold_slack < 0.0) ||
     ($adc_setup_slack < 0.0) || ($adc_hold_slack < 0.0)} {
     error "Routed timing failed"
 }
 
-# 每次成功构建都刷新交付目录中的路由后证据，避免遗留旧报告。
-set verification_dir [file join $root_dir "output" "verification"]
-file mkdir $verification_dir
-foreach {source_name evidence_name} {
-    ad9708_ps7_timing_final.rpt      timing_final.rpt
-    ad9708_ps7_drc_final.rpt         drc_final.rpt
-    ad9708_ps7_utilization_final.rpt utilization_final.rpt
-    ad9708_ps7_cdc_final.rpt         cdc_global_final.rpt
-    ad9708_ps7_cdc_adc_to_cfg.rpt    cdc_adc_to_cfg_final.rpt
-    ad9708_ps7_cdc_cfg_to_adc.rpt    cdc_cfg_to_adc_final.rpt
-} {
-    file copy -force [file join $report_dir $source_name] \
-        [file join $verification_dir $evidence_name]
+set drc_errors [get_drc_violations -quiet -filter {SEVERITY == Error}]
+set drc_error_count [llength $drc_errors]
+puts "DRC_ERROR_COUNT=$drc_error_count"
+if {$drc_error_count != 0} {
+    error "DRC contains $drc_error_count Error violation(s)"
 }
 
-# 将含PS7配置的位流复制到统一输出目录。
-set bit_file [file join $report_dir "ad9708_zynq_top.bit"]
-set output_dir [file join $root_dir "output"]
-set output_bit [file join $output_dir "BX71_V4_U3_tail_AD9708_PS7.bit"]
-if {![file exists $bit_file]} {
-    error "Bitstream was not generated: $bit_file"
-}
+# The old deliverable is never copied. A new bitstream is written only after
+# all release gates above have passed.
+set output_bit [file join $output_dir "BX71_G_ANALYZER_PS7.bit"]
 file mkdir $output_dir
-file copy -force $bit_file $output_bit
+if {[file exists $output_bit]} {
+    file delete -force $output_bit
+}
+set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
+write_bitstream -force $output_bit
+if {![file exists $output_bit]} {
+    error "Bitstream was not generated: $output_bit"
+}
+
 puts "OUTPUT_BIT=$output_bit"
-puts "BUILD_PASS: $impl_status"
+puts "BUILD_PASS=$impl_status"
 close_project

@@ -48,11 +48,11 @@ NCO 只在 FIFO 输出有效样本时推进，因此相位增量按实际 ADC �
 - 稳定 `0x00020003` 镜像已完成 Vivado 2018.3 PS7 全量构建，路由后全局建立/保持余量为 `+0.404/+0.023 ns`；DAC 为 `+1.632/+2.158 ns`，ADC 为 `+1.008/+1.518 ns`。
 - 稳定镜像顶层实际使用 `34,086 LUT`、`31,587 FF`、`1 RAMB36`、`163 DSP48E1`，其中 ProMax 实时数据面保留 `160 DSP48E1`。
 - AD9280采集、AD9708幅度/偏置及ProMax集成三项自检均通过；ProMax定向CDC报告没有Critical，完整证据见 `output/verification/`。
-- `BOOT_PS7.bin` 已重新打包，可按下文步骤写入 QSPI；静态验证和数字仿真不替代最终板上模拟链路实测。
+- `BOOT_G_ANALYZER.bin` 已重新打包，可按下文步骤写入 QSPI；静态验证和数字仿真不替代最终板上模拟链路实测。
 
 ## 目录
 
-- `Vivado/BX71_AD9708_AD9280_PS7/`：含 PS7 的固定 Vivado 工程，直接打开同名 `.xpr`。
+- `Vivado/BX71_G_ANALYZER_PS7/`：含 PS7 的固定 Vivado 工程，直接打开同名 `.xpr`。
 - `Vivado/BX71_AD9708_AD9280_PL/`：运行纯 PL 构建脚本后生成的固定 Vivado 工程。
 - `rtl/`：AD9708 DDS、AD9280 采集核、时钟和 SPI 寄存器从机。
 - `rtl_ps7/`：带 PS7 配置的持久化启动顶层。
@@ -60,19 +60,19 @@ NCO 只在 FIFO 输出有效样本时推进，因此相位增量按实际 ADC �
 - `sim/`：AD9708 数字幅度及 AD9280 采集自检仿真。
 - `scripts/`：Vivado 构建和 QSPI 启动镜像打包脚本。
 - `启动支持/`：本 FPGA 工程使用的 FSBL 等启动支持文件。
-- `output/`：构建后的 `.bit`、`BOOT_PS7.bin`和 SHA-256。
+- `output/`：构建后的 `.bit`、`BOOT_G_ANALYZER.bin`和 SHA-256。
 
 ## 构建与固化
 
-双击 `scripts/Build-QspiBoot.cmd`，脚本会在 `Vivado/BX71_AD9708_AD9280_PS7/` 创建或复用固定工程，构建 PS7 集成位流并生成 `output/BOOT_PS7.bin`。
+双击 `scripts/Build-QspiBoot.cmd`，脚本会在 `Vivado/BX71_G_ANALYZER_PS7/` 创建或复用固定工程，构建 PS7 集成位流并生成 `output/BOOT_G_ANALYZER.bin`。
 
-JTAG 临时调试应下载最终的 `output/BX71_V4_U3_tail_AD9708_PS7.bit`。掉电保存使用以下任一入口，不需要打开 SDK、不需要 SDK workspace，也不需要导入 HDF：
+JTAG 临时调试应下载最终的 `output/BX71_G_ANALYZER_PS7.bit`。掉电保存使用以下任一入口，不需要打开 SDK、不需要 SDK workspace，也不需要导入 HDF：
 
-- `scripts/Program-Qspi.cmd`：烧录现有的 `output/BOOT_PS7.bin`，适合确认镜像后重复烧录。
+- `scripts/Program-Qspi.cmd`：烧录现有的 `output/BOOT_G_ANALYZER.bin`，适合确认镜像后重复烧录。
 - `scripts/Build-And-Program-Qspi.cmd`：重新构建位流、打包完整启动镜像、烧录 QSPI 并写后校验。
 - `scripts/Probe-Qspi.cmd`：只检查工具、JTAG 和 XC7Z020，不擦除、不写入 Flash。
 
-脚本固定使用 BX71 所需的 `qspi-x1-single`、Offset 0 和工程内 `启动支持/boot/FSBL.elf`。它会自动寻找任意盘符及常见安装目录中的 Vivado/SDK 2018.3，自动连接或启动 `hw_server`，确认 JTAG 链中存在 XC7Z020，自动选择唯一的 Zynq ARM DAP，并把烧录输入暂存到纯 ASCII 短路径，避免工程目录变化、空格或中文路径导致 Xilinx 2018.3 失败。烧录成功后默认执行 Xilinx 写后校验，并在 `output/` 保存本机日志及 `LAST_PROGRAMMED.txt`。
+脚本固定使用 BX71 所需的 `qspi-x1-single`、Offset 0 和工程内 `启动支持/boot/FSBL.elf`。它会自动寻找任意盘符及常见安装目录中的 Vivado/SDK 2018.3，自动连接或启动 `hw_server`，确认 JTAG 链中存在 XC7Z020，自动选择唯一的 Zynq ARM DAP，并把烧录输入暂存到纯 ASCII 短路径，避免工程目录变化、空格或中文路径导致 Xilinx 2018.3 失败。烧录成功后默认执行 Xilinx 写后校验，并在 `output/` 保存本机日志及 `LAST_PROGRAMMED_G_QSPI.txt`。
 
 跨电脑使用时只需完整复制/拉取本工程，并安装 Vivado 2018.3 与 SDK 2018.3。工具可安装在不同盘符；若采用非常规目录，可先运行 Xilinx 的 `settings64.bat`，或直接给 PowerShell 脚本传入 `-Vivado`、`-Bootgen`、`-ProgramFlash`、`-HwServer` 的完整路径。烧录时只能连接一块 Zynq；检测到多块 Zynq 时脚本会拒绝继续，避免写错设备。
 

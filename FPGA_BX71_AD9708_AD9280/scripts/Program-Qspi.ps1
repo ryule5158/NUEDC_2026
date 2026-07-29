@@ -1,10 +1,11 @@
-# Program the complete Zynq boot image into BX71 QSPI without an SDK workspace.
+# Program and verify the complete G-analyzer Zynq boot image in BX71 QSPI.
 [CmdletBinding()]
 param(
     [string]$Image,
     [string]$Fsbl,
     [string]$ProgramFlash,
     [string]$HwServer,
+    [string]$Xsdb,
     [string]$Url = 'tcp:localhost:3121',
     [ValidateSet(
         'qspi-x1-single',
@@ -29,7 +30,7 @@ $ErrorActionPreference = 'Stop'
 $fpgaRoot = Split-Path -Parent $PSScriptRoot
 $outputDir = Join-Path $fpgaRoot 'output'
 if ([string]::IsNullOrWhiteSpace($Image)) {
-    $Image = Join-Path $outputDir 'BOOT_PS7.bin'
+    $Image = Join-Path $outputDir 'BOOT_G_ANALYZER.bin'
 }
 if ([string]::IsNullOrWhiteSpace($Fsbl)) {
     $asciiFsbl = Join-Path $fpgaRoot 'boot\FSBL.elf'
@@ -69,8 +70,13 @@ $HwServer = Resolve-XilinxTool `
     -Product SDK `
     -Version '2018.3' `
     -SpecifiedPath $HwServer
+$Xsdb = Resolve-XilinxTool `
+    -ToolName 'xsdb.bat' `
+    -Product SDK `
+    -Version '2018.3' `
+    -SpecifiedPath $Xsdb
 
-foreach ($required in @($Image, $Fsbl, $ProgramFlash, $HwServer)) {
+foreach ($required in @($Image, $Fsbl, $ProgramFlash, $HwServer, $Xsdb)) {
     if (-not (Test-Path -LiteralPath $required -PathType Leaf)) {
         throw "Required file was not found: $required"
     }
@@ -90,10 +96,48 @@ function Get-JtagTargetProbe {
     )
 
     $probeLines = @(& $Programmer -jtagtargets -url $ServerUrl 2>&1)
-    $probeExitCode = $LASTEXITCODE
     [PSCustomObject]@{
-        ExitCode = $probeExitCode
+        ExitCode = $LASTEXITCODE
         Text = ($probeLines | Out-String)
+    }
+}
+
+function Get-ZynqBootMode {
+    param(
+        [string]$XsdbTool,
+        [string]$ServerUrl
+    )
+
+    $modeStageDir = Join-Path $env:TEMP ("BX71_BOOTMODE_{0}" -f $PID)
+    $modeScript = Join-Path $modeStageDir 'read_boot_mode.tcl'
+    try {
+        New-Item -ItemType Directory -Path $modeStageDir -Force | Out-Null
+        @"
+connect -url $ServerUrl
+targets -set -filter {name =~ "ARM Cortex-A9 MPCore #0"}
+puts [mrd 0xF800025C 1]
+disconnect
+exit
+"@ | Set-Content -LiteralPath $modeScript -Encoding ASCII
+
+        $modeOutput = @(& $XsdbTool $modeScript 2>&1)
+        $modeExitCode = $LASTEXITCODE
+        $modeText = $modeOutput | Out-String
+        if ($modeExitCode -ne 0) {
+            throw "XSDB boot-mode read failed with exit code $modeExitCode.`n$modeText"
+        }
+        $modeMatch = [regex]::Match(
+            $modeText,
+            '(?im)F800025C:\s*([0-9A-Fa-f]{8})'
+        )
+        if (-not $modeMatch.Success) {
+            throw "XSDB did not return Zynq boot-mode register F800025C.`n$modeText"
+        }
+        return $modeMatch.Groups[1].Value.ToUpperInvariant()
+    } finally {
+        if (Test-Path -LiteralPath $modeStageDir) {
+            Remove-Item -LiteralPath $modeStageDir -Recurse -Force
+        }
     }
 }
 
@@ -150,29 +194,37 @@ Disconnect every board except the BX71 that should be programmed, then re-run.
 "@
 }
 
-# program_flash 2018.3 rejects -target_name even when passed the exact name
-# returned by -jtagtargets. Use the numeric ARM DAP ID from the probe output.
 $targetId = $armTargetMatches[0].Groups[1].Value
 $detectedTarget = $armTargetMatches[0].Groups[2].Value
 Write-Host "Validated Zynq target:  $detectedTarget"
 Write-Host "ARM DAP target ID:      $targetId"
 
+# Writing QSPI while the board is booted in QSPI/SD/NAND mode can make the
+# flash operation unreliable. Require exact JTAG mode after a real power-cycle.
+$bootMode = Get-ZynqBootMode -XsdbTool $Xsdb -ServerUrl $Url
+Write-Host "Boot-mode F800025C:     0x$bootMode"
+if ($bootMode -ne '00000000') {
+    throw @"
+QSPI PROGRAMMING BLOCKED: the board is not in JTAG boot mode.
+Power off the BX71, set its boot switches/jumpers to JTAG, power it on,
+and run Build-And-Program-Qspi.cmd again. Detected F800025C=0x$bootMode.
+"@
+}
+
 if ($ProbeOnly) {
     Write-Host ''
-    Write-Host 'QSPI PROGRAMMER PROBE PASSED.'
+    Write-Host 'QSPI PROGRAMMER AND JTAG BOOT-MODE PROBE PASSED.'
     Write-Host 'No flash contents were changed.'
     return
 }
 
-# Xilinx 2018.3 tools are sensitive to long and non-ASCII paths. Stage only
-# the two programming inputs in a short, ASCII-only temporary directory.
-$stageDir = Join-Path $env:TEMP ("BX71_QSPI_{0}" -f $PID)
-$stagedImage = Join-Path $stageDir 'BOOT_PS7.bin'
+$stageDir = Join-Path $env:TEMP ("BX71_G_QSPI_{0}" -f $PID)
+$stagedImage = Join-Path $stageDir 'BOOT_G_ANALYZER.bin'
 $stagedFsbl = Join-Path $stageDir 'FSBL.elf'
 $logFile = Join-Path $outputDir (
-    'program_qspi_{0}.log' -f (Get-Date -Format 'yyyyMMdd_HHmmss')
+    'program_g_qspi_{0}.log' -f (Get-Date -Format 'yyyyMMdd_HHmmss')
 )
-$manifest = Join-Path $outputDir 'LAST_PROGRAMMED.txt'
+$manifest = Join-Path $outputDir 'LAST_PROGRAMMED_G_QSPI.txt'
 $transcriptStarted = $false
 
 try {
@@ -206,7 +258,7 @@ try {
     $programArguments += @('-target_id', $targetId, '-url', $Url)
 
     Write-Host ''
-    Write-Host 'Programming the complete QSPI boot image...'
+    Write-Host 'Programming and verifying the complete G-analyzer QSPI image...'
     Write-Host 'Do not disconnect power or JTAG until this command finishes.'
     $programOutput = @(& $ProgramFlash @programArguments 2>&1)
     $programExitCode = $LASTEXITCODE
@@ -234,17 +286,18 @@ try {
         "SHA256:     $imageHash"
         "FlashType:  $FlashType"
         "Target:     $detectedTarget"
+        "BootMode:   0x$bootMode"
         "Verified:   $(-not $NoVerify)"
         "Log:        $logFile"
     ) | Set-Content -LiteralPath $manifest -Encoding UTF8
 
     Write-Host ''
-    Write-Host 'QSPI PROGRAMMING PASSED.'
+    Write-Host 'QSPI PROGRAMMING AND READBACK VERIFY PASSED.'
     Write-Host "Image length: $($imageItem.Length) bytes"
     Write-Host "SHA256:       $imageHash"
     Write-Host "Log:          $logFile"
     Write-Host ''
-    Write-Host 'For the final cold-boot test: power off, select QSPI boot, then power on.'
+    Write-Host 'Cold-boot proof still required: power off, select QSPI boot, then power on.'
 } finally {
     if ($transcriptStarted) {
         try {

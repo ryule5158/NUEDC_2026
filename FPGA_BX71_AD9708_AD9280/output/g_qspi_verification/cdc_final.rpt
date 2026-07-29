@@ -1,0 +1,649 @@
+Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
+-----------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
+| Date         : Wed Jul 29 11:31:50 2026
+| Host         : LAPTOP-9SJO8I4N running 64-bit major release  (build 9200)
+| Command      : report_cdc -details -file C:/Users/LENOVO/Desktop/NUEDC_2026/FPGA_BX71_AD9708_AD9280/output/g_qspi_verification/cdc_final.rpt
+| Design       : g_analyzer_zynq_top
+| Device       : 7z020-clg400
+| Speed File   : -2  PRODUCTION 1.11 2014-09-11
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+CDC Report
+
+ID      Severity  Count  Description
+------  --------  -----  ------------------------------------------------------
+CDC-1   Critical     59  1-bit unknown CDC circuitry
+CDC-2   Warning       1  1-bit synchronized with missing ASYNC_REG property
+CDC-3   Info          7  1-bit synchronized with ASYNC_REG property
+CDC-5   Warning      10  Multi-bit synchronized with missing ASYNC_REG property
+CDC-7   Critical    512  Asynchronous reset unknown CDC circuitry
+CDC-13  Critical      3  1-bit CDC path on a non-FD primitive
+
+Source Clock: input port clock
+Destination Clock: clk125
+CDC Type: No Common Primary Clock
+
+Row  ID      Severity  Description                           Depth  Exception   Source (From)  Destination (To)
+---  ------  --------  ------------------------------------  -----  ----------  -------------  -----------------------------
+  1  CDC-13  Critical  1-bit CDC path on a non-FD primitive      0  False Path  reset_n        analyzer_logic/dac_clk_oddr/R
+
+Source Clock: clk_50m
+Destination Clock: clk32
+CDC Type: User Ignored
+
+Row  ID     Severity  Description                                             Depth  Exception   Source (From)                                                Destination (To)
+---  -----  --------  ------------------------------------------------------  -----  ----------  -----------------------------------------------------------  ------------------------------------------------------------
+  1  CDC-3  Info      1-bit synchronized with ASYNC_REG property                  2  False Path  analyzer_logic/adc_capture/abort_toggle_cfg_reg/C            analyzer_logic/adc_capture/abort_toggle_sync_reg[0]/D
+  2  CDC-5  Warning   Multi-bit synchronized with missing ASYNC_REG property      2  False Path  analyzer_logic/adc_capture/decimation_cfg_reg[15:0]/C        analyzer_logic/adc_capture/decimation_meta_reg[15:0]/D
+  3  CDC-2  Warning   1-bit synchronized with missing ASYNC_REG property          2  False Path  analyzer_logic/adc_capture/filter_enable_cfg_reg/C           analyzer_logic/adc_capture/filter_enable_meta_reg/D
+  4  CDC-5  Warning   Multi-bit synchronized with missing ASYNC_REG property      2  False Path  analyzer_logic/adc_capture/sample_count_cfg_reg[12:0]/C      analyzer_logic/adc_capture/sample_count_meta_reg[12:0]/D
+  5  CDC-3  Info      1-bit synchronized with ASYNC_REG property                  2  False Path  analyzer_logic/adc_capture/start_toggle_cfg_reg/C            analyzer_logic/adc_capture/start_toggle_sync_reg[0]/D
+  6  CDC-5  Warning   Multi-bit synchronized with missing ASYNC_REG property      2  False Path  analyzer_logic/adc_capture/trigger_mode_cfg_reg[1:0]/C       analyzer_logic/adc_capture/trigger_mode_meta_reg[1:0]/D
+  7  CDC-5  Warning   Multi-bit synchronized with missing ASYNC_REG property      2  False Path  analyzer_logic/adc_capture/trigger_threshold_cfg_reg[7:0]/C  analyzer_logic/adc_capture/trigger_threshold_meta_reg[7:0]/D
+
+Source Clock: input port clock
+Destination Clock: clk32
+CDC Type: No Common Primary Clock
+
+Row  ID      Severity  Description                               Depth  Exception   Source (From)  Destination (To)
+---  ------  --------  ----------------------------------------  -----  ----------  -------------  ------------------------------------------------------------------
+  1  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/ad9280_data_iob_reg[0]/CLR
+  2  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/ad9280_data_iob_reg[1]/CLR
+  3  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/ad9280_data_iob_reg[2]/CLR
+  4  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/ad9280_data_iob_reg[3]/CLR
+  5  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/ad9280_data_iob_reg[4]/CLR
+  6  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/ad9280_data_iob_reg[5]/CLR
+  7  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/ad9280_data_iob_reg[6]/CLR
+  8  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/ad9280_data_iob_reg[7]/PRE
+  9  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/ad9280_otr_iob_reg/CLR
+ 10  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/abort_toggle_seen_reg/CLR
+ 11  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/busy_adc_reg/CLR
+ 12  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/captured_count_adc_reg[0]/CLR
+ 13  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/captured_count_adc_reg[1]/CLR
+ 14  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/captured_count_adc_reg[2]/CLR
+ 15  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/captured_count_adc_reg[3]/CLR
+ 16  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/captured_count_adc_reg[4]/CLR
+ 17  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/captured_count_adc_reg[5]/CLR
+ 18  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/captured_count_adc_reg[6]/CLR
+ 19  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/captured_count_adc_reg[7]/CLR
+ 20  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/captured_count_adc_reg[8]/CLR
+ 21  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/captured_count_adc_reg[9]/CLR
+ 22  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/captured_count_adc_reg[10]/CLR
+ 23  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/captured_count_adc_reg[11]/CLR
+ 24  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/captured_count_adc_reg[12]/CLR
+ 25  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/completion_toggle_adc_reg/CLR
+ 26  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_count_adc_reg[0]/CLR
+ 27  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_count_adc_reg[1]/CLR
+ 28  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_count_adc_reg[2]/CLR
+ 29  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_count_adc_reg[3]/CLR
+ 30  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_count_adc_reg[4]/CLR
+ 31  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_count_adc_reg[5]/CLR
+ 32  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_count_adc_reg[6]/CLR
+ 33  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_count_adc_reg[7]/CLR
+ 34  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_count_adc_reg[8]/CLR
+ 35  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_count_adc_reg[9]/CLR
+ 36  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_count_adc_reg[10]/CLR
+ 37  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_count_adc_reg[11]/CLR
+ 38  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_count_adc_reg[12]/CLR
+ 39  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_count_adc_reg[13]/CLR
+ 40  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_count_adc_reg[14]/CLR
+ 41  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_count_adc_reg[15]/CLR
+ 42  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_latched_reg[0]/PRE
+ 43  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_latched_reg[1]/CLR
+ 44  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_latched_reg[2]/CLR
+ 45  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_latched_reg[3]/CLR
+ 46  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_latched_reg[5]/CLR
+ 47  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_latched_reg[6]/CLR
+ 48  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_latched_reg[7]/CLR
+ 49  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_latched_reg[8]/CLR
+ 50  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_latched_reg[9]/CLR
+ 51  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_latched_reg[10]/CLR
+ 52  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_latched_reg[11]/CLR
+ 53  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_latched_reg[12]/CLR
+ 54  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_latched_reg[13]/CLR
+ 55  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_latched_reg[14]/CLR
+ 56  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_latched_reg[15]/CLR
+ 57  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_sync_reg[0]/PRE
+ 58  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_sync_reg[3]/CLR
+ 59  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_sync_reg[5]/CLR
+ 60  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_sync_reg[6]/CLR
+ 61  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_sync_reg[7]/CLR
+ 62  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_sync_reg[8]/CLR
+ 63  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_sync_reg[9]/CLR
+ 64  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_sync_reg[10]/CLR
+ 65  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_sync_reg[11]/CLR
+ 66  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_sync_reg[12]/CLR
+ 67  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_sync_reg[13]/CLR
+ 68  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_sync_reg[14]/CLR
+ 69  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/decimation_sync_reg[15]/CLR
+ 70  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/filter_enable_latched_reg/CLR
+ 71  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[0]/CLR
+ 72  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[1]/CLR
+ 73  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[2]/CLR
+ 74  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[3]/CLR
+ 75  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[4]/CLR
+ 76  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[5]/CLR
+ 77  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[6]/CLR
+ 78  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[7]/CLR
+ 79  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[8]/CLR
+ 80  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[9]/CLR
+ 81  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[10]/CLR
+ 82  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[11]/CLR
+ 83  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[12]/CLR
+ 84  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[13]/CLR
+ 85  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[14]/CLR
+ 86  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[15]/CLR
+ 87  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[16]/CLR
+ 88  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[17]/CLR
+ 89  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[18]/CLR
+ 90  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[19]/CLR
+ 91  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[20]/CLR
+ 92  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[21]/CLR
+ 93  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[22]/CLR
+ 94  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay1_reg[23]/CLR
+ 95  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[0]/CLR
+ 96  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[1]/CLR
+ 97  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[2]/CLR
+ 98  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[3]/CLR
+ 99  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[4]/CLR
+100  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[5]/CLR
+101  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[6]/CLR
+102  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[7]/CLR
+103  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[8]/CLR
+104  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[9]/CLR
+105  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[10]/CLR
+106  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[11]/CLR
+107  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[12]/CLR
+108  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[13]/CLR
+109  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[14]/CLR
+110  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[15]/CLR
+111  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[16]/CLR
+112  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[17]/CLR
+113  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[18]/CLR
+114  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[19]/CLR
+115  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[20]/CLR
+116  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[21]/CLR
+117  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[22]/CLR
+118  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay2_reg[23]/CLR
+119  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[0]/CLR
+120  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[1]/CLR
+121  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[2]/CLR
+122  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[3]/CLR
+123  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[4]/CLR
+124  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[5]/CLR
+125  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[6]/CLR
+126  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[7]/CLR
+127  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[8]/CLR
+128  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[9]/CLR
+129  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[10]/CLR
+130  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[11]/CLR
+131  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[12]/CLR
+132  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[13]/CLR
+133  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[14]/CLR
+134  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[15]/CLR
+135  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[16]/CLR
+136  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[17]/CLR
+137  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[18]/CLR
+138  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[19]/CLR
+139  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[20]/CLR
+140  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[21]/CLR
+141  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[22]/CLR
+142  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/comb_delay3_reg[23]/CLR
+143  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[0]/CLR
+144  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[1]/CLR
+145  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[2]/CLR
+146  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[3]/CLR
+147  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[4]/CLR
+148  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[5]/CLR
+149  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[6]/CLR
+150  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[7]/CLR
+151  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[8]/CLR
+152  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[9]/CLR
+153  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[10]/CLR
+154  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[11]/CLR
+155  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[12]/CLR
+156  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[13]/CLR
+157  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[14]/CLR
+158  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[15]/CLR
+159  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[16]/CLR
+160  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[17]/CLR
+161  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[18]/CLR
+162  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[19]/CLR
+163  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[20]/CLR
+164  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[21]/CLR
+165  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[22]/CLR
+166  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator1_reg[23]/CLR
+167  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[0]/CLR
+168  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[1]/CLR
+169  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[2]/CLR
+170  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[3]/CLR
+171  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[4]/CLR
+172  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[5]/CLR
+173  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[6]/CLR
+174  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[7]/CLR
+175  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[8]/CLR
+176  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[9]/CLR
+177  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[10]/CLR
+178  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[11]/CLR
+179  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[12]/CLR
+180  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[13]/CLR
+181  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[14]/CLR
+182  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[15]/CLR
+183  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[16]/CLR
+184  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[17]/CLR
+185  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[18]/CLR
+186  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[19]/CLR
+187  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[20]/CLR
+188  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[21]/CLR
+189  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[22]/CLR
+190  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator2_reg[23]/CLR
+191  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[0]/CLR
+192  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[1]/CLR
+193  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[2]/CLR
+194  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[3]/CLR
+195  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[4]/CLR
+196  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[5]/CLR
+197  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[6]/CLR
+198  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[7]/CLR
+199  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[8]/CLR
+200  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[9]/CLR
+201  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[10]/CLR
+202  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[11]/CLR
+203  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[12]/CLR
+204  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[13]/CLR
+205  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[14]/CLR
+206  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[15]/CLR
+207  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[16]/CLR
+208  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[17]/CLR
+209  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[18]/CLR
+210  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[19]/CLR
+211  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[20]/CLR
+212  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[21]/CLR
+213  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[22]/CLR
+214  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/integrator3_reg[23]/CLR
+215  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/output_code_reg[0]/CLR
+216  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/output_code_reg[1]/CLR
+217  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/output_code_reg[2]/CLR
+218  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/output_code_reg[3]/CLR
+219  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/output_code_reg[4]/CLR
+220  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/output_code_reg[5]/CLR
+221  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/output_code_reg[6]/CLR
+222  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/output_code_reg[7]/PRE
+223  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/output_valid_reg/CLR
+224  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/phase_reg[0]/CLR
+225  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/phase_reg[1]/CLR
+226  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/phase_reg[2]/CLR
+227  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/phase_reg[3]/CLR
+228  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/warmup_count_reg[0]/CLR
+229  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/g_cic_decimator/warmup_count_reg[1]/CLR
+230  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_adc_reg/CLR
+231  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[0]/CLR
+232  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[1]/CLR
+233  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[2]/CLR
+234  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[3]/CLR
+235  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[4]/CLR
+236  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[5]/CLR
+237  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[6]/CLR
+238  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[7]/CLR
+239  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[8]/CLR
+240  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[9]/CLR
+241  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[10]/CLR
+242  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[11]/CLR
+243  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[12]/CLR
+244  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[13]/CLR
+245  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[14]/CLR
+246  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[15]/CLR
+247  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[16]/CLR
+248  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[17]/CLR
+249  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[18]/CLR
+250  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[19]/CLR
+251  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[20]/CLR
+252  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[21]/CLR
+253  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[22]/CLR
+254  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[23]/CLR
+255  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[24]/CLR
+256  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[25]/CLR
+257  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[26]/CLR
+258  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[27]/CLR
+259  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[28]/CLR
+260  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[29]/CLR
+261  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[30]/CLR
+262  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/overrange_count_adc_reg[31]/CLR
+263  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/previous_sample_adc_reg[0]/CLR
+264  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/previous_sample_adc_reg[1]/CLR
+265  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/previous_sample_adc_reg[2]/CLR
+266  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/previous_sample_adc_reg[3]/CLR
+267  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/previous_sample_adc_reg[4]/CLR
+268  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/previous_sample_adc_reg[5]/CLR
+269  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/previous_sample_adc_reg[6]/CLR
+270  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/previous_sample_adc_reg[7]/PRE
+271  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_addr_adc_reg[0]/R
+272  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_addr_adc_reg[1]/R
+273  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_addr_adc_reg[2]/R
+274  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_addr_adc_reg[3]/R
+275  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_addr_adc_reg[4]/R
+276  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_addr_adc_reg[5]/R
+277  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_addr_adc_reg[6]/R
+278  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_addr_adc_reg[7]/R
+279  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_addr_adc_reg[8]/R
+280  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_addr_adc_reg[9]/R
+281  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_addr_adc_reg[10]/R
+282  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_addr_adc_reg[11]/R
+283  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_data_adc_reg[0]/R
+284  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_data_adc_reg[1]/R
+285  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_data_adc_reg[2]/R
+286  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_data_adc_reg[3]/R
+287  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_data_adc_reg[4]/R
+288  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_data_adc_reg[5]/R
+289  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_data_adc_reg[6]/R
+290  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_data_adc_reg[7]/S
+291  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/ram_write_enable_adc_reg/D
+292  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_count_latched_reg[0]/CLR
+293  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_count_latched_reg[1]/CLR
+294  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_count_latched_reg[2]/CLR
+295  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_count_latched_reg[3]/CLR
+296  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_count_latched_reg[4]/CLR
+297  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_count_latched_reg[5]/CLR
+298  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_count_latched_reg[6]/CLR
+299  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_count_latched_reg[7]/CLR
+300  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_count_latched_reg[8]/CLR
+301  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_count_latched_reg[9]/CLR
+302  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_count_latched_reg[10]/PRE
+303  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_count_latched_reg[11]/CLR
+304  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_count_latched_reg[12]/CLR
+305  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_max_adc_reg[0]/CLR
+306  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_max_adc_reg[1]/CLR
+307  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_max_adc_reg[2]/CLR
+308  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_max_adc_reg[3]/CLR
+309  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_max_adc_reg[4]/CLR
+310  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_max_adc_reg[5]/CLR
+311  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_max_adc_reg[6]/CLR
+312  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_max_adc_reg[7]/CLR
+313  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_min_adc_reg[0]/PRE
+314  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_min_adc_reg[1]/PRE
+315  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_min_adc_reg[2]/PRE
+316  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_min_adc_reg[3]/PRE
+317  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_min_adc_reg[4]/PRE
+318  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_min_adc_reg[5]/PRE
+319  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_min_adc_reg[6]/PRE
+320  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_min_adc_reg[7]/PRE
+321  CDC-13  Critical  1-bit CDC path on a non-FD primitive          0  False Path  reset_n        analyzer_logic/adc_capture/sample_ram_reg/WEA[0]
+322  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[0]/CLR
+323  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[1]/CLR
+324  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[2]/CLR
+325  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[3]/CLR
+326  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[4]/CLR
+327  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[5]/CLR
+328  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[6]/CLR
+329  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[7]/CLR
+330  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[8]/CLR
+331  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[9]/CLR
+332  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[10]/CLR
+333  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[11]/CLR
+334  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[12]/CLR
+335  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[13]/CLR
+336  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[14]/CLR
+337  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[15]/CLR
+338  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[16]/CLR
+339  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[17]/CLR
+340  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[18]/CLR
+341  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[19]/CLR
+342  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[20]/CLR
+343  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[21]/CLR
+344  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[22]/CLR
+345  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[23]/CLR
+346  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[24]/CLR
+347  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[25]/CLR
+348  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[26]/CLR
+349  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[27]/CLR
+350  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[28]/CLR
+351  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[29]/CLR
+352  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[30]/CLR
+353  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/sample_sum_adc_reg[31]/CLR
+354  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/start_toggle_seen_reg/CLR
+355  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/trigger_mode_sync_reg[0]/CLR
+356  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/trigger_mode_sync_reg[1]/CLR
+357  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/trigger_threshold_sync_reg[0]/CLR
+358  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/trigger_threshold_sync_reg[1]/CLR
+359  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/trigger_threshold_sync_reg[2]/CLR
+360  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/trigger_threshold_sync_reg[3]/CLR
+361  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/trigger_threshold_sync_reg[5]/CLR
+362  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/trigger_threshold_sync_reg[6]/CLR
+363  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/trigger_threshold_sync_reg[7]/PRE
+364  CDC-7   Critical  Asynchronous reset unknown CDC circuitry      0  False Path  reset_n        analyzer_logic/adc_capture/triggered_adc_reg/CLR
+365  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/write_addr_adc_reg[0]/R
+366  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/write_addr_adc_reg[1]/R
+367  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/write_addr_adc_reg[2]/R
+368  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/write_addr_adc_reg[3]/R
+369  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/write_addr_adc_reg[4]/R
+370  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/write_addr_adc_reg[5]/R
+371  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/write_addr_adc_reg[6]/R
+372  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/write_addr_adc_reg[7]/R
+373  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/write_addr_adc_reg[8]/R
+374  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/write_addr_adc_reg[9]/R
+375  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/write_addr_adc_reg[10]/R
+376  CDC-1   Critical  1-bit unknown CDC circuitry                   0  False Path  reset_n        analyzer_logic/adc_capture/write_addr_adc_reg[11]/R
+377  CDC-13  Critical  1-bit CDC path on a non-FD primitive          0  False Path  reset_n        analyzer_logic/adc_clk_oddr/R
+
+Source Clock: clk32
+Destination Clock: clk_50m
+CDC Type: User Ignored
+
+Row  ID     Severity  Description                                             Depth  Exception   Source (From)                                               Destination (To)
+---  -----  --------  ------------------------------------------------------  -----  ----------  ----------------------------------------------------------  -----------------------------------------------------------
+  1  CDC-3  Info      1-bit synchronized with ASYNC_REG property                  2  False Path  analyzer_logic/adc_capture/busy_adc_reg/C                   analyzer_logic/adc_capture/busy_sync_reg[0]/D
+  2  CDC-5  Warning   Multi-bit synchronized with missing ASYNC_REG property      2  False Path  analyzer_logic/adc_capture/captured_count_adc_reg[12:0]/C   analyzer_logic/adc_capture/captured_count_meta_reg[12:0]/D
+  3  CDC-3  Info      1-bit synchronized with ASYNC_REG property                  3  False Path  analyzer_logic/adc_capture/completion_toggle_adc_reg/C      analyzer_logic/adc_capture/completion_toggle_sync_reg[0]/D
+  4  CDC-5  Warning   Multi-bit synchronized with missing ASYNC_REG property      2  False Path  analyzer_logic/adc_capture/previous_sample_adc_reg[7:0]/C   analyzer_logic/adc_capture/latest_sample_meta_reg[7:0]/D
+  5  CDC-5  Warning   Multi-bit synchronized with missing ASYNC_REG property      2  False Path  analyzer_logic/adc_capture/overrange_count_adc_reg[31:0]/C  analyzer_logic/adc_capture/overrange_count_meta_reg[31:0]/D
+  6  CDC-3  Info      1-bit synchronized with ASYNC_REG property                  2  False Path  analyzer_logic/adc_capture/overrange_adc_reg/C              analyzer_logic/adc_capture/overrange_sync_reg[0]/D
+  7  CDC-5  Warning   Multi-bit synchronized with missing ASYNC_REG property      2  False Path  analyzer_logic/adc_capture/sample_max_adc_reg[7:0]/C        analyzer_logic/adc_capture/sample_max_meta_reg[7:0]/D
+  8  CDC-5  Warning   Multi-bit synchronized with missing ASYNC_REG property      2  False Path  analyzer_logic/adc_capture/sample_min_adc_reg[7:0]/C        analyzer_logic/adc_capture/sample_min_meta_reg[7:0]/D
+  9  CDC-5  Warning   Multi-bit synchronized with missing ASYNC_REG property      2  False Path  analyzer_logic/adc_capture/sample_sum_adc_reg[31:0]/C       analyzer_logic/adc_capture/sample_sum_meta_reg[31:0]/D
+ 10  CDC-3  Info      1-bit synchronized with ASYNC_REG property                  2  False Path  analyzer_logic/adc_capture/triggered_adc_reg/C              analyzer_logic/adc_capture/triggered_sync_reg[0]/D
+
+Source Clock: input port clock
+Destination Clock: clk_50m
+CDC Type: No Common Primary Clock
+
+Row  ID     Severity  Description                                 Depth  Exception   Source (From)   Destination (To)
+---  -----  --------  ------------------------------------------  -----  ----------  --------------  ------------------------------------------------------------
+  1  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/abort_toggle_cfg_reg/CLR
+  2  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/capture_valid_cfg_reg/CLR
+  3  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/captured_count_sync_reg[0]/CLR
+  4  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/captured_count_sync_reg[1]/CLR
+  5  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/captured_count_sync_reg[2]/CLR
+  6  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/captured_count_sync_reg[3]/CLR
+  7  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/captured_count_sync_reg[4]/CLR
+  8  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/captured_count_sync_reg[5]/CLR
+  9  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/captured_count_sync_reg[6]/CLR
+ 10  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/captured_count_sync_reg[7]/CLR
+ 11  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/captured_count_sync_reg[8]/CLR
+ 12  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/captured_count_sync_reg[9]/CLR
+ 13  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/captured_count_sync_reg[10]/CLR
+ 14  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/captured_count_sync_reg[11]/CLR
+ 15  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/captured_count_sync_reg[12]/CLR
+ 16  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/completion_toggle_sync_reg[2]/CLR
+ 17  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/decimation_cfg_reg[0]/PRE
+ 18  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/filter_enable_cfg_reg/CLR
+ 19  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/latest_sample_sync_reg[1]/CLR
+ 20  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/latest_sample_sync_reg[2]/CLR
+ 21  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/latest_sample_sync_reg[3]/CLR
+ 22  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/latest_sample_sync_reg[4]/CLR
+ 23  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/latest_sample_sync_reg[5]/CLR
+ 24  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/latest_sample_sync_reg[6]/CLR
+ 25  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/latest_sample_sync_reg[7]/PRE
+ 26  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[0]/CLR
+ 27  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[1]/CLR
+ 28  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[2]/CLR
+ 29  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[3]/CLR
+ 30  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[4]/CLR
+ 31  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[5]/CLR
+ 32  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[6]/CLR
+ 33  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[7]/CLR
+ 34  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[8]/CLR
+ 35  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[9]/CLR
+ 36  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[10]/CLR
+ 37  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[11]/CLR
+ 38  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[12]/CLR
+ 39  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[13]/CLR
+ 40  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[14]/CLR
+ 41  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[15]/CLR
+ 42  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[16]/CLR
+ 43  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[17]/CLR
+ 44  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[18]/CLR
+ 45  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[19]/CLR
+ 46  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[20]/CLR
+ 47  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[21]/CLR
+ 48  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[22]/CLR
+ 49  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[23]/CLR
+ 50  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[24]/CLR
+ 51  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[25]/CLR
+ 52  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[26]/CLR
+ 53  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[27]/CLR
+ 54  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[28]/CLR
+ 55  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[29]/CLR
+ 56  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[30]/CLR
+ 57  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/overrange_count_sync_reg[31]/CLR
+ 58  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg[0]/R
+ 59  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg[1]/R
+ 60  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg[2]/R
+ 61  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg[3]/R
+ 62  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg[4]/R
+ 63  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg[5]/R
+ 64  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg[6]/R
+ 65  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg[7]/R
+ 66  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg[8]/R
+ 67  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg[9]/R
+ 68  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg[10]/R
+ 69  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg[11]/R
+ 70  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg_rep[0]/R
+ 71  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg_rep[1]/R
+ 72  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg_rep[2]/R
+ 73  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg_rep[3]/R
+ 74  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg_rep[4]/R
+ 75  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg_rep[5]/R
+ 76  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg_rep[6]/R
+ 77  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg_rep[7]/R
+ 78  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg_rep[8]/R
+ 79  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg_rep[9]/R
+ 80  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg_rep[10]/R
+ 81  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  reset_n         analyzer_logic/adc_capture/read_addr_cfg_reg_rep[11]/R
+ 82  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_count_cfg_reg[10]/PRE
+ 83  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_max_sync_reg[0]/CLR
+ 84  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_max_sync_reg[1]/CLR
+ 85  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_max_sync_reg[2]/CLR
+ 86  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_max_sync_reg[3]/CLR
+ 87  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_max_sync_reg[4]/CLR
+ 88  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_max_sync_reg[5]/CLR
+ 89  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_max_sync_reg[6]/CLR
+ 90  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_max_sync_reg[7]/CLR
+ 91  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_min_sync_reg[0]/PRE
+ 92  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[0]/CLR
+ 93  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[8]/CLR
+ 94  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[9]/CLR
+ 95  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[10]/CLR
+ 96  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[11]/CLR
+ 97  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[12]/CLR
+ 98  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[13]/CLR
+ 99  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[14]/CLR
+100  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[15]/CLR
+101  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[16]/CLR
+102  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[17]/CLR
+103  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[18]/CLR
+104  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[19]/CLR
+105  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[20]/CLR
+106  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[21]/CLR
+107  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[22]/CLR
+108  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[23]/CLR
+109  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[24]/CLR
+110  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[25]/CLR
+111  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[26]/CLR
+112  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[27]/CLR
+113  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[28]/CLR
+114  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[29]/CLR
+115  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[30]/CLR
+116  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/sample_sum_sync_reg[31]/CLR
+117  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/start_toggle_cfg_reg/CLR
+118  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/trigger_threshold_cfg_reg[0]/CLR
+119  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/trigger_threshold_cfg_reg[1]/CLR
+120  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/trigger_threshold_cfg_reg[2]/CLR
+121  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/trigger_threshold_cfg_reg[7]/PRE
+122  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/adc_capture/triggered_sync_reg[1]/CLR
+123  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/bit_cnt_reg[0]/CLR
+124  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/bit_cnt_reg[1]/CLR
+125  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/bit_cnt_reg[2]/CLR
+126  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/byte_idx_reg[0]/CLR
+127  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/byte_idx_reg[1]/CLR
+128  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/byte_idx_reg[2]/CLR
+129  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/cs_level_reg/PRE
+130  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  stm32_spi_cs_n  analyzer_logic/spi_if/cs_sync_reg[0]/D
+131  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/cs_sync_reg[0]/PRE
+132  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/cs_sync_reg[1]/PRE
+133  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/cs_sync_reg[2]/PRE
+134  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/frame_ready_reg/CLR
+135  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/is_write_reg/CLR
+136  CDC-3  Info      1-bit synchronized with ASYNC_REG property      2  False Path  stm32_spi_mosi  analyzer_logic/spi_if/mosi_sync_reg[0]/D
+137  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[0]/CLR
+138  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[1]/CLR
+139  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[2]/CLR
+140  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[3]/CLR
+141  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[4]/CLR
+142  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[5]/CLR
+143  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[6]/CLR
+144  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[7]/CLR
+145  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[8]/CLR
+146  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[9]/CLR
+147  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[10]/CLR
+148  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[11]/CLR
+149  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[12]/CLR
+150  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[13]/CLR
+151  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[14]/CLR
+152  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[15]/CLR
+153  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[16]/CLR
+154  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[17]/CLR
+155  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[18]/CLR
+156  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[19]/CLR
+157  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[20]/CLR
+158  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[21]/CLR
+159  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[22]/CLR
+160  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[23]/CLR
+161  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[24]/CLR
+162  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[25]/CLR
+163  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[26]/CLR
+164  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[27]/CLR
+165  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[28]/CLR
+166  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[29]/CLR
+167  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[30]/CLR
+168  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/read_snapshot_reg[31]/CLR
+169  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/reg_addr_reg[0]/CLR
+170  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/reg_read_commit_reg/CLR
+171  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/reg_write_reg/CLR
+172  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/rx_shift_reg[0]/CLR
+173  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/rx_shift_reg[1]/CLR
+174  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/rx_shift_reg[2]/CLR
+175  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/rx_shift_reg[3]/CLR
+176  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/rx_shift_reg[4]/CLR
+177  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/rx_shift_reg[5]/CLR
+178  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/rx_shift_reg[6]/CLR
+179  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/sck_level_reg/CLR
+180  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/sck_sync_reg[0]/CLR
+181  CDC-1  Critical  1-bit unknown CDC circuitry                     0  False Path  stm32_spi_sck   analyzer_logic/spi_if/sck_sync_reg[0]/D
+182  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/write_shift_reg[0]/CLR
+183  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/write_shift_reg[1]/CLR
+184  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/write_shift_reg[2]/CLR
+185  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/write_shift_reg[3]/CLR
+186  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/write_shift_reg[4]/CLR
+187  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/write_shift_reg[5]/CLR
+188  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/write_shift_reg[6]/CLR
+189  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/write_shift_reg[7]/CLR
+190  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/write_shift_reg[8]/CLR
+191  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/write_shift_reg[9]/CLR
+192  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/write_shift_reg[10]/CLR
+193  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/write_shift_reg[11]/CLR
+194  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/write_shift_reg[12]/CLR
+195  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/write_shift_reg[13]/CLR
+196  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/write_shift_reg[14]/CLR
+197  CDC-7  Critical  Asynchronous reset unknown CDC circuitry        0  False Path  reset_n         analyzer_logic/spi_if/write_shift_reg[15]/CLR
+
