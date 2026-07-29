@@ -221,12 +221,15 @@ static int run_cic_compensation_sweep(void)
         }
         if ((result.spectrum_component_count != 1U) ||
             (absf_local(result.spectrum[0].peak_amplitude_v -
-                        input_peak_v) > 0.0001f)) {
+                        input_peak_v) > 0.0001f) ||
+            (phase_error_rad(result.spectrum[0].phase_rad,
+                             input_phase_rad) > 0.003f)) {
             fprintf(stderr,
-                    "CIC sweep %.0fHz: spectrum count=%u amp=%f\n",
+                    "CIC sweep %.0fHz: spectrum count=%u amp=%f phase=%f\n",
                     frequency_hz,
                     (unsigned)result.spectrum_component_count,
-                    result.spectrum[0].peak_amplitude_v);
+                    result.spectrum[0].peak_amplitude_v,
+                    result.spectrum[0].phase_rad);
             return 13;
         }
         printf("PASS CIC3/R16 %6.0fHz H=%0.7f corrected=%0.6fV\n",
@@ -669,14 +672,22 @@ static int run_multiline_interference_rejection(void)
             (absf_local(result.component[c].peak_amplitude_v -
                         tc.amp[c]) > 0.0001f) ||
             (phase_error_rad(result.component[c].phase_rad,
+                             tc.phase[c]) > 0.003f) ||
+            (result.spectrum[c].harmonic_order != tc.order[c]) ||
+            (absf_local(result.spectrum[c].peak_amplitude_v -
+                        tc.amp[c]) > 0.0001f) ||
+            (phase_error_rad(result.spectrum[c].phase_rad,
                              tc.phase[c]) > 0.003f)) {
             fprintf(stderr,
-                    "nuisance multiline line%u: order=%u amp=%f "
-                    "phase=%f\n",
+                    "nuisance multiline line%u: model H%u amp=%f "
+                    "phase=%f spectrum H%u amp=%f phase=%f\n",
                     c,
                     (unsigned)result.component[c].harmonic_order,
                     result.component[c].peak_amplitude_v,
-                    result.component[c].phase_rad);
+                    result.component[c].phase_rad,
+                    (unsigned)result.spectrum[c].harmonic_order,
+                    result.spectrum[c].peak_amplitude_v,
+                    result.spectrum[c].phase_rad);
             return 52;
         }
     }

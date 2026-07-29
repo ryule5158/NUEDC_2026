@@ -79,6 +79,8 @@ typedef struct {
     uint16_t harmonic_order;
     float frequency_hz;
     float peak_amplitude_v;
+    /* Input-referred phase at the first captured sample, radians in (-pi, pi]. */
+    float phase_rad;
 } PeriodicAnalyzer_SpectrumComponent;
 
 typedef struct {

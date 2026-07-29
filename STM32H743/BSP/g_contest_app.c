@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define G_CONTEST_RAD_TO_DEG 57.29577951308232f
+
 static float s_input_volts[G_CONTEST_SAMPLE_COUNT];
 static PeriodicAnalyzer_Config s_analyzer_config;
 static PeriodicAnalyzer_Result s_result;
@@ -149,30 +151,36 @@ static void GContest_PrintMeasurementAndSpectrum(void)
                     s_result.interference_post_dsp_rms_adc_v));
 
     printf("[SPEC] begin band=%.0f..%.0fHz count=%u "
-           "columns=component,frequency_Hz,peak_mV,vpp_mV "
+           "columns=component,frequency_Hz,peak_mV,vpp_mV,phase_deg "
            "order=frequency_ascending\r\n",
            (double)G_CONTEST_MIN_FREQ_HZ,
            (double)G_CONTEST_MAX_FREQ_HZ,
            (unsigned)s_result.spectrum_component_count);
     for (uint8_t i = 0U;
          i < s_result.spectrum_component_count;
-         ++i) {
+        ++i) {
+        const double phase_deg =
+            (double)(s_result.spectrum[i].phase_rad *
+                     G_CONTEST_RAD_TO_DEG);
+
         if (s_result.spectrum[i].harmonic_order != 0U) {
-            printf("SPEC,H%u,%.2f,%.6f,%.6f\r\n",
+            printf("SPEC,H%u,%.2f,%.6f,%.6f,%.6f\r\n",
                    (unsigned)s_result.spectrum[i].harmonic_order,
                    (double)s_result.spectrum[i].frequency_hz,
                    (double)(1000.0f *
                             s_result.spectrum[i].peak_amplitude_v),
                    (double)(2000.0f *
-                            s_result.spectrum[i].peak_amplitude_v));
+                            s_result.spectrum[i].peak_amplitude_v),
+                   phase_deg);
         } else {
-            printf("SPEC,C%u,%.2f,%.6f,%.6f\r\n",
+            printf("SPEC,C%u,%.2f,%.6f,%.6f,%.6f\r\n",
                    (unsigned)(i + 1U),
                    (double)s_result.spectrum[i].frequency_hz,
                    (double)(1000.0f *
                             s_result.spectrum[i].peak_amplitude_v),
                    (double)(2000.0f *
-                            s_result.spectrum[i].peak_amplitude_v));
+                            s_result.spectrum[i].peak_amplitude_v),
+                   phase_deg);
         }
     }
     printf("[SPEC] end\r\n");

@@ -1530,6 +1530,8 @@ PeriodicAnalyzer_Status PeriodicAnalyzer_Analyze(
         float refined_frequency;
         double amplitude_adc;
         float amp_corr;
+        float phase_corr;
+        float phase_adc;
 
         /*
          * The Hann FFT is used only to locate a line.  Its bin interpolation
@@ -1552,17 +1554,30 @@ PeriodicAnalyzer_Status PeriodicAnalyzer_Analyze(
                              (double)refined_frequency,
                              nuisance_ptr,
                              single_solution,
-                             NULL) == 0) {
-            amplitude_adc = hypot(single_solution[1],
-                                  single_solution[2]);
-        } else {
+                             NULL) != 0) {
             refined_frequency = peaks[i].frequency_hz;
-            amplitude_adc = (double)peaks[i].amplitude_adc_v;
+            memset(single_solution, 0, sizeof(single_solution));
+            if (PA_FitComponents(s_centered,
+                                 length,
+                                 config->sample_rate_hz,
+                                 &single_order,
+                                 1U,
+                                 (double)refined_frequency,
+                                 nuisance_ptr,
+                                 single_solution,
+                                 NULL) != 0) {
+                result->status = PERIODIC_ANALYZER_E_MODEL;
+                return result->status;
+            }
         }
+        amplitude_adc = hypot(single_solution[1],
+                              single_solution[2]);
+        phase_adc = (float)atan2(single_solution[2],
+                                 single_solution[1]);
         if (PA_GetCorrection(config,
                              refined_frequency,
                              &amp_corr,
-                             NULL) == 0U) {
+                             &phase_corr) == 0U) {
             result->status = PERIODIC_ANALYZER_E_MODEL;
             return result->status;
         }
@@ -1571,6 +1586,8 @@ PeriodicAnalyzer_Status PeriodicAnalyzer_Analyze(
             (float)(amplitude_adc *
                     (double)config->input_volts_per_adc_volt *
                     (double)amp_corr);
+        result->spectrum[i].phase_rad =
+            PA_WrapPhase(phase_adc + phase_corr);
     }
 
     component_count = PA_SelectHarmonicModel(
@@ -1693,6 +1710,8 @@ PeriodicAnalyzer_Status PeriodicAnalyzer_Analyze(
                 result->component[c].frequency_hz;
             result->spectrum[nearest].peak_amplitude_v =
                 result->component[c].peak_amplitude_v;
+            result->spectrum[nearest].phase_rad =
+                result->component[c].phase_rad;
         }
     }
     for (uint8_t i = 0U;
