@@ -174,6 +174,25 @@ static uint32_t G_TjcUi_BulkTxTimeoutMs(uint32_t byte_count)
     return wire_time_ms + G_TJC_BULK_TX_MARGIN_MS;
 }
 
+static void G_TjcUi_ReversePlotForPanel(void)
+{
+    uint16_t left = 0U;
+    uint16_t right = G_TJC_PLOT_POINTS - 1U;
+
+    /*
+     * This TJC waveform component maps the first addt byte to the right edge.
+     * Reverse the common bulk buffer once so increasing time/frequency is
+     * displayed from left to right for both waveform and spectrum modes.
+     */
+    while (left < right) {
+        const uint8_t temporary = s_plot[left];
+        s_plot[left] = s_plot[right];
+        s_plot[right] = temporary;
+        left++;
+        right--;
+    }
+}
+
 /*
  * Nextion/TJC transparent waveform transfer:
  *   addt <waveform>,<channel>,<count> FF FF FF
@@ -243,6 +262,7 @@ static HAL_StatusTypeDef G_TjcUi_SendPlotBulk(void)
     s_transfer_state = (uint8_t)G_TJC_TRANSFER_WAIT_DONE;
     if (primask == 0U) __enable_irq();
 
+    G_TjcUi_ReversePlotForPanel();
     status = HAL_UART_Transmit(
         &huart2,
         s_plot,
