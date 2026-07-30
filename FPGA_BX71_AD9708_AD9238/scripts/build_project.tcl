@@ -12,6 +12,7 @@ set project_name "BX71_AD9708_AD9238_PL"
 set project_dir [file join $root_dir "Vivado" $project_name]
 set project_file [file join $project_dir "${project_name}.xpr"]
 set verilog_files [glob [file join $root_dir "rtl" "*.v"]]
+set header_files [glob -nocomplain [file join $root_dir "rtl" "*.vh"]]
 set systemverilog_files [concat \
     [glob -nocomplain [file join $root_dir "rtl" "*.sv"]] \
     [glob -nocomplain [file join $root_dir "rtl" "promax" "*.sv"]]]
@@ -22,6 +23,7 @@ if {![file exists $project_file]} {
     create_project $project_name $project_dir -part xc7z020clg400-2 -force
     set_property target_language Verilog [current_project]
     add_files -norecurse $verilog_files
+    add_files -norecurse $header_files
     add_files -norecurse $systemverilog_files
     set_property file_type SystemVerilog [get_files $systemverilog_files]
     add_files -fileset constrs_1 -norecurse \
@@ -34,12 +36,13 @@ if {![file exists $project_file]} {
 set_property XPM_LIBRARIES {XPM_FIFO} [current_project]
 
 # 复用旧工程时只补入新增RTL，避免重复添加同一个源文件。
-foreach rtl_file [concat $verilog_files $systemverilog_files] {
+foreach rtl_file [concat $verilog_files $header_files $systemverilog_files] {
     if {[llength [get_files -quiet $rtl_file]] == 0} {
         add_files -norecurse $rtl_file
     }
 }
 set_property file_type SystemVerilog [get_files $systemverilog_files]
+set_property include_dirs [file join $root_dir "rtl"] [get_filesets sources_1]
 set_property top ad9708_spi_top [get_filesets sources_1]
 update_compile_order -fileset sources_1
 

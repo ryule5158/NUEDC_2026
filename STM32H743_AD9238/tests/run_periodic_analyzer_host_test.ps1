@@ -38,6 +38,9 @@ try {
     -Destination $buildRoot
   Copy-Item -LiteralPath (Join-Path $projectRoot 'DSP\periodic_analyzer.h') `
     -Destination $buildRoot
+  Copy-Item -LiteralPath (Join-Path $projectRoot 'DSP\ad9238_fir307_coeffs.h') `
+    -Destination $buildRoot
+
   Copy-Item -LiteralPath (Join-Path $testRoot 'fft_host_stub.c') `
     -Destination $buildRoot
   Copy-Item -LiteralPath (Join-Path $testRoot 'fft_host_stub.h') `

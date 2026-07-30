@@ -16,7 +16,13 @@ proc run_legacy_test {
     create_project -force $project_name $project_dir -part xc7z020clg400-2
     if {$top_name eq "tb_ad9238_capture_core"} {
         add_files -norecurse [file join $root_dir "rtl" \
+            "fir307_antialias_coeffs.vh"]
+        add_files -norecurse [file join $root_dir "rtl" \
+            "fir307_antialias_q4.v"]
+        add_files -norecurse [file join $root_dir "rtl" \
             "cic3_decimator_25.v"]
+        set_property include_dirs [file join $root_dir "rtl"] \
+            [get_filesets sources_1]
     }
     add_files -norecurse [file join $root_dir "rtl" $rtl_file]
     add_files -fileset sim_1 -norecurse [file join $root_dir "sim" $tb_file]

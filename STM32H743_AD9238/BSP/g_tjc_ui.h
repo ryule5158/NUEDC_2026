@@ -13,6 +13,8 @@ typedef enum {
 } G_TjcUiMode;
 
 HAL_StatusTypeDef G_TjcUi_Init(void);
+uint8_t G_TjcUi_IsHealthy(void);
+uint8_t G_TjcUi_CanReinitialize(void);
 uint8_t G_TjcUi_TakeRequest(G_TjcUiMode *mode);
 
 HAL_StatusTypeDef G_TjcUi_ShowAcquiring(G_TjcUiMode mode);

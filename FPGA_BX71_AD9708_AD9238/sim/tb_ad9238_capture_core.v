@@ -101,7 +101,7 @@ module tb_ad9238_capture_core;
     endtask
 
     /*
-     * Protocol v2.1:
+     * Protocol v2.2:
      *   bits 31:28 = zero
      *   bits 27:16 = 12-bit address tag
      *   bits 15:0  = signed two's-complement Q8.8 sample
@@ -173,7 +173,7 @@ module tb_ad9238_capture_core;
 
         bus_addr = REG_FIRMWARE_VERSION;
         #1;
-        if (bus_rdata != 32'h00020001)
+        if (bus_rdata != 32'h00020002)
             $fatal(1, "G capture protocol version mismatch");
         bus_addr = REG_DEVICE_ID;
         #1;

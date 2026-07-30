@@ -12,21 +12,32 @@ static uint32_t s_frame_number;
 static uint32_t s_last_latency_ms;
 
 /*
- * Residual whole-chain calibration template after CIC3/R25 theory correction.
- * Replace amplitude=1 and phase=0 with signal-source measurements, then set
- * G_CONTEST_EMPIRICAL_CAL_POINT_COUNT to the number of valid ascending points.
+ * Residual whole-chain calibration after the exact FIR307+CIC3/R25 inverse.
+ * Each amplitude factor is the average of two user measurements:
+ *   100 kHz: 25.000 mVpp / {25.002010, 25.000788} mVpp
+ *   200 kHz: 12.500 mVpp / {13.232144, 13.217731} mVpp
+ *   400 kHz: {140,190} mVpp / {147.838654,200.661011} mVpp
+ * Above 400 kHz, the last factor is held explicitly as an inference only.
+ * Phase remains zero because only amplitude references were supplied.
  */
 static const PeriodicAnalyzer_CalPoint s_empirical_chain_calibration[
     PERIODIC_ANALYZER_MAX_CAL_POINTS] = {
-    { 10000.0f, 1.0f, 0.0f},
-    { 50000.0f, 1.0f, 0.0f},
-    {100000.0f, 1.0f, 0.0f},
-    {200000.0f, 1.0f, 0.0f},
-    {300000.0f, 1.0f, 0.0f},
-    {400000.0f, 1.0f, 0.0f},
-    {450000.0f, 1.0f, 0.0f},
-    {500000.0f, 1.0f, 0.0f}
+    {100000.0f, 0.999944044f, 0.0f},
+    {200000.0f, 0.945184332f, 0.0f},
+    {400000.0f, 0.946924430f, 0.0f}
 };
+
+static const char *GContest_EmpiricalStatusName(
+    PeriodicAnalyzer_EmpiricalStatus status)
+{
+    if (status == PERIODIC_ANALYZER_EMPIRICAL_TABLE) {
+        return "TABLE";
+    }
+    if (status == PERIODIC_ANALYZER_EMPIRICAL_INFERRED_HOLD) {
+        return "INFERRED_HOLD";
+    }
+    return "UNCAL";
+}
 
 static void GContest_PrintCaptureDiagnostic(SignalAdc_Status status)
 {
@@ -134,15 +145,96 @@ static void GContest_PrintMeasurementAndSpectrum(void)
         }
     }
     printf("[SPEC] end\r\n");
-}
 
+    printf("[RESP] begin count=%u "
+           "columns=component,frequency_Hz,transport_vpp_mV,"
+           "fir_x,cic_x,digital_x,after_digital_vpp_mV,"
+           "chain_x,total_x,final_vpp_mV,chain_status\r\n",
+           (unsigned)s_result.spectrum_component_count);
+    for (uint8_t i = 0U;
+         i < s_result.spectrum_component_count;
+         ++i) {
+        float fir_amplitude_correction;
+        float cic_amplitude_correction;
+        float empirical_amplitude_correction;
+        float total_amplitude_correction;
+        float digital_amplitude_correction;
+        float transport_vpp_mv;
+        float after_digital_vpp_mv;
+        float final_vpp_mv;
+        PeriodicAnalyzer_EmpiricalStatus empirical_status;
+
+        PeriodicAnalyzer_GetFir307Correction(
+            s_result.spectrum[i].frequency_hz,
+            s_analyzer_config.cic_input_sample_rate_hz,
+            &fir_amplitude_correction,
+            NULL);
+        PeriodicAnalyzer_GetCic3R25Correction(
+            s_result.spectrum[i].frequency_hz,
+            s_analyzer_config.cic_input_sample_rate_hz,
+            &cic_amplitude_correction,
+            NULL);
+        PeriodicAnalyzer_GetAppliedCorrection(
+            &s_analyzer_config,
+            s_result.spectrum[i].frequency_hz,
+            &total_amplitude_correction,
+            NULL,
+            &empirical_amplitude_correction,
+            &empirical_status);
+        digital_amplitude_correction =
+            fir_amplitude_correction * cic_amplitude_correction;
+        final_vpp_mv = 2000.0f *
+                       s_result.spectrum[i].peak_amplitude_v;
+        transport_vpp_mv =
+            (total_amplitude_correction > 0.0f) ?
+            (final_vpp_mv / total_amplitude_correction) : 0.0f;
+        after_digital_vpp_mv = transport_vpp_mv *
+                               digital_amplitude_correction;
+
+        if (s_result.spectrum[i].harmonic_order != 0U) {
+            printf("RESP,H%u,%.2f,%.6f,%.9f,%.9f,%.9f,"
+                   "%.6f,%.9f,%.9f,%.6f,%s\r\n",
+                   (unsigned)s_result.spectrum[i].harmonic_order,
+                   (double)s_result.spectrum[i].frequency_hz,
+                   (double)transport_vpp_mv,
+                   (double)fir_amplitude_correction,
+                   (double)cic_amplitude_correction,
+                   (double)digital_amplitude_correction,
+                   (double)after_digital_vpp_mv,
+                   (double)empirical_amplitude_correction,
+                   (double)total_amplitude_correction,
+                   (double)final_vpp_mv,
+                   GContest_EmpiricalStatusName(empirical_status));
+        } else {
+            printf("RESP,C%u,%.2f,%.6f,%.9f,%.9f,%.9f,"
+                   "%.6f,%.9f,%.9f,%.6f,%s\r\n",
+                   (unsigned)(i + 1U),
+                   (double)s_result.spectrum[i].frequency_hz,
+                   (double)transport_vpp_mv,
+                   (double)fir_amplitude_correction,
+                   (double)cic_amplitude_correction,
+                   (double)digital_amplitude_correction,
+                   (double)after_digital_vpp_mv,
+                   (double)empirical_amplitude_correction,
+                   (double)total_amplitude_correction,
+                   (double)final_vpp_mv,
+                   GContest_EmpiricalStatusName(empirical_status));
+        }
+    }
+    printf("[RESP] end\r\n");
+}
 HAL_StatusTypeDef GContest_Init(void)
 {
     const SignalAdc_Info *adc_info;
     const SignalAdc_Diagnostic *adc_diagnostic;
     SignalAdc_Status adc_status;
+    float max_fir_amplitude_correction;
     float max_cic_amplitude_correction;
-    float max_cic_phase_correction_rad;
+    float max_digital_amplitude_correction;
+    float max_digital_phase_correction_rad;
+    float max_empirical_amplitude_correction;
+    float max_total_amplitude_correction;
+    PeriodicAnalyzer_EmpiricalStatus max_empirical_status;
 
     adc_status = SignalAdc_Init();
     if (adc_status != SIGNAL_ADC_OK) {
@@ -169,13 +261,13 @@ HAL_StatusTypeDef GContest_Init(void)
     s_analyzer_config.min_component_peak_v =
         G_CONTEST_MIN_COMPONENT_PEAK_V;
     s_analyzer_config.relative_peak_threshold = 0.01f;
-    PeriodicAnalyzer_EnableCic3R25Compensation(
+    PeriodicAnalyzer_EnableAd9238DigitalCompensation(
         &s_analyzer_config,
         (float)adc_info->physical_sample_clock_hz);
     /*
-     * Layer 1 is deterministic CIC3/R25 inverse compensation.  Layer 2 stays
-     * empty until the complete AD9238 front end, PCB and cable are measured
-     * with a calibrated 10..500 kHz source.
+     * Layer 1 is the exact FIR307 plus CIC3/R25 RTL inverse. Layer 2
+     * interpolates only the repeated 100/200/400 kHz source measurements.
+     * The 400 kHz factor is explicitly held to 500 kHz as an inference.
      */
     s_analyzer_config.cal_count =
         (uint8_t)G_CONTEST_EMPIRICAL_CAL_POINT_COUNT;
@@ -183,11 +275,30 @@ HAL_StatusTypeDef GContest_Init(void)
            s_empirical_chain_calibration,
            (size_t)s_analyzer_config.cal_count *
            sizeof(s_analyzer_config.cal[0]));
+    s_analyzer_config.empirical_hold_last_until_hz =
+        G_CONTEST_MAX_FREQ_HZ;
+    PeriodicAnalyzer_GetFir307Correction(
+        G_CONTEST_MAX_FREQ_HZ,
+        (float)adc_info->physical_sample_clock_hz,
+        &max_fir_amplitude_correction,
+        NULL);
     PeriodicAnalyzer_GetCic3R25Correction(
         G_CONTEST_MAX_FREQ_HZ,
         (float)adc_info->physical_sample_clock_hz,
         &max_cic_amplitude_correction,
-        &max_cic_phase_correction_rad);
+        NULL);
+    PeriodicAnalyzer_GetAd9238DigitalCorrection(
+        G_CONTEST_MAX_FREQ_HZ,
+        (float)adc_info->physical_sample_clock_hz,
+        &max_digital_amplitude_correction,
+        &max_digital_phase_correction_rad);
+    PeriodicAnalyzer_GetAppliedCorrection(
+        &s_analyzer_config,
+        G_CONTEST_MAX_FREQ_HZ,
+        &max_total_amplitude_correction,
+        NULL,
+        &max_empirical_amplitude_correction,
+        &max_empirical_status);
 
     memset(&s_result, 0, sizeof(s_result));
     s_frame_number = 0U;
@@ -216,15 +327,24 @@ HAL_StatusTypeDef GContest_Init(void)
                (unsigned)adc_diagnostic->sample_fraction_bits,
                (unsigned)adc_diagnostic->ready);
     }
-    printf("[G] CIC3_R25_theory=ON at %.0fHz amp_x=%.6f "
-           "phase_deg=%.3f empirical_chain_cal_points=%u\r\n",
+    printf("[G] FIR307_CIC3_R25_RTL=ON at %.0fHz fir_x=%.9f "
+           "cic_x=%.9f digital_x=%.9f phase_deg=%.3f "
+           "chain_x=%.9f total_x=%.9f chain_status=%s points=%u\r\n",
            (double)G_CONTEST_MAX_FREQ_HZ,
+           (double)max_fir_amplitude_correction,
            (double)max_cic_amplitude_correction,
-           (double)(max_cic_phase_correction_rad *
+           (double)max_digital_amplitude_correction,
+           (double)(max_digital_phase_correction_rad *
                     (180.0f / 3.14159265358979323846f)),
+           (double)max_empirical_amplitude_correction,
+           (double)max_total_amplitude_correction,
+           GContest_EmpiricalStatusName(max_empirical_status),
            (unsigned)s_analyzer_config.cal_count);
-    printf("[G] voltage_transfer=nominal; run 10..500kHz source "
-           "calibration before claiming full-chain accuracy\r\n");
+    printf("[G] antialias=FIR307_Q16 passband=0..500000Hz "
+           "stopband>=1000000Hz stop_min=52.7dB linear_phase_delay=191clk\r\n");
+    printf("[G] empirical_response=100000..500000Hz interpolation=ON "
+           "extrapolation=OFF measured=100/200/400kHz "
+           "inferred_hold=500kHz; verify 10/50/300/450/500kHz\r\n");
     return HAL_OK;
 }
 

@@ -70,6 +70,7 @@ if {[file exists $project_dir]} {
 create_project $project_name $project_dir -part xc7z020clg400-2 -force
 set_property target_language Verilog [current_project]
 set_property XPM_LIBRARIES {XPM_FIFO} [current_project]
+set_property include_dirs [file join $root_dir "rtl"] [get_filesets sources_1]
 
 add_files -norecurse $rtl_files
 if {[llength $ip_files] > 0} {
@@ -115,6 +116,11 @@ if {![string match "*Complete*" $impl_status]} {
 }
 
 open_run impl_1
+set dsp_count [llength [get_cells -hier -quiet -filter {REF_NAME == DSP48E1}]]
+puts "G_QSPI_DSP48_COUNT=$dsp_count"
+if {($dsp_count < 154) || ($dsp_count > 220)} {
+    error "FIR307 datapath missing or device DSP capacity exceeded: $dsp_count"
+}
 set output_dir [file join $root_dir "output"]
 set verification_dir [file join $output_dir "g_ad9238_qspi_verification"]
 if {[file exists $verification_dir]} {

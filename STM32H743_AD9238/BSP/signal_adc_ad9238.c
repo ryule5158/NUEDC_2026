@@ -4,11 +4,11 @@
 #include <stddef.h>
 
 /*
- * Current hardware provider: AD9238 -> FPGA CIC3/R25 Q8.8 -> SPI -> STM32.
+ * Current hardware provider: AD9238 -> FPGA FIR307 + CIC3/R25 Q8.8 -> SPI -> STM32.
  *
  * These device-specific values intentionally live only in this adapter.
- * The voltage transfer below is the module's nominal data-sheet scale, not
- * the disabled measured frequency-response calibration table.
+ * The voltage transfer below is the module's nominal data-sheet scale.
+ * Frequency-limited measured residual correction is applied by the analyzer.
  */
 #define SIGNAL_ADC_AD9238_OUTPUT_RATE_HZ  2000000U
 #define SIGNAL_ADC_AD9238_DECIMATION      25U
@@ -19,7 +19,7 @@
 #define SIGNAL_ADC_AD9238_CLIP_HIGH_Q8_8   31744
 
 static const SignalAdc_Info s_info = {
-    "AD9238+FPGA-CIC3/R25-S16Q8.8",
+    "AD9238+FPGA-FIR307-CIC3/R25-S16Q8.8",
     AD9238_SAMPLE_CLOCK_HZ,
     (float)SIGNAL_ADC_AD9238_OUTPUT_RATE_HZ,
     AD9238_BUFFER_MAX_SAMPLES,

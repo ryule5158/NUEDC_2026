@@ -2,14 +2,14 @@
 
 /*
  * Three-stage CIC decimator for ACM9238 channel 1.
- * Input:  12-bit unsigned offset-binary AD9238 code at 50 MSPS.
+ * Input:  signed AD9238 sample-code units in Q4 after FIR307 at 50 MSPS.
  * Output: signed two's-complement Q8.8 sample at 2 MSPS (R=25).
  *
  * The R=25 CIC gain is 25^3=15625.  The output transport is normalized to
  * the 16-bit Q8.8 convention used by the analyzer, so one native ADC code is
  * 16 transport counts:
  *
- *     q8_8 = round_to_nearest(comb_value * 16 / 15625)
+ *     q8_8 = round_to_nearest(comb_value / 15625)
  *
  * This division normalizes DC gain only.  The deterministic CIC passband
  * magnitude/phase inverse is applied in the paired STM32 analyzer; residual
@@ -24,14 +24,14 @@ module cic3_decimator_25(
     input  wire              reset_n,
     input  wire              clear,
     input  wire              input_valid,
-    input  wire [11:0]       input_code,
+    input  wire signed [15:0] input_sample_q4,
     output reg               output_valid,
     output reg signed [15:0] output_sample_q8_8
 );
 
     localparam [4:0] DECIMATION = 5'd25;
     localparam [2:0] WARMUP_OUTPUTS = 3'd3;
-    localparam [22:0] RECIPROCAL_Q32 = 23'd4398047;
+    localparam [18:0] RECIPROCAL_Q32 = 19'd274878;
 
     reg signed [31:0] integrator1;
     reg signed [31:0] integrator2;
@@ -55,11 +55,10 @@ module cic3_decimator_25(
     reg [4:0] phase;
     reg [2:0] warmup_count;
 
-    wire signed [12:0] centered =
-        $signed({1'b0, input_code}) - 13'sd2048;
-    wire signed [31:0] centered_ext =
-        {{19{centered[12]}}, centered};
-    wire signed [31:0] integrator1_next = integrator1 + centered_ext;
+    wire signed [31:0] input_sample_ext =
+        {{16{input_sample_q4[15]}}, input_sample_q4};
+    wire signed [31:0] integrator1_next =
+        integrator1 + input_sample_ext;
     wire signed [31:0] integrator2_next = integrator2 + integrator1;
     wire signed [31:0] integrator3_next = integrator3 + integrator2;
 
@@ -86,7 +85,7 @@ module cic3_decimator_25(
             else
                 magnitude = {1'b0, value};
 
-            numerator = magnitude << 4;
+            numerator = magnitude;
             quotient = numerator / 14'd15625;
             remainder = numerator % 14'd15625;
             if (remainder >= 14'd7813)

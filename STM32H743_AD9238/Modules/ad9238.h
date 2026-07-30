@@ -16,7 +16,7 @@ extern "C" {
 #define AD9238_MODULE_INPUT_MIN_V    (-5.0f)    /* 高速AD/DA模块标称最小输入电压。 */
 #define AD9238_MODULE_INPUT_MAX_V    5.0f       /* 高速AD/DA模块标称最大输入电压。 */
 #define AD9238_IDEAL_VOLTS_PER_CODE  (10.0f / 4096.0f) /* 模块理想每码输入电压。 */
-#define AD9238_CAPTURE_PROTOCOL_Q8_8_VERSION 0x00020001UL
+#define AD9238_CAPTURE_PROTOCOL_Q8_8_VERSION 0x00020002UL
 #define AD9238_NATIVE_RESOLUTION_BITS 12U
 #define AD9238_NATIVE_MAX_CODE        4095U
 #define AD9238_SAMPLE_WORD_BITS       16U
@@ -118,7 +118,7 @@ AD9238_StatusTypeDef AD9238_GetCaptureInfo(AD9238_CaptureInfoTypeDef *info);
 
 /* 终止正在等待触发或正在进行的采集。 */
 AD9238_StatusTypeDef AD9238_AbortCapture(void);
-/* Enable the FPGA CIC3/R25 anti-alias decimator (firmware 1.2+ only). */
+/* Enable FPGA FIR307 plus CIC3/R25 anti-aliasing (protocol v2.2+ only). */
 AD9238_StatusTypeDef AD9238_SetCic3Filter(uint8_t enable);
 
 

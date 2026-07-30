@@ -5,7 +5,7 @@ module tb_cic3_decimator_25;
     localparam integer INPUT_SAMPLE_RATE_HZ = 50000000;
     localparam integer OUTPUT_SAMPLE_RATE_HZ = 2000000;
     localparam integer TONE_OUTPUT_COUNT = 4000;
-    localparam integer TONE_AMPLITUDE_CODES = 1024;
+    localparam real RTL_GAIN_SCALE = 1.0000003385357559;
     localparam integer FIRST_STORED_INPUT_INDEX = 99;
     localparam integer CIC_TOTAL_DELAY_INPUT_SAMPLES = 38;
 
@@ -13,7 +13,7 @@ module tb_cic3_decimator_25;
     reg reset_n = 1'b0;
     reg clear = 1'b0;
     reg input_valid = 1'b0;
-    reg [11:0] input_code = 12'd2048;
+    reg signed [15:0] input_sample_q4 = 16'sd0;
     wire output_valid;
     wire signed [15:0] output_sample_q8_8;
     integer input_index;
@@ -26,7 +26,7 @@ module tb_cic3_decimator_25;
         .reset_n(reset_n),
         .clear(clear),
         .input_valid(input_valid),
-        .input_code(input_code),
+        .input_sample_q4(input_sample_q4),
         .output_valid(output_valid),
         .output_sample_q8_8(output_sample_q8_8)
     );
@@ -60,7 +60,7 @@ module tb_cic3_decimator_25;
         begin
             ClearFilter();
             input_valid = 1'b1;
-            input_code = code;
+            input_sample_q4 = ($signed({1'b0, code}) - 13'sd2048) <<< 4;
             output_count = 0;
             while (output_count < 8) begin
                 @(posedge clk);
@@ -79,6 +79,9 @@ module tb_cic3_decimator_25;
 
     task RunToneTest;
         input integer frequency_hz;
+        input integer amplitude_codes;
+        input real max_amplitude_error_q8_8;
+        input real max_phase_error_rad;
         integer code_integer;
         integer sample_integer;
         integer fractional_count;
@@ -110,12 +113,12 @@ module tb_cic3_decimator_25;
                     INPUT_SAMPLE_RATE_HZ;
                 code_integer = $rtoi(
                     2048.5 +
-                    TONE_AMPLITUDE_CODES * $sin(input_angle));
+                    amplitude_codes * $sin(input_angle));
                 if (code_integer < 0)
                     code_integer = 0;
                 else if (code_integer > 4095)
                     code_integer = 4095;
-                input_code = code_integer[11:0];
+                input_sample_q4 = (code_integer - 2048) <<< 4;
                 input_valid = 1'b1;
                 input_index = input_index + 1;
 
@@ -148,13 +151,13 @@ module tb_cic3_decimator_25;
             response_ratio =
                 response_ratio * response_ratio * response_ratio;
             expected_amplitude_q8_8 =
-                TONE_AMPLITUDE_CODES * 16.0 * response_ratio;
+                amplitude_codes * 16.0 * response_ratio * RTL_GAIN_SCALE;
             amplitude_error_q8_8 =
                 measured_amplitude_q8_8 - expected_amplitude_q8_8;
             if (amplitude_error_q8_8 < 0.0)
                 amplitude_error_q8_8 = -amplitude_error_q8_8;
 
-            if (amplitude_error_q8_8 > 12.0) begin
+            if (amplitude_error_q8_8 > max_amplitude_error_q8_8) begin
                 $fatal(1,
                        "CIC tone gain mismatch f=%0d measured=%f expected=%f error=%f",
                        frequency_hz, measured_amplitude_q8_8,
@@ -193,7 +196,7 @@ module tb_cic3_decimator_25;
                 phase_error_rad = phase_error_rad + 2.0 * PI;
             if (phase_error_rad < 0.0)
                 phase_error_rad = -phase_error_rad;
-            if (phase_error_rad > 0.015) begin
+            if (phase_error_rad > max_phase_error_rad) begin
                 $fatal(1,
                        "CIC tone phase mismatch f=%0d measured=%f expected=%f error=%f",
                        frequency_hz, measured_filter_phase_rad,
@@ -205,8 +208,9 @@ module tb_cic3_decimator_25;
                        "CIC sub-code precision missing f=%0d fractional=%0d/%0d",
                        frequency_hz, fractional_count, TONE_OUTPUT_COUNT);
             end
-            $display("CIC_TONE_PASS f=%0d measured_q8_8=%f expected_q8_8=%f phase=%f",
-                     frequency_hz, measured_amplitude_q8_8,
+            $display("CIC_TONE_PASS f=%0d amplitude_codes=%0d measured_q8_8=%f expected_q8_8=%f phase=%f",
+                     frequency_hz, amplitude_codes,
+                     measured_amplitude_q8_8,
                      expected_amplitude_q8_8,
                      measured_filter_phase_rad);
         end
@@ -216,17 +220,17 @@ module tb_cic3_decimator_25;
         repeat (4) @(posedge clk);
         reset_n = 1'b1;
 
-        /* Exact rounding thresholds for value*16/15625. */
-        CheckQuantizer(32'sd488, 16'sd0);
-        CheckQuantizer(32'sd489, 16'sd1);
-        CheckQuantizer(32'sd1464, 16'sd1);
-        CheckQuantizer(32'sd1465, 16'sd2);
-        CheckQuantizer(-32'sd488, 16'sd0);
-        CheckQuantizer(-32'sd489, -16'sd1);
-        CheckQuantizer(-32'sd1464, -16'sd1);
-        CheckQuantizer(-32'sd1465, -16'sd2);
-        CheckQuantizer(32'sd40000000, 16'sh7FFF);
-        CheckQuantizer(-32'sd40000000, 16'sh8000);
+        /* Exact rounding thresholds for signed-Q4 value/15625. */
+        CheckQuantizer(32'sd7812, 16'sd0);
+        CheckQuantizer(32'sd7813, 16'sd1);
+        CheckQuantizer(32'sd23437, 16'sd1);
+        CheckQuantizer(32'sd23438, 16'sd2);
+        CheckQuantizer(-32'sd7812, 16'sd0);
+        CheckQuantizer(-32'sd7813, -16'sd1);
+        CheckQuantizer(-32'sd23437, -16'sd1);
+        CheckQuantizer(-32'sd23438, -16'sd2);
+        CheckQuantizer(32'sd600000000, 16'sh7FFF);
+        CheckQuantizer(-32'sd600000000, 16'sh8000);
 
         /* Positive, negative, and both full-scale 12-bit DC endpoints. */
         CheckDcCode(12'd2560, 16'sh2000);
@@ -241,7 +245,7 @@ module tb_cic3_decimator_25;
         input_index = 0;
         while (output_count < 8) begin
             @(negedge clk);
-            input_code = 12'd2036 + (input_index % 25);
+            input_sample_q4 = (-12 + (input_index % 25)) <<< 4;
             input_index = input_index + 1;
             @(posedge clk);
             #1;
@@ -255,14 +259,31 @@ module tb_cic3_decimator_25;
             end
         end
 
-        RunToneTest(10000);
-        RunToneTest(20000);
-        RunToneTest(30000);
-        RunToneTest(100000);
-        RunToneTest(200000);
-        RunToneTest(300000);
-        RunToneTest(400000);
-        RunToneTest(500000);
+        RunToneTest(10000, 1024, 12.0, 0.015);
+        RunToneTest(20000, 1024, 12.0, 0.015);
+        RunToneTest(30000, 1024, 12.0, 0.015);
+        RunToneTest(100000, 1024, 12.0, 0.015);
+        RunToneTest(200000, 1024, 12.0, 0.015);
+        RunToneTest(300000, 1024, 12.0, 0.015);
+        RunToneTest(400000, 1024, 12.0, 0.015);
+        RunToneTest(500000, 1024, 12.0, 0.015);
+
+        /* 140 mVpp is about 29 AD9238 codes peak at the module input. */
+        RunToneTest(100000, 29, 3.0, 0.035);
+        RunToneTest(200000, 29, 3.0, 0.035);
+        RunToneTest(300000, 29, 3.0, 0.035);
+        RunToneTest(400000, 29, 3.0, 0.035);
+        RunToneTest(500000, 29, 3.0, 0.035);
+
+        /* Field levels: H1~5 codes, H2~3 codes, H4~29/39 codes peak. */
+        RunToneTest(100000, 5, 2.0, 0.080);
+        RunToneTest(200000, 3, 2.0, 0.100);
+        RunToneTest(400000, 3, 2.0, 0.100);
+        RunToneTest(400000, 5, 2.0, 0.080);
+        RunToneTest(400000, 39, 3.0, 0.035);
+        RunToneTest(500000, 39, 3.0, 0.035);
+        $display("G_CIC3_DECIMATOR_R25_FIELD_LEVEL_PASS");
+        $display("G_CIC3_DECIMATOR_R25_LOW_AMPLITUDE_PASS");
 
         $display("G_CIC3_DECIMATOR_R25_500KHZ_COVERAGE_PASS");
         $display("G_CIC3_DECIMATOR_R25_TEST_PASS");

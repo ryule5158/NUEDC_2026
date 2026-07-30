@@ -14,6 +14,8 @@ set source_files [list \
     [file join $root_dir "rtl" "stm32_spi_reg_slave.v"] \
     [file join $root_dir "rtl" "ad9708_clkgen.v"] \
     [file join $root_dir "rtl" "ad9238_clkgen.v"] \
+    [file join $root_dir "rtl" "fir307_antialias_coeffs.vh"] \
+    [file join $root_dir "rtl" "fir307_antialias_q4.v"] \
     [file join $root_dir "rtl" "cic3_decimator_25.v"] \
     [file join $root_dir "rtl" "ad9238_capture_core.v"]]
 set constraint_file [file join $root_dir "constraints" "acm9238_p3_spi_gpio0.xdc"]
@@ -32,6 +34,7 @@ if {![file exists $project_file]} {
         }
     }
 }
+set_property include_dirs [file join $root_dir "rtl"] [get_filesets sources_1]
 set_property top g_analyzer_top [get_filesets sources_1]
 update_compile_order -fileset sources_1
 

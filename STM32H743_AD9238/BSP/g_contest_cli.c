@@ -70,9 +70,12 @@ static void GContestCli_PrintInfo(void)
                (double)(info->output_sample_rate_hz /
                         (float)G_CONTEST_SAMPLE_COUNT));
     }
-    printf("[CLI] band=%.1f..%.1fHz frequency_response_calibration=OFF\r\n",
+    printf("[CLI] band=%.1f..%.1fHz FIR307_CIC3_R25_RTL=ON "
+           "empirical_points=%u span=100000..500000Hz "
+           "extrapolation=OFF endpoint500=INFERRED_HOLD\r\n",
            (double)G_CONTEST_MIN_FREQ_HZ,
-           (double)G_CONTEST_MAX_FREQ_HZ);
+           (double)G_CONTEST_MAX_FREQ_HZ,
+           (unsigned)G_CONTEST_EMPIRICAL_CAL_POINT_COUNT);
 }
 
 static void GContestCli_PrintStatus(void)

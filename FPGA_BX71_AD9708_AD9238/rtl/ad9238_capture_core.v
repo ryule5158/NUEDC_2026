@@ -32,13 +32,13 @@ module ad9238_capture_core(
     localparam REG_MIN_MAX         = 7'h2C; /* 已存样本最小值和最大值。 */
     localparam REG_SUM             = 7'h2D; /* 已存样本累加和。 */
     localparam REG_LATEST          = 7'h2E; /* 最近一个ADC采样码。 */
-    localparam REG_FILTER          = 7'h2F; /* bit0: enable G-mode CIC3/R25 anti-alias decimator. */
+    localparam REG_FILTER          = 7'h2F; /* bit0: enable FIR307 plus CIC3/R25 anti-alias path. */
 
     localparam [31:0] DEVICE_ID       = 32'hAD923801; /* AD9238采集单元标识。 */
     localparam [31:0] SAMPLE_CLK_HZ    = 32'd50000000; /* AD9238采样时钟。 */
     localparam [12:0] BUFFER_DEPTH     = 13'd4096; /* FPGA采样缓存深度。 */
-    /* v2.1: AD9238/R25 with signed Q8.8 sample transport. */
-    localparam [31:0] G_CAPTURE_VERSION = 32'h00020001;
+    /* v2.2: AD9238 FIR307/R25 with signed Q8.8 sample transport. */
+    localparam [31:0] G_CAPTURE_VERSION = 32'h00020002;
 
     localparam [1:0] TRIGGER_IMMEDIATE = 2'd0; /* 立即开始采集。 */
     localparam [1:0] TRIGGER_RISING    = 2'd1; /* 阈值上升沿触发。 */
@@ -123,6 +123,8 @@ module ad9238_capture_core(
      */
     (* ram_style = "block" *) reg signed [15:0] sample_ram [0:4095];
 
+    wire fir_output_valid;
+    wire signed [15:0] fir_output_q4;
     wire cic_output_valid;
     wire signed [15:0] cic_output_q8_8;
     wire raw_store_sample;
@@ -154,12 +156,22 @@ module ad9238_capture_core(
     assign bus_select = (bus_addr >= REG_CONTROL) && (bus_addr <= REG_FILTER);
 
     /* 判断当前样本是否满足所选阈值触发条件。 */
-    cic3_decimator_25 g_cic_decimator (
+    fir307_antialias_q4 g_antialias_fir (
         .clk(adc_clk),
         .reset_n(reset_n),
         .clear(start_event || abort_event),
         .input_valid(capture_window && filter_enable_latched),
         .input_code(adc_data),
+        .output_valid(fir_output_valid),
+        .output_sample_q4(fir_output_q4)
+    );
+
+    cic3_decimator_25 g_cic_decimator (
+        .clk(adc_clk),
+        .reset_n(reset_n),
+        .clear(start_event || abort_event),
+        .input_valid(fir_output_valid),
+        .input_sample_q4(fir_output_q4),
         .output_valid(cic_output_valid),
         .output_sample_q8_8(cic_output_q8_8)
     );

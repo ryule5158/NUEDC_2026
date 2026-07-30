@@ -15,7 +15,7 @@
 #define AD9238_REG_MIN_MAX             0x2CU /* 样本最小值和最大值地址。 */
 #define AD9238_REG_SUM                 0x2DU /* 样本累加和地址。 */
 #define AD9238_REG_LATEST              0x2EU /* 最近物理采样码地址。 */
-#define AD9238_REG_FILTER              0x2FU /* bit0 enables the G-mode CIC3/R25 filter. */
+#define AD9238_REG_FILTER              0x2FU /* bit0 enables the G-mode FIR307 plus CIC3/R25 filter. */
 
 #define AD9238_DEVICE_ID               0xAD923801UL /* 预期FPGA采集单元标识。 */
 #define AD9238_CONTROL_START           0x00000001UL /* 启动一次采集的控制位。 */

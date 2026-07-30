@@ -13,12 +13,11 @@
 #define G_CONTEST_MAX_WAVEFORM_CYCLES       3U
 
 /*
- * Keep this at zero until the eight identity placeholders in g_contest_app.c
- * are replaced by calibrated residual amplitude/phase data from the complete
- * AD9238 front end, PCB and cable.  CIC3/R25 theoretical correction is
- * independent and remains enabled when this count is zero.
+ * Three ascending, independently measured amplitude points are enabled in
+ * g_contest_app.c. The last factor is held to 500 kHz only as an explicitly
+ * reported inference; FIR307+CIC3/R25 remains a separate first layer.
  */
-#define G_CONTEST_EMPIRICAL_CAL_POINT_COUNT 0U
+#define G_CONTEST_EMPIRICAL_CAL_POINT_COUNT 3U
 #if G_CONTEST_EMPIRICAL_CAL_POINT_COUNT > 8U
 #error "G contest supports at most eight empirical calibration points"
 #endif

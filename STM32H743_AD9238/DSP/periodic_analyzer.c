@@ -1,6 +1,7 @@
 #include "periodic_analyzer.h"
 
 #include "FFT.h"
+#include "ad9238_fir307_coeffs.h"
 #include <math.h>
 #include <stddef.h>
 #include <string.h>
@@ -47,6 +48,61 @@ void PeriodicAnalyzer_EnableCic3R25Compensation(
     config->cic3_r25_compensation_enabled = 1U;
 }
 
+void PeriodicAnalyzer_EnableAd9238DigitalCompensation(
+    PeriodicAnalyzer_Config *config,
+    float input_sample_rate_hz)
+{
+    if (config == NULL) return;
+    config->cic_input_sample_rate_hz = input_sample_rate_hz;
+    config->fir307_antialias_compensation_enabled = 1U;
+    config->cic3_r25_compensation_enabled = 1U;
+}
+
+void PeriodicAnalyzer_GetFir307Correction(
+    float frequency_hz,
+    float input_sample_rate_hz,
+    float *amplitude_correction,
+    float *phase_correction_rad)
+{
+    float amplitude = 1.0f;
+    float phase = 0.0f;
+
+    if (isfinite(frequency_hz) &&
+        isfinite(input_sample_rate_hz) &&
+        (frequency_hz >= 0.0f) &&
+        (input_sample_rate_hz > 0.0f) &&
+        (frequency_hz < 0.5f * input_sample_rate_hz)) {
+        const float omega = PA_TWO_PI * frequency_hz /
+                            input_sample_rate_hz;
+        float zero_phase =
+            (float)g_ad9238_fir307_half_coeff_q16[
+                AD9238_FIR307_CENTER_INDEX];
+
+        for (uint32_t k = 0U;
+             k < AD9238_FIR307_CENTER_INDEX;
+             ++k) {
+            const float distance =
+                (float)(AD9238_FIR307_CENTER_INDEX - k);
+            zero_phase += 2.0f *
+                (float)g_ad9238_fir307_half_coeff_q16[k] *
+                cosf(omega * distance);
+        }
+        zero_phase /= 65536.0f;
+        zero_phase = PA_AbsF(zero_phase);
+        if ((zero_phase > 1e-12f) && isfinite(zero_phase)) {
+            amplitude = 1.0f / zero_phase;
+        }
+        phase = omega * PERIODIC_ANALYZER_FIR307_DELAY_INPUT_SAMPLES;
+    }
+
+    if (amplitude_correction != NULL) {
+        *amplitude_correction = amplitude;
+    }
+    if (phase_correction_rad != NULL) {
+        *phase_correction_rad = phase;
+    }
+}
+
 void PeriodicAnalyzer_GetCic3R25Correction(
     float frequency_hz,
     float input_sample_rate_hz,
@@ -77,6 +133,11 @@ void PeriodicAnalyzer_GetCic3R25Correction(
         }
         response = PA_AbsF(response);
         response = response * response * response;
+        /*
+         * Match the implemented reciprocal scaler, not only the ideal CIC:
+         * 274878 / 2^32 realizes the RTL's signed-Q4 divide by 15625.
+         */
+        response *= PERIODIC_ANALYZER_CIC3_R25_RTL_GAIN_SCALE;
         if ((response > 1e-12f) && isfinite(response)) {
             amplitude = 1.0f / response;
         }
@@ -102,6 +163,33 @@ void PeriodicAnalyzer_GetCic3R25Correction(
     }
 }
 
+void PeriodicAnalyzer_GetAd9238DigitalCorrection(
+    float frequency_hz,
+    float input_sample_rate_hz,
+    float *amplitude_correction,
+    float *phase_correction_rad)
+{
+    float fir_amplitude = 1.0f;
+    float fir_phase = 0.0f;
+    float cic_amplitude = 1.0f;
+    float cic_phase = 0.0f;
+
+    PeriodicAnalyzer_GetFir307Correction(frequency_hz,
+                                         input_sample_rate_hz,
+                                         &fir_amplitude,
+                                         &fir_phase);
+    PeriodicAnalyzer_GetCic3R25Correction(frequency_hz,
+                                          input_sample_rate_hz,
+                                          &cic_amplitude,
+                                          &cic_phase);
+    if (amplitude_correction != NULL) {
+        *amplitude_correction = fir_amplitude * cic_amplitude;
+    }
+    if (phase_correction_rad != NULL) {
+        *phase_correction_rad = fir_phase + cic_phase;
+    }
+}
+
 static void PA_ClearResult(PeriodicAnalyzer_Result *result,
                            PeriodicAnalyzer_Status status)
 {
@@ -109,49 +197,102 @@ static void PA_ClearResult(PeriodicAnalyzer_Result *result,
     result->status = status;
 }
 
-static void PA_InterpolateCalibration(
+void PeriodicAnalyzer_GetAppliedCorrection(
     const PeriodicAnalyzer_Config *config,
     float frequency_hz,
     float *amplitude_correction,
-    float *phase_correction_rad)
+    float *phase_correction_rad,
+    float *empirical_amplitude_correction,
+    PeriodicAnalyzer_EmpiricalStatus *empirical_status)
 {
     float amp = 1.0f;
     float phase_deg = 0.0f;
+    PeriodicAnalyzer_EmpiricalStatus status =
+        PERIODIC_ANALYZER_EMPIRICAL_UNCALIBRATED;
 
-    if (config->cal_count != 0U) {
-        uint32_t upper = 0U;
-        if (frequency_hz <= config->cal[0].frequency_hz) {
-            amp = config->cal[0].amplitude_correction;
-            phase_deg = config->cal[0].phase_correction_deg;
-        } else if (frequency_hz >=
-                   config->cal[config->cal_count - 1U].frequency_hz) {
-            amp = config->cal[config->cal_count - 1U].amplitude_correction;
-            phase_deg =
-                config->cal[config->cal_count - 1U].phase_correction_deg;
-        } else {
-            for (upper = 1U; upper < config->cal_count; ++upper) {
-                if (frequency_hz <= config->cal[upper].frequency_hz) break;
+    if ((config != NULL) && isfinite(frequency_hz) &&
+        (config->cal_count != 0U) &&
+        (config->cal_count <= PERIODIC_ANALYZER_MAX_CAL_POINTS)) {
+        const uint8_t last_index = (uint8_t)(config->cal_count - 1U);
+        const float first_hz = config->cal[0].frequency_hz;
+        const float last_hz = config->cal[last_index].frequency_hz;
+
+        if ((frequency_hz >=
+             first_hz - PERIODIC_ANALYZER_CAL_EDGE_GUARD_HZ) &&
+            (frequency_hz <=
+             last_hz + PERIODIC_ANALYZER_CAL_EDGE_GUARD_HZ)) {
+            uint32_t upper = 0U;
+            status = PERIODIC_ANALYZER_EMPIRICAL_TABLE;
+            if ((config->cal_count == 1U) ||
+                (frequency_hz <= first_hz)) {
+                amp = config->cal[0].amplitude_correction;
+                phase_deg = config->cal[0].phase_correction_deg;
+            } else if (frequency_hz >= last_hz) {
+                amp = config->cal[last_index].amplitude_correction;
+                phase_deg = config->cal[last_index].phase_correction_deg;
+            } else {
+                for (upper = 1U; upper < config->cal_count; ++upper) {
+                    if (frequency_hz <=
+                        config->cal[upper].frequency_hz) {
+                        break;
+                    }
+                }
+                if (upper < config->cal_count) {
+                    const PeriodicAnalyzer_CalPoint *lo =
+                        &config->cal[upper - 1U];
+                    const PeriodicAnalyzer_CalPoint *hi =
+                        &config->cal[upper];
+                    const float span = hi->frequency_hz - lo->frequency_hz;
+                    const float t = (span > 0.0f) ?
+                        (frequency_hz - lo->frequency_hz) / span : 0.0f;
+                    amp = lo->amplitude_correction +
+                          t * (hi->amplitude_correction -
+                               lo->amplitude_correction);
+                    phase_deg = lo->phase_correction_deg +
+                                t * (hi->phase_correction_deg -
+                                     lo->phase_correction_deg);
+                }
             }
-            if (upper < config->cal_count) {
-                const PeriodicAnalyzer_CalPoint *lo = &config->cal[upper - 1U];
-                const PeriodicAnalyzer_CalPoint *hi = &config->cal[upper];
-                const float span = hi->frequency_hz - lo->frequency_hz;
-                const float t = (span > 0.0f)
-                    ? (frequency_hz - lo->frequency_hz) / span : 0.0f;
-                amp = lo->amplitude_correction +
-                      t * (hi->amplitude_correction -
-                           lo->amplitude_correction);
-                phase_deg = lo->phase_correction_deg +
-                            t * (hi->phase_correction_deg -
-                                 lo->phase_correction_deg);
-            }
+        } else if (
+            (config->empirical_hold_last_until_hz >
+             last_hz + PERIODIC_ANALYZER_CAL_EDGE_GUARD_HZ) &&
+            (frequency_hz >
+             last_hz + PERIODIC_ANALYZER_CAL_EDGE_GUARD_HZ) &&
+            (frequency_hz <=
+             config->empirical_hold_last_until_hz +
+             PERIODIC_ANALYZER_CAL_EDGE_GUARD_HZ)) {
+            amp = config->cal[last_index].amplitude_correction;
+            phase_deg = config->cal[last_index].phase_correction_deg;
+            status = PERIODIC_ANALYZER_EMPIRICAL_INFERRED_HOLD;
         }
     }
 
-    if (!(amp > 0.0f) || !isfinite(amp)) amp = 1.0f;
+    if (!(amp > 0.0f) || !isfinite(amp)) {
+        amp = 1.0f;
+        status = PERIODIC_ANALYZER_EMPIRICAL_UNCALIBRATED;
+    }
     if (!isfinite(phase_deg)) phase_deg = 0.0f;
 
-    if (config->cic3_r25_compensation_enabled != 0U) {
+    if (empirical_amplitude_correction != NULL) {
+        *empirical_amplitude_correction = amp;
+    }
+    if (empirical_status != NULL) *empirical_status = status;
+
+    if ((config != NULL) &&
+        (config->fir307_antialias_compensation_enabled != 0U)) {
+        float fir_amp = 1.0f;
+        float fir_phase = 0.0f;
+        PeriodicAnalyzer_GetFir307Correction(
+            frequency_hz,
+            config->cic_input_sample_rate_hz,
+            &fir_amp,
+            &fir_phase);
+        amp *= fir_amp;
+        phase_deg += fir_phase * (180.0f / PA_PI);
+    }
+
+    if ((config != NULL) &&
+        (config->cic3_r25_compensation_enabled != 0U)) {
         float cic_amp = 1.0f;
         float cic_phase = 0.0f;
         PeriodicAnalyzer_GetCic3R25Correction(
@@ -169,10 +310,34 @@ static void PA_InterpolateCalibration(
     }
 }
 
+static void PA_InterpolateCalibration(
+    const PeriodicAnalyzer_Config *config,
+    float frequency_hz,
+    float *amplitude_correction,
+    float *phase_correction_rad)
+{
+    PeriodicAnalyzer_GetAppliedCorrection(config,
+                                          frequency_hz,
+                                          amplitude_correction,
+                                          phase_correction_rad,
+                                          NULL,
+                                          NULL);
+}
 static uint8_t PA_IsCalibrationValid(
     const PeriodicAnalyzer_Config *config)
 {
     if (config->cal_count > PERIODIC_ANALYZER_MAX_CAL_POINTS) return 0U;
+    if (!isfinite(config->empirical_hold_last_until_hz) ||
+        (config->empirical_hold_last_until_hz < 0.0f)) {
+        return 0U;
+    }
+    if (config->empirical_hold_last_until_hz > 0.0f) {
+        if ((config->cal_count == 0U) ||
+            (config->empirical_hold_last_until_hz <
+             config->cal[config->cal_count - 1U].frequency_hz)) {
+            return 0U;
+        }
+    }
     for (uint8_t i = 0U; i < config->cal_count; ++i) {
         const PeriodicAnalyzer_CalPoint *point = &config->cal[i];
         if (!isfinite(point->frequency_hz) ||
@@ -858,7 +1023,8 @@ PeriodicAnalyzer_Status PeriodicAnalyzer_Analyze(
         !(config->sample_rate_hz > 0.0f) ||
         !(config->input_volts_per_adc_volt > 0.0f) ||
         (PA_IsCalibrationValid(config) == 0U) ||
-        ((config->cic3_r25_compensation_enabled != 0U) &&
+        (((config->fir307_antialias_compensation_enabled != 0U) ||
+          (config->cic3_r25_compensation_enabled != 0U)) &&
          (!(config->cic_input_sample_rate_hz > 0.0f) ||
           (PA_AbsF(config->cic_input_sample_rate_hz -
                    config->sample_rate_hz *
