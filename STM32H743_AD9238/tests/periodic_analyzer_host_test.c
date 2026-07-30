@@ -6,7 +6,7 @@
 #define TEST_N 4096U
 #define TEST_FS 2000000.0f
 #define TEST_GAIN 8.0f
-#define ADC_STEP_V (10.0f / 256.0f)
+#define ADC_STEP_V (10.0f / 4096.0f)
 
 typedef struct {
     const char *name;
@@ -17,9 +17,30 @@ typedef struct {
     float phase[3];
 } TestCase;
 
+typedef struct {
+    float frequency_hz;
+    float amplitude_correction;
+    float phase_correction_deg;
+} CicExpectation;
+
+static const CicExpectation cic_expectation[] = {
+    {100000.0f, 1.0124037f,  27.36f},
+    {200000.0f, 1.0506746f,  54.72f},
+    {300000.0f, 1.1181651f,  82.08f},
+    {400000.0f, 1.2210864f, 109.44f},
+    {500000.0f, 1.3696207f, 136.80f}
+};
+
 static float samples[TEST_N];
 
 static float absf_local(float x) { return (x < 0.0f) ? -x : x; }
+
+static float wrap_phase_local(float phase)
+{
+    while (phase > TEST_PI) phase -= 2.0f * TEST_PI;
+    while (phase <= -TEST_PI) phase += 2.0f * TEST_PI;
+    return phase;
+}
 
 static float expected_vpp(const TestCase *tc)
 {
@@ -54,7 +75,7 @@ static int run_case(const TestCase *tc)
                 sinf(2.0f * TEST_PI * tc->f0 * (float)tc->order[c] * t +
                      tc->phase[c]);
         }
-        /* Emulate the nominal 8x front end and the module's 8-bit, 10 V span. */
+        /* Emulate the nominal 8x front end and AD9238 12-bit, 10 V span. */
         samples[i] = roundf((input_v * TEST_GAIN) / ADC_STEP_V) * ADC_STEP_V;
     }
 
@@ -102,6 +123,98 @@ static int run_case(const TestCase *tc)
     return 0;
 }
 
+static int run_cic_inverse_case(const CicExpectation *expectation,
+                                int use_residual_calibration)
+{
+    const float input_peak_v = 0.100f;
+    const float input_phase_rad = 0.37f;
+    const float residual_gain =
+        (use_residual_calibration != 0) ? 0.94f : 1.0f;
+    const float residual_phase_deg =
+        (use_residual_calibration != 0) ? 7.0f : 0.0f;
+    const float residual_phase_rad =
+        residual_phase_deg * TEST_PI / 180.0f;
+    PeriodicAnalyzer_Config cfg;
+    PeriodicAnalyzer_Result result;
+    float amplitude_correction;
+    float phase_correction_rad;
+    float phase_error;
+
+    PeriodicAnalyzer_GetCic3R25Correction(
+        expectation->frequency_hz,
+        50000000.0f,
+        &amplitude_correction,
+        &phase_correction_rad);
+    if (absf_local(amplitude_correction -
+                   expectation->amplitude_correction) > 2e-5f ||
+        absf_local(phase_correction_rad * 180.0f / TEST_PI -
+                   expectation->phase_correction_deg) > 0.002f) {
+        fprintf(stderr,
+                "CIC table mismatch f=%.0f amp=%f phase=%fdeg\n",
+                expectation->frequency_hz,
+                amplitude_correction,
+                phase_correction_rad * 180.0f / TEST_PI);
+        return 10;
+    }
+
+    for (unsigned i = 0U; i < TEST_N; ++i) {
+        const float t = (float)i / TEST_FS;
+        const float cic_gain = 1.0f / amplitude_correction;
+        const float adc_v = input_peak_v * TEST_GAIN *
+            cic_gain * residual_gain *
+            sinf(2.0f * TEST_PI * expectation->frequency_hz * t +
+                 input_phase_rad - phase_correction_rad -
+                 residual_phase_rad);
+        samples[i] = roundf(adc_v / ADC_STEP_V) * ADC_STEP_V;
+    }
+
+    PeriodicAnalyzer_GetDefaultConfig(&cfg);
+    cfg.sample_rate_hz = TEST_FS;
+    cfg.min_frequency_hz = 10000.0f;
+    cfg.max_frequency_hz = 500000.0f;
+    cfg.input_volts_per_adc_volt = 1.0f / TEST_GAIN;
+    cfg.min_component_peak_v = 0.0005f;
+    cfg.relative_peak_threshold = 0.01f;
+    PeriodicAnalyzer_EnableCic3R25Compensation(&cfg, 50000000.0f);
+    if (use_residual_calibration != 0) {
+        cfg.cal_count = 1U;
+        cfg.cal[0].frequency_hz = expectation->frequency_hz;
+        cfg.cal[0].amplitude_correction = 1.0f / residual_gain;
+        cfg.cal[0].phase_correction_deg = residual_phase_deg;
+    }
+
+    if (PeriodicAnalyzer_Analyze(samples, TEST_N, &cfg, &result) !=
+        PERIODIC_ANALYZER_OK) {
+        fprintf(stderr, "CIC inverse f=%.0f analyzer returned %d\n",
+                expectation->frequency_hz, (int)result.status);
+        return 11;
+    }
+    phase_error = wrap_phase_local(
+        result.component[0].phase_rad - input_phase_rad);
+    if ((result.component_count != 1U) ||
+        (absf_local(result.fundamental_hz -
+                    expectation->frequency_hz) > 25.0f) ||
+        (absf_local(result.component[0].peak_amplitude_v -
+                    input_peak_v) > 0.0015f) ||
+        (absf_local(phase_error) > 0.015f)) {
+        fprintf(stderr,
+                "CIC inverse mismatch f=%.0f measured_f=%f amp=%f phase=%f err=%f\n",
+                expectation->frequency_hz,
+                result.fundamental_hz,
+                result.component[0].peak_amplitude_v,
+                result.component[0].phase_rad,
+                phase_error);
+        return 12;
+    }
+
+    printf("PASS cic_inverse_%6.0fk amp_x=%1.7f phase=%7.3fdeg residual=%s\n",
+           expectation->frequency_hz / 1000.0f,
+           amplitude_correction,
+           phase_correction_rad * 180.0f / TEST_PI,
+           (use_residual_calibration != 0) ? "ON" : "OFF");
+    return 0;
+}
+
 int main(void)
 {
     static const TestCase cases[] = {
@@ -123,6 +236,19 @@ int main(void)
         const int status = run_case(&cases[i]);
         if (status != 0) return status;
     }
+    for (unsigned i = 0U;
+         i < sizeof(cic_expectation) / sizeof(cic_expectation[0]);
+         ++i) {
+        const int status = run_cic_inverse_case(&cic_expectation[i], 0);
+        if (status != 0) return status;
+    }
+    if (run_cic_inverse_case(
+            &cic_expectation[
+                sizeof(cic_expectation) / sizeof(cic_expectation[0]) - 1U],
+            1) != 0) {
+        return 13;
+    }
+    puts("PERIODIC_ANALYZER_CIC3_R25_INVERSE_PASS");
     puts("PERIODIC_ANALYZER_HOST_MATRIX_PASS");
     return 0;
 }

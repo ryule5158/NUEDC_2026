@@ -7,6 +7,8 @@
 #define PERIODIC_ANALYZER_MAX_SPECTRUM_COMPONENTS 12U
 #define PERIODIC_ANALYZER_MAX_CAL_POINTS    8U
 #define PERIODIC_ANALYZER_MAX_FFT_POINTS    4096U
+#define PERIODIC_ANALYZER_CIC3_R25_DECIMATION 25U
+#define PERIODIC_ANALYZER_CIC3_R25_DELAY_INPUT_SAMPLES 38.0f
 
 typedef enum {
     PERIODIC_ANALYZER_OK = 0,
@@ -18,9 +20,15 @@ typedef enum {
 
 typedef struct {
     float frequency_hz;
+    /*
+     * 实测整链路的剩余幅值修正，叠加在确定性的 CIC3/R25 理论逆补偿之后。
+     * 例如理论补偿后仍低 2%，此处填写 1/0.98。
+     */
     float amplitude_correction;
     /*
-     * 输入相位 = ADC 实测相位 + phase_correction_deg。
+     * 输入相位 = ADC 实测相位 + CIC 理论相位修正
+     *            + phase_correction_deg。
+     * 此处只填写信号源实测得到的模拟前端、PCB 和连接线剩余误差。
      * 表内相位应保持展开连续，例如 143° 后写 188°，不要写 -172°。
      */
     float phase_correction_deg;
@@ -33,6 +41,8 @@ typedef struct {
     float input_volts_per_adc_volt;
     float min_component_peak_v;
     float relative_peak_threshold;
+    float cic_input_sample_rate_hz;
+    uint8_t cic3_r25_compensation_enabled;
     uint8_t cal_count;
     PeriodicAnalyzer_CalPoint cal[PERIODIC_ANALYZER_MAX_CAL_POINTS];
 } PeriodicAnalyzer_Config;
@@ -66,6 +76,14 @@ typedef struct {
 } PeriodicAnalyzer_Result;
 
 void PeriodicAnalyzer_GetDefaultConfig(PeriodicAnalyzer_Config *config);
+void PeriodicAnalyzer_EnableCic3R25Compensation(
+    PeriodicAnalyzer_Config *config,
+    float input_sample_rate_hz);
+void PeriodicAnalyzer_GetCic3R25Correction(
+    float frequency_hz,
+    float input_sample_rate_hz,
+    float *amplitude_correction,
+    float *phase_correction_rad);
 PeriodicAnalyzer_Status PeriodicAnalyzer_Analyze(
     const float *adc_volts,
     uint32_t length,

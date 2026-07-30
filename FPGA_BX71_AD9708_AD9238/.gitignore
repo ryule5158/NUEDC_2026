@@ -25,6 +25,8 @@ Vivado/**/*.str
 *.str
 output/LAST_PROGRAMMED.txt
 xsim.dir/
+# Vivado PS7 can emit ps7_summary.html under a relative NA directory.
+NA/
 sim_work/
 ps7/hdl/
 ps7/hw_handoff/

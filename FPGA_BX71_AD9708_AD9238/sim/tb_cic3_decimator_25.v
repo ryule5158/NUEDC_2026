@@ -6,6 +6,8 @@ module tb_cic3_decimator_25;
     localparam integer OUTPUT_SAMPLE_RATE_HZ = 2000000;
     localparam integer TONE_OUTPUT_COUNT = 4000;
     localparam integer TONE_AMPLITUDE_CODES = 1024;
+    localparam integer FIRST_STORED_INPUT_INDEX = 99;
+    localparam integer CIC_TOTAL_DELAY_INPUT_SAMPLES = 38;
 
     reg clk = 1'b0;
     reg reset_n = 1'b0;
@@ -88,9 +90,13 @@ module tb_cic3_decimator_25;
         real response_ratio;
         real expected_amplitude_q8_8;
         real amplitude_error_q8_8;
+        real measured_phase_rad;
+        real measured_filter_phase_rad;
+        real expected_filter_phase_rad;
+        real phase_error_rad;
         begin
+            input_valid = 1'b0;
             ClearFilter();
-            input_valid = 1'b1;
             input_index = 0;
             output_count = 0;
             sine_sum = 0.0;
@@ -110,6 +116,7 @@ module tb_cic3_decimator_25;
                 else if (code_integer > 4095)
                     code_integer = 4095;
                 input_code = code_integer[11:0];
+                input_valid = 1'b1;
                 input_index = input_index + 1;
 
                 @(posedge clk);
@@ -153,14 +160,55 @@ module tb_cic3_decimator_25;
                        frequency_hz, measured_amplitude_q8_8,
                        expected_amplitude_q8_8, amplitude_error_q8_8);
             end
+
+            /*
+             * The first stored value is the fourth R=25 output (input index
+             * 99).  Reference phase to that physical sample time: the ideal
+             * CIC delay is 36 clocks and the registered integrators add two.
+             */
+            measured_phase_rad = $atan2(cosine_sum, sine_sum);
+            measured_filter_phase_rad = measured_phase_rad -
+                2.0 * PI * frequency_hz * FIRST_STORED_INPUT_INDEX /
+                INPUT_SAMPLE_RATE_HZ;
+            expected_filter_phase_rad =
+                -2.0 * PI * frequency_hz *
+                CIC_TOTAL_DELAY_INPUT_SAMPLES / INPUT_SAMPLE_RATE_HZ;
+            while (measured_filter_phase_rad > PI)
+                measured_filter_phase_rad = measured_filter_phase_rad -
+                                            2.0 * PI;
+            while (measured_filter_phase_rad <= -PI)
+                measured_filter_phase_rad = measured_filter_phase_rad +
+                                            2.0 * PI;
+            while (expected_filter_phase_rad > PI)
+                expected_filter_phase_rad = expected_filter_phase_rad -
+                                            2.0 * PI;
+            while (expected_filter_phase_rad <= -PI)
+                expected_filter_phase_rad = expected_filter_phase_rad +
+                                            2.0 * PI;
+            phase_error_rad = measured_filter_phase_rad -
+                              expected_filter_phase_rad;
+            while (phase_error_rad > PI)
+                phase_error_rad = phase_error_rad - 2.0 * PI;
+            while (phase_error_rad <= -PI)
+                phase_error_rad = phase_error_rad + 2.0 * PI;
+            if (phase_error_rad < 0.0)
+                phase_error_rad = -phase_error_rad;
+            if (phase_error_rad > 0.015) begin
+                $fatal(1,
+                       "CIC tone phase mismatch f=%0d measured=%f expected=%f error=%f",
+                       frequency_hz, measured_filter_phase_rad,
+                       expected_filter_phase_rad, phase_error_rad);
+            end
+
             if (fractional_count < (TONE_OUTPUT_COUNT / 2)) begin
                 $fatal(1,
                        "CIC sub-code precision missing f=%0d fractional=%0d/%0d",
                        frequency_hz, fractional_count, TONE_OUTPUT_COUNT);
             end
-            $display("CIC_TONE_PASS f=%0d measured_q8_8=%f expected_q8_8=%f",
+            $display("CIC_TONE_PASS f=%0d measured_q8_8=%f expected_q8_8=%f phase=%f",
                      frequency_hz, measured_amplitude_q8_8,
-                     expected_amplitude_q8_8);
+                     expected_amplitude_q8_8,
+                     measured_filter_phase_rad);
         end
     endtask
 
@@ -210,7 +258,13 @@ module tb_cic3_decimator_25;
         RunToneTest(10000);
         RunToneTest(20000);
         RunToneTest(30000);
+        RunToneTest(100000);
+        RunToneTest(200000);
+        RunToneTest(300000);
+        RunToneTest(400000);
+        RunToneTest(500000);
 
+        $display("G_CIC3_DECIMATOR_R25_500KHZ_COVERAGE_PASS");
         $display("G_CIC3_DECIMATOR_R25_TEST_PASS");
         $finish;
     end

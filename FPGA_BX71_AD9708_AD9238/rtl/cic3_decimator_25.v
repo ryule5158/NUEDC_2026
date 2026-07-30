@@ -11,6 +11,10 @@
  *
  *     q8_8 = round_to_nearest(comb_value * 16 / 15625)
  *
+ * This division normalizes DC gain only.  The deterministic CIC passband
+ * magnitude/phase inverse is applied in the paired STM32 analyzer; residual
+ * analog-front-end/PCB/cable error remains an empirical calibration layer.
+ *
  * Integrator, comb, and scaling stages are registered separately.  This is
  * important at 50 MHz: the ADC input must never see a single combinational
  * path through the complete CIC and the constant divider.

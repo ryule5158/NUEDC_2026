@@ -38,6 +38,70 @@ static float PA_WrapPhase(float phase)
     return phase;
 }
 
+void PeriodicAnalyzer_EnableCic3R25Compensation(
+    PeriodicAnalyzer_Config *config,
+    float input_sample_rate_hz)
+{
+    if (config == NULL) return;
+    config->cic_input_sample_rate_hz = input_sample_rate_hz;
+    config->cic3_r25_compensation_enabled = 1U;
+}
+
+void PeriodicAnalyzer_GetCic3R25Correction(
+    float frequency_hz,
+    float input_sample_rate_hz,
+    float *amplitude_correction,
+    float *phase_correction_rad)
+{
+    float amplitude = 1.0f;
+    float phase = 0.0f;
+
+    if (isfinite(frequency_hz) &&
+        isfinite(input_sample_rate_hz) &&
+        (frequency_hz >= 0.0f) &&
+        (input_sample_rate_hz > 0.0f) &&
+        (frequency_hz <
+         input_sample_rate_hz /
+         (float)PERIODIC_ANALYZER_CIC3_R25_DECIMATION)) {
+        const float x = PA_PI * frequency_hz / input_sample_rate_hz;
+        float response = 1.0f;
+
+        if (PA_AbsF(x) > 1e-7f) {
+            const float denominator =
+                (float)PERIODIC_ANALYZER_CIC3_R25_DECIMATION * sinf(x);
+            if (PA_AbsF(denominator) > 1e-12f) {
+                response = sinf(
+                    (float)PERIODIC_ANALYZER_CIC3_R25_DECIMATION * x) /
+                    denominator;
+            }
+        }
+        response = PA_AbsF(response);
+        response = response * response * response;
+        if ((response > 1e-12f) && isfinite(response)) {
+            amplitude = 1.0f / response;
+        }
+
+        /*
+         * The ideal three-stage CIC contributes 3*(25-1)/2 = 36 input
+         * clocks of group delay.  This RTL's registered integrator cascade
+         * adds two input clocks; the comb/scaler pipeline changes only data
+         * availability.  Therefore the stored samples need +38 clocks of
+         * deterministic phase correction.  Capture-frame phase can still be
+         * arbitrary without a shared external trigger/reference.
+         */
+        phase = PA_TWO_PI * frequency_hz *
+                PERIODIC_ANALYZER_CIC3_R25_DELAY_INPUT_SAMPLES /
+                input_sample_rate_hz;
+    }
+
+    if (amplitude_correction != NULL) {
+        *amplitude_correction = amplitude;
+    }
+    if (phase_correction_rad != NULL) {
+        *phase_correction_rad = phase;
+    }
+}
+
 static void PA_ClearResult(PeriodicAnalyzer_Result *result,
                            PeriodicAnalyzer_Status status)
 {
@@ -86,10 +150,42 @@ static void PA_InterpolateCalibration(
 
     if (!(amp > 0.0f) || !isfinite(amp)) amp = 1.0f;
     if (!isfinite(phase_deg)) phase_deg = 0.0f;
+
+    if (config->cic3_r25_compensation_enabled != 0U) {
+        float cic_amp = 1.0f;
+        float cic_phase = 0.0f;
+        PeriodicAnalyzer_GetCic3R25Correction(
+            frequency_hz,
+            config->cic_input_sample_rate_hz,
+            &cic_amp,
+            &cic_phase);
+        amp *= cic_amp;
+        phase_deg += cic_phase * (180.0f / PA_PI);
+    }
+
     if (amplitude_correction != NULL) *amplitude_correction = amp;
     if (phase_correction_rad != NULL) {
         *phase_correction_rad = phase_deg * (PA_PI / 180.0f);
     }
+}
+
+static uint8_t PA_IsCalibrationValid(
+    const PeriodicAnalyzer_Config *config)
+{
+    if (config->cal_count > PERIODIC_ANALYZER_MAX_CAL_POINTS) return 0U;
+    for (uint8_t i = 0U; i < config->cal_count; ++i) {
+        const PeriodicAnalyzer_CalPoint *point = &config->cal[i];
+        if (!isfinite(point->frequency_hz) ||
+            !isfinite(point->amplitude_correction) ||
+            !isfinite(point->phase_correction_deg) ||
+            (point->frequency_hz < 0.0f) ||
+            !(point->amplitude_correction > 0.0f) ||
+            ((i != 0U) &&
+             !(point->frequency_hz > config->cal[i - 1U].frequency_hz))) {
+            return 0U;
+        }
+    }
+    return 1U;
 }
 
 static void PA_InterpPeak(const float *mag,
@@ -761,7 +857,13 @@ PeriodicAnalyzer_Status PeriodicAnalyzer_Analyze(
         ((length & (length - 1U)) != 0U) ||
         !(config->sample_rate_hz > 0.0f) ||
         !(config->input_volts_per_adc_volt > 0.0f) ||
-        (config->cal_count > PERIODIC_ANALYZER_MAX_CAL_POINTS)) {
+        (PA_IsCalibrationValid(config) == 0U) ||
+        ((config->cic3_r25_compensation_enabled != 0U) &&
+         (!(config->cic_input_sample_rate_hz > 0.0f) ||
+          (PA_AbsF(config->cic_input_sample_rate_hz -
+                   config->sample_rate_hz *
+                   (float)PERIODIC_ANALYZER_CIC3_R25_DECIMATION) >
+           1.0f)))) {
         if (result != NULL) {
             PA_ClearResult(result, PERIODIC_ANALYZER_E_ARGUMENT);
         }
