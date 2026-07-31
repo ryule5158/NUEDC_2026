@@ -1,0 +1,9 @@
+rtl/g_analyzer_top.v
+rtl/stm32_spi_reg_slave.v
+rtl/ad9708_clkgen.v
+rtl/ltc2208_clkgen.v
+rtl/ltc2208_cic5_fir81_decimator.v
+rtl/ltc2208_capture_core.v
+rtl_ps7/g_analyzer_zynq_top.v
+constraints/ltc2208_u8_to_bx71_p3_spi_gpio0.xdc
+ps7/sys.bd

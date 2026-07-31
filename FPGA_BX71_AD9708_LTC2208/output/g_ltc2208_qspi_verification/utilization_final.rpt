@@ -1,0 +1,41 @@
+Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
+| Date         : Fri Jul 31 18:42:07 2026
+| Host         : LAPTOP-9SJO8I4N running 64-bit major release  (build 9200)
+| Command      : report_utilization -hierarchical -file C:/tmp/nuedc_ltc2208_20260731/FPGA_BX71_AD9708_LTC2208/output/g_ltc2208_qspi_verification/utilization_final.rpt
+| Design       : g_analyzer_zynq_top
+| Device       : 7z020clg400-2
+| Design State : Routed
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Utilization Design Information
+
+Table of Contents
+-----------------
+1. Utilization by Hierarchy
+
+1. Utilization by Hierarchy
+---------------------------
+
++--------------------------------+-----------------------------------------------------------------------+------------+------------+---------+------+------+--------+--------+--------------+
+|            Instance            |                                 Module                                | Total LUTs | Logic LUTs | LUTRAMs | SRLs |  FFs | RAMB36 | RAMB18 | DSP48 Blocks |
++--------------------------------+-----------------------------------------------------------------------+------------+------------+---------+------+------+--------+--------+--------------+
+| g_analyzer_zynq_top            |                                                                 (top) |       3219 |       3051 |       0 |  168 | 5869 |      2 |      1 |            3 |
+|   (g_analyzer_zynq_top)        |                                                                 (top) |          0 |          0 |       0 |    0 |    0 |      0 |      0 |            0 |
+|   analyzer_logic               |                                                        g_analyzer_top |       3219 |       3051 |       0 |  168 | 5869 |      2 |      1 |            3 |
+|     (analyzer_logic)           |                                                        g_analyzer_top |          0 |          0 |       0 |    0 |    0 |      0 |      0 |            0 |
+|     adc_capture                |                                                  ltc2208_capture_core |       3055 |       2887 |       0 |  168 | 5765 |      2 |      1 |            3 |
+|       (adc_capture)            |                                                  ltc2208_capture_core |        204 |        204 |       0 |    0 |  675 |      2 |      1 |            0 |
+|       anti_interference_filter |                                          ltc2208_cic5_fir81_decimator |       2851 |       2683 |       0 |  168 | 5090 |      0 |      0 |            3 |
+|     adc_clkgen                 |                                                        ltc2208_clkgen |          1 |          1 |       0 |    0 |    0 |      0 |      0 |            0 |
+|     dac_clkgen                 |                                                         ad9708_clkgen |          1 |          1 |       0 |    0 |    0 |      0 |      0 |            0 |
+|     spi_if                     |                                                   stm32_spi_reg_slave |        162 |        162 |       0 |    0 |  104 |      0 |      0 |            0 |
+|   ps7_board_config             |                                                                   sys |          0 |          0 |       0 |    0 |    0 |      0 |      0 |            0 |
+|     processing_system7_0       |                                            sys_processing_system7_0_0 |          0 |          0 |       0 |    0 |    0 |      0 |      0 |            0 |
+|       (processing_system7_0)   |                                            sys_processing_system7_0_0 |          0 |          0 |       0 |    0 |    0 |      0 |      0 |            0 |
+|       inst                     | sys_processing_system7_0_0_processing_system7_v5_5_processing_system7 |          0 |          0 |       0 |    0 |    0 |      0 |      0 |            0 |
++--------------------------------+-----------------------------------------------------------------------+------------+------------+---------+------+------+--------+--------+--------------+
+* Note: The sum of lower-level cells may be larger than their parent cells total, due to cross-hierarchy LUT combining
+
+

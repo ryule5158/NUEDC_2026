@@ -1,0 +1,2372 @@
+Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
+| Date         : Fri Jul 31 18:42:00 2026
+| Host         : LAPTOP-9SJO8I4N running 64-bit major release  (build 9200)
+| Command      : report_timing_summary -delay_type min_max -report_unconstrained -file C:/tmp/nuedc_ltc2208_20260731/FPGA_BX71_AD9708_LTC2208/output/g_ltc2208_qspi_verification/timing_final.rpt
+| Design       : g_analyzer_zynq_top
+| Device       : 7z020-clg400
+| Speed File   : -2  PRODUCTION 1.11 2014-09-11
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Timing Summary Report
+
+------------------------------------------------------------------------------------------------
+| Timer Settings
+| --------------
+------------------------------------------------------------------------------------------------
+
+  Enable Multi Corner Analysis               :  Yes
+  Enable Pessimism Removal                   :  Yes
+  Pessimism Removal Resolution               :  Nearest Common Node
+  Enable Input Delay Default Clock           :  No
+  Enable Preset / Clear Arcs                 :  No
+  Disable Flight Delays                      :  No
+  Ignore I/O Paths                           :  No
+  Timing Early Launch at Borrowing Latches   :  false
+
+  Corner  Analyze    Analyze    
+  Name    Max Paths  Min Paths  
+  ------  ---------  ---------  
+  Slow    Yes        Yes        
+  Fast    Yes        Yes        
+
+
+
+check_timing report
+
+Table of Contents
+-----------------
+1. checking no_clock
+2. checking constant_clock
+3. checking pulse_width_clock
+4. checking unconstrained_internal_endpoints
+5. checking no_input_delay
+6. checking no_output_delay
+7. checking multiple_clock
+8. checking generated_clocks
+9. checking loops
+10. checking partial_input_delay
+11. checking partial_output_delay
+12. checking latch_loops
+
+1. checking no_clock
+--------------------
+ There are 0 register/latch pins with no clock.
+
+
+2. checking constant_clock
+--------------------------
+ There are 0 register/latch pins with constant_clock.
+
+
+3. checking pulse_width_clock
+-----------------------------
+ There are 0 register/latch pins which need pulse_width check
+
+
+4. checking unconstrained_internal_endpoints
+--------------------------------------------
+ There are 0 pins that are not constrained for maximum delay.
+
+ There are 0 pins that are not constrained for maximum delay due to constant clock.
+
+
+5. checking no_input_delay
+--------------------------
+ There are 0 input ports with no input delay specified.
+
+ There are 4 input ports with no input delay but user has a false path constraint. (MEDIUM)
+
+
+6. checking no_output_delay
+---------------------------
+ There are 0 ports with no output delay specified.
+
+ There is 1 port with no output delay but user has a false path constraint (MEDIUM)
+
+ There are 2 ports with no output delay but with a timing clock defined on it or propagating through it (LOW)
+
+
+7. checking multiple_clock
+--------------------------
+ There are 0 register/latch pins with multiple clocks.
+
+
+8. checking generated_clocks
+----------------------------
+ There are 0 generated clocks that are not connected to a clock source.
+
+
+9. checking loops
+-----------------
+ There are 0 combinational loops in the design.
+
+
+10. checking partial_input_delay
+--------------------------------
+ There are 0 input ports with partial input delay specified.
+
+
+11. checking partial_output_delay
+---------------------------------
+ There are 0 ports with partial output delay specified.
+
+
+12. checking latch_loops
+------------------------
+ There are 0 combinational latch loops in the design through latch input
+
+
+
+------------------------------------------------------------------------------------------------
+| Design Timing Summary
+| ---------------------
+------------------------------------------------------------------------------------------------
+
+    WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints     WPWS(ns)     TPWS(ns)  TPWS Failing Endpoints  TPWS Total Endpoints  
+    -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------     --------     --------  ----------------------  --------------------  
+      0.152        0.000                      0                11621        0.072        0.000                      0                11621        2.992        0.000                       0                  6076  
+
+
+All user specified timing constraints are met.
+
+
+------------------------------------------------------------------------------------------------
+| Clock Summary
+| -------------
+------------------------------------------------------------------------------------------------
+
+Clock                        Waveform(ns)         Period(ns)      Frequency(MHz)
+-----                        ------------         ----------      --------------
+clk_50m                      {0.000 10.000}       20.000          50.000          
+  clk125                     {0.000 4.000}        8.000           125.000         
+    ad9708_dclock            {4.000 8.000}        8.000           125.000         
+  clk130_capture_unbuffered  {2.115 5.962}        7.692           130.000         
+  clk130_drive_unbuffered    {0.000 3.846}        7.692           130.000         
+    ltc2208_ch1_clk          {0.000 3.846}        7.692           130.000         
+  clkfb                      {0.000 10.000}       20.000          50.000          
+  clkfb_1                    {0.000 10.000}       20.000          50.000          
+
+
+------------------------------------------------------------------------------------------------
+| Intra Clock Table
+| -----------------
+------------------------------------------------------------------------------------------------
+
+Clock                            WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints     WPWS(ns)     TPWS(ns)  TPWS Failing Endpoints  TPWS Total Endpoints  
+-----                            -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------     --------     --------  ----------------------  --------------------  
+clk_50m                           12.993        0.000                      0                  520        0.079        0.000                      0                  520        7.000        0.000                       0                   444  
+  clk125                                                                                                                                                                       6.408        0.000                       0                     3  
+  clk130_capture_unbuffered        0.152        0.000                      0                11085        0.072        0.000                      0                11085        2.992        0.000                       0                  5620  
+  clk130_drive_unbuffered                                                                                                                                                      6.100        0.000                       0                     3  
+  clkfb                                                                                                                                                                       18.408        0.000                       0                     3  
+  clkfb_1                                                                                                                                                                     18.408        0.000                       0                     3  
+
+
+------------------------------------------------------------------------------------------------
+| Inter Clock Table
+| -----------------
+------------------------------------------------------------------------------------------------
+
+From Clock                 To Clock                       WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints  
+----------                 --------                       -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------  
+ltc2208_ch1_clk            clk130_capture_unbuffered        0.352        0.000                      0                   16        0.399        0.000                      0                   16  
+
+
+------------------------------------------------------------------------------------------------
+| Other Path Groups Table
+| -----------------------
+------------------------------------------------------------------------------------------------
+
+Path Group    From Clock    To Clock          WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints  
+----------    ----------    --------          -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------  
+
+
+------------------------------------------------------------------------------------------------
+| User Ignored Path Table
+| -----------------------
+------------------------------------------------------------------------------------------------
+
+Path Group                 From Clock                 To Clock                 
+----------                 ----------                 --------                 
+(none)                                                                           
+(none)                     clk_50m                                               
+(none)                                                clk125                     
+(none)                                                clk130_capture_unbuffered  
+(none)                     clk_50m                    clk130_capture_unbuffered  
+(none)                                                clk130_drive_unbuffered    
+(none)                                                clk_50m                    
+(none)                     clk130_capture_unbuffered  clk_50m                    
+
+
+------------------------------------------------------------------------------------------------
+| Unconstrained Path Table
+| ------------------------
+------------------------------------------------------------------------------------------------
+
+Path Group                 From Clock                 To Clock                 
+----------                 ----------                 --------                 
+(none)                     clk125                                                
+(none)                     clk130_drive_unbuffered                               
+(none)                     clkfb                                                 
+(none)                     clkfb_1                                               
+(none)                                                clk125                     
+(none)                                                clk130_capture_unbuffered  
+(none)                                                clk130_drive_unbuffered    
+(none)                                                clk_50m                    
+
+
+------------------------------------------------------------------------------------------------
+| Timing Details
+| --------------
+------------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------------
+From Clock:  clk_50m
+  To Clock:  clk_50m
+
+Setup :            0  Failing Endpoints,  Worst Slack       12.993ns,  Total Violation        0.000ns
+Hold  :            0  Failing Endpoints,  Worst Slack        0.079ns,  Total Violation        0.000ns
+PW    :            0  Failing Endpoints,  Worst Slack        7.000ns,  Total Violation        0.000ns
+---------------------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack (MET) :             12.993ns  (required time - arrival time)
+  Source:                 analyzer_logic/spi_if/reg_addr_reg[1]/C
+                            (rising edge-triggered cell FDCE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Destination:            analyzer_logic/spi_if/read_snapshot_reg[16]/D
+                            (rising edge-triggered cell FDCE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Path Group:             clk_50m
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            20.000ns  (clk_50m rise@20.000ns - clk_50m rise@0.000ns)
+  Data Path Delay:        6.984ns  (logic 0.853ns (12.214%)  route 6.131ns (87.786%))
+  Logic Levels:           3  (LUT4=1 LUT6=2)
+  Clock Path Skew:        -0.020ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    4.482ns = ( 24.482 - 20.000 ) 
+    Source Clock Delay      (SCD):    4.877ns
+    Clock Pessimism Removal (CPR):    0.376ns
+  Clock Uncertainty:      0.035ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk_50m rise edge)    0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.429     1.429 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.873     3.302    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085     3.387 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.490     4.877    analyzer_logic/spi_if/cfg_clk
+    SLICE_X101Y72        FDCE                                         r  analyzer_logic/spi_if/reg_addr_reg[1]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X101Y72        FDCE (Prop_fdce_C_Q)         0.379     5.256 r  analyzer_logic/spi_if/reg_addr_reg[1]/Q
+                         net (fo=95, routed)          4.100     9.356    analyzer_logic/spi_if/reg_addr_reg[2]_0[1]
+    SLICE_X104Y75        LUT4 (Prop_lut4_I0_O)        0.105     9.461 f  analyzer_logic/spi_if/read_snapshot[31]_i_4/O
+                         net (fo=7, routed)           1.103    10.564    analyzer_logic/spi_if/read_snapshot[31]_i_4_n_0
+    SLICE_X105Y70        LUT6 (Prop_lut6_I0_O)        0.264    10.828 r  analyzer_logic/spi_if/read_snapshot[16]_i_3/O
+                         net (fo=1, routed)           0.928    11.756    analyzer_logic/spi_if/read_snapshot[16]_i_3_n_0
+    SLICE_X101Y68        LUT6 (Prop_lut6_I4_O)        0.105    11.861 r  analyzer_logic/spi_if/read_snapshot[16]_i_1/O
+                         net (fo=1, routed)           0.000    11.861    analyzer_logic/spi_if/spi_rdata[16]
+    SLICE_X101Y68        FDCE                                         r  analyzer_logic/spi_if/read_snapshot_reg[16]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_50m rise edge)   20.000    20.000 r  
+    U18                                               0.000    20.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000    20.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.363    21.363 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.701    23.064    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077    23.141 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.340    24.482    analyzer_logic/spi_if/cfg_clk
+    SLICE_X101Y68        FDCE                                         r  analyzer_logic/spi_if/read_snapshot_reg[16]/C
+                         clock pessimism              0.376    24.857    
+                         clock uncertainty           -0.035    24.822    
+    SLICE_X101Y68        FDCE (Setup_fdce_C_D)        0.032    24.854    analyzer_logic/spi_if/read_snapshot_reg[16]
+  -------------------------------------------------------------------
+                         required time                         24.854    
+                         arrival time                         -11.861    
+  -------------------------------------------------------------------
+                         slack                                 12.993    
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack (MET) :             0.079ns  (arrival time - required time)
+  Source:                 analyzer_logic/adc_capture/read_addr_cfg_reg_rep[2]/C
+                            (rising edge-triggered cell FDRE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Destination:            analyzer_logic/adc_capture/sample_ram_reg_0/ADDRBWRADDR[5]
+                            (rising edge-triggered cell RAMB36E1 clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Path Group:             clk_50m
+  Path Type:              Hold (Min at Fast Process Corner)
+  Requirement:            0.000ns  (clk_50m rise@0.000ns - clk_50m rise@0.000ns)
+  Data Path Delay:        0.319ns  (logic 0.164ns (51.489%)  route 0.155ns (48.511%))
+  Logic Levels:           0  
+  Clock Path Skew:        0.057ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    2.130ns
+    Source Clock Delay      (SCD):    1.570ns
+    Clock Pessimism Removal (CPR):    0.503ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk_50m rise edge)    0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.266     0.266 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.674     0.940    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     0.966 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.604     1.570    analyzer_logic/adc_capture/cfg_clk
+    SLICE_X104Y63        FDRE                                         r  analyzer_logic/adc_capture/read_addr_cfg_reg_rep[2]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X104Y63        FDRE (Prop_fdre_C_Q)         0.164     1.734 r  analyzer_logic/adc_capture/read_addr_cfg_reg_rep[2]/Q
+                         net (fo=3, routed)           0.155     1.888    analyzer_logic/adc_capture/read_addr_cfg[2]
+    RAMB36_X5Y12         RAMB36E1                                     r  analyzer_logic/adc_capture/sample_ram_reg_0/ADDRBWRADDR[5]
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_50m rise edge)    0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.916     2.130    analyzer_logic/adc_capture/cfg_clk
+    RAMB36_X5Y12         RAMB36E1                                     r  analyzer_logic/adc_capture/sample_ram_reg_0/CLKBWRCLK
+                         clock pessimism             -0.503     1.627    
+    RAMB36_X5Y12         RAMB36E1 (Hold_ramb36e1_CLKBWRCLK_ADDRBWRADDR[5])
+                                                      0.183     1.810    analyzer_logic/adc_capture/sample_ram_reg_0
+  -------------------------------------------------------------------
+                         required time                         -1.810    
+                         arrival time                           1.888    
+  -------------------------------------------------------------------
+                         slack                                  0.079    
+
+
+
+
+
+Pulse Width Checks
+--------------------------------------------------------------------------------------
+Clock Name:         clk_50m
+Waveform(ns):       { 0.000 10.000 }
+Period(ns):         20.000
+Sources:            { clk_50m }
+
+Check Type        Corner  Lib Pin             Reference Pin  Required(ns)  Actual(ns)  Slack(ns)  Location         Pin
+Min Period        n/a     RAMB36E1/CLKBWRCLK  n/a            2.170         20.000      17.830     RAMB36_X5Y12     analyzer_logic/adc_capture/sample_ram_reg_0/CLKBWRCLK
+Max Period        n/a     PLLE2_ADV/CLKIN1    n/a            52.633        20.000      32.633     PLLE2_ADV_X1Y0   analyzer_logic/dac_clkgen/pll_i/CLKIN1
+Low Pulse Width   Fast    PLLE2_ADV/CLKIN1    n/a            3.000         10.000      7.000      PLLE2_ADV_X1Y0   analyzer_logic/dac_clkgen/pll_i/CLKIN1
+High Pulse Width  Slow    MMCME2_ADV/CLKIN1   n/a            3.000         10.000      7.000      MMCME2_ADV_X1Y0  analyzer_logic/adc_clkgen/mmcm_i/CLKIN1
+
+
+
+---------------------------------------------------------------------------------------------------
+From Clock:  clk125
+  To Clock:  clk125
+
+Setup :           NA  Failing Endpoints,  Worst Slack           NA  ,  Total Violation           NA
+Hold  :           NA  Failing Endpoints,  Worst Slack           NA  ,  Total Violation           NA
+PW    :            0  Failing Endpoints,  Worst Slack        6.408ns,  Total Violation        0.000ns
+---------------------------------------------------------------------------------------------------
+
+
+Pulse Width Checks
+--------------------------------------------------------------------------------------
+Clock Name:         clk125
+Waveform(ns):       { 0.000 4.000 }
+Period(ns):         8.000
+Sources:            { analyzer_logic/dac_clkgen/pll_i/CLKOUT0 }
+
+Check Type  Corner  Lib Pin            Reference Pin  Required(ns)  Actual(ns)  Slack(ns)  Location        Pin
+Min Period  n/a     BUFG/I             n/a            1.592         8.000       6.408      BUFGCTRL_X0Y2   analyzer_logic/dac_clkgen/clk125_buf_i/I
+Max Period  n/a     PLLE2_ADV/CLKOUT0  n/a            160.000       8.000       152.000    PLLE2_ADV_X1Y0  analyzer_logic/dac_clkgen/pll_i/CLKOUT0
+
+
+
+---------------------------------------------------------------------------------------------------
+From Clock:  clk130_capture_unbuffered
+  To Clock:  clk130_capture_unbuffered
+
+Setup :            0  Failing Endpoints,  Worst Slack        0.152ns,  Total Violation        0.000ns
+Hold  :            0  Failing Endpoints,  Worst Slack        0.072ns,  Total Violation        0.000ns
+PW    :            0  Failing Endpoints,  Worst Slack        2.992ns,  Total Violation        0.000ns
+---------------------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack (MET) :             0.152ns  (required time - arrival time)
+  Source:                 analyzer_logic/ltc2208_ch1_data_iob_reg[1]/C
+                            (rising edge-triggered cell FDCE clocked by clk130_capture_unbuffered  {rise@2.115ns fall@5.962ns period=7.692ns})
+  Destination:            analyzer_logic/adc_capture/sample_min_adc_reg[13]/CE
+                            (rising edge-triggered cell FDPE clocked by clk130_capture_unbuffered  {rise@2.115ns fall@5.962ns period=7.692ns})
+  Path Group:             clk130_capture_unbuffered
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            7.692ns  (clk130_capture_unbuffered rise@9.808ns - clk130_capture_unbuffered rise@2.115ns)
+  Data Path Delay:        7.211ns  (logic 3.061ns (42.446%)  route 4.150ns (57.554%))
+  Logic Levels:           12  (CARRY4=8 LUT2=1 LUT5=1 LUT6=2)
+  Clock Path Skew:        -0.104ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    4.554ns = ( 14.361 - 9.808 ) 
+    Source Clock Delay      (SCD):    4.999ns = ( 7.115 - 2.115 ) 
+    Clock Pessimism Removal (CPR):    0.342ns
+  Clock Uncertainty:      0.057ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.090ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk130_capture_unbuffered rise edge)
+                                                      2.115     2.115 r  
+    U18                                               0.000     2.115 r  clk_50m (IN)
+                         net (fo=0)                   0.000     2.115    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.429     3.545 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.873     5.418    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085     5.503 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.552     7.055    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -3.232     3.823 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT1
+                         net (fo=1, routed)           1.597     5.420    analyzer_logic/adc_clkgen/clk130_capture_unbuffered
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.085     5.505 r  analyzer_logic/adc_clkgen/clk_capture_buf_i/O
+                         net (fo=5618, routed)        1.610     7.115    analyzer_logic/clk_adc_capture
+    ILOGIC_X1Y51         FDCE                                         r  analyzer_logic/ltc2208_ch1_data_iob_reg[1]/C
+  -------------------------------------------------------------------    -------------------
+    ILOGIC_X1Y51         FDCE (Prop_fdce_C_Q)         0.448     7.563 r  analyzer_logic/ltc2208_ch1_data_iob_reg[1]/Q
+                         net (fo=13, routed)          1.343     8.905    analyzer_logic/adc_capture/anti_interference_filter/Q[1]
+    SLICE_X113Y62        LUT5 (Prop_lut5_I0_O)        0.154     9.059 r  analyzer_logic/adc_capture/anti_interference_filter/LTC2208_Q3ToS163_carry__0_i_7/O
+                         net (fo=1, routed)           0.000     9.059    analyzer_logic/adc_capture/anti_interference_filter_n_55
+    SLICE_X113Y62        CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.457     9.516 r  analyzer_logic/adc_capture/LTC2208_Q3ToS163_carry__0/CO[3]
+                         net (fo=1, routed)           0.000     9.516    analyzer_logic/adc_capture/LTC2208_Q3ToS163_carry__0_n_0
+    SLICE_X113Y63        CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.098     9.614 r  analyzer_logic/adc_capture/LTC2208_Q3ToS163_carry__1/CO[3]
+                         net (fo=1, routed)           0.000     9.614    analyzer_logic/adc_capture/LTC2208_Q3ToS163_carry__1_n_0
+    SLICE_X113Y64        CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.098     9.712 r  analyzer_logic/adc_capture/LTC2208_Q3ToS163_carry__2/CO[3]
+                         net (fo=1, routed)           0.000     9.712    analyzer_logic/adc_capture/LTC2208_Q3ToS163_carry__2_n_0
+    SLICE_X113Y65        CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.098     9.810 r  analyzer_logic/adc_capture/LTC2208_Q3ToS163_carry__3/CO[3]
+                         net (fo=1, routed)           0.000     9.810    analyzer_logic/adc_capture/anti_interference_filter/LTC2208_Q3ToS161_inferred__0/i__carry[0]
+    SLICE_X113Y66        CARRY4 (Prop_carry4_CI_CO[0])
+                                                      0.216    10.026 f  analyzer_logic/adc_capture/anti_interference_filter/LTC2208_Q3ToS161_carry_i_1/CO[0]
+                         net (fo=10, routed)          0.495    10.521    analyzer_logic/adc_capture/anti_interference_filter_n_243
+    SLICE_X111Y67        LUT2 (Prop_lut2_I1_O)        0.309    10.830 r  analyzer_logic/adc_capture/LTC2208_Q3ToS161_carry_i_6/O
+                         net (fo=1, routed)           0.000    10.830    analyzer_logic/adc_capture/LTC2208_Q3ToS161_carry_i_6_n_0
+    SLICE_X111Y67        CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.457    11.287 r  analyzer_logic/adc_capture/LTC2208_Q3ToS161_carry/CO[3]
+                         net (fo=127, routed)         0.986    12.273    analyzer_logic/adc_capture/LTC2208_Q3ToS161
+    SLICE_X112Y64        LUT6 (Prop_lut6_I2_O)        0.105    12.378 r  analyzer_logic/adc_capture/sample_min_adc0_carry_i_3/O
+                         net (fo=1, routed)           0.407    12.786    analyzer_logic/adc_capture/sample_min_adc0_carry_i_3_n_0
+    SLICE_X111Y63        CARRY4 (Prop_carry4_DI[1]_CO[3])
+                                                      0.418    13.204 r  analyzer_logic/adc_capture/sample_min_adc0_carry/CO[3]
+                         net (fo=1, routed)           0.000    13.204    analyzer_logic/adc_capture/sample_min_adc0_carry_n_0
+    SLICE_X111Y64        CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.098    13.302 r  analyzer_logic/adc_capture/sample_min_adc0_carry__0/CO[3]
+                         net (fo=1, routed)           0.502    13.803    analyzer_logic/adc_capture/anti_interference_filter/sample_min_adc_reg[0]_2[0]
+    SLICE_X109Y64        LUT6 (Prop_lut6_I5_O)        0.105    13.908 r  analyzer_logic/adc_capture/anti_interference_filter/sample_min_adc[15]_i_1/O
+                         net (fo=16, routed)          0.418    14.326    analyzer_logic/adc_capture/anti_interference_filter_n_89
+    SLICE_X106Y64        FDPE                                         r  analyzer_logic/adc_capture/sample_min_adc_reg[13]/CE
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk130_capture_unbuffered rise edge)
+                                                      9.808     9.808 r  
+    U18                                               0.000     9.808 r  clk_50m (IN)
+                         net (fo=0)                   0.000     9.808    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.363    11.171 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.701    12.872    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077    12.949 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.386    14.335    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -2.915    11.420 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT1
+                         net (fo=1, routed)           1.454    12.874    analyzer_logic/adc_clkgen/clk130_capture_unbuffered
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.077    12.951 r  analyzer_logic/adc_clkgen/clk_capture_buf_i/O
+                         net (fo=5618, routed)        1.410    14.361    analyzer_logic/adc_capture/clk_adc_capture
+    SLICE_X106Y64        FDPE                                         r  analyzer_logic/adc_capture/sample_min_adc_reg[13]/C
+                         clock pessimism              0.342    14.703    
+                         clock uncertainty           -0.057    14.646    
+    SLICE_X106Y64        FDPE (Setup_fdpe_C_CE)      -0.168    14.478    analyzer_logic/adc_capture/sample_min_adc_reg[13]
+  -------------------------------------------------------------------
+                         required time                         14.478    
+                         arrival time                         -14.326    
+  -------------------------------------------------------------------
+                         slack                                  0.152    
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack (MET) :             0.072ns  (arrival time - required time)
+  Source:                 analyzer_logic/adc_capture/anti_interference_filter/comb5_stage_reg[44]/C
+                            (rising edge-triggered cell FDCE clocked by clk130_capture_unbuffered  {rise@2.115ns fall@5.962ns period=7.692ns})
+  Destination:            analyzer_logic/adc_capture/anti_interference_filter/fir_history_reg[63][44]_srl32/D
+                            (rising edge-triggered cell SRLC32E clocked by clk130_capture_unbuffered  {rise@2.115ns fall@5.962ns period=7.692ns})
+  Path Group:             clk130_capture_unbuffered
+  Path Type:              Hold (Min at Fast Process Corner)
+  Requirement:            0.000ns  (clk130_capture_unbuffered rise@2.115ns - clk130_capture_unbuffered rise@2.115ns)
+  Data Path Delay:        0.291ns  (logic 0.164ns (56.308%)  route 0.127ns (43.692%))
+  Logic Levels:           0  
+  Clock Path Skew:        0.036ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    2.095ns = ( 4.210 - 2.115 ) 
+    Source Clock Delay      (SCD):    1.578ns = ( 3.693 - 2.115 ) 
+    Clock Pessimism Removal (CPR):    0.481ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk130_capture_unbuffered rise edge)
+                                                      2.115     2.115 r  
+    U18                                               0.000     2.115 r  clk_50m (IN)
+                         net (fo=0)                   0.000     2.115    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.266     2.381 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.674     3.056    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     3.082 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.597     3.678    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -1.150     2.529 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT1
+                         net (fo=1, routed)           0.529     3.058    analyzer_logic/adc_clkgen/clk130_capture_unbuffered
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.026     3.084 r  analyzer_logic/adc_clkgen/clk_capture_buf_i/O
+                         net (fo=5618, routed)        0.610     3.693    analyzer_logic/adc_capture/anti_interference_filter/clk_adc_capture
+    SLICE_X92Y43         FDCE                                         r  analyzer_logic/adc_capture/anti_interference_filter/comb5_stage_reg[44]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X92Y43         FDCE (Prop_fdce_C_Q)         0.164     3.857 r  analyzer_logic/adc_capture/anti_interference_filter/comb5_stage_reg[44]/Q
+                         net (fo=2, routed)           0.127     3.984    analyzer_logic/adc_capture/anti_interference_filter/comb5_stage_reg_n_0_[44]
+    SLICE_X90Y43         SRLC32E                                      r  analyzer_logic/adc_capture/anti_interference_filter/fir_history_reg[63][44]_srl32/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk130_capture_unbuffered rise edge)
+                                                      2.115     2.115 r  
+    U18                                               0.000     2.115 r  clk_50m (IN)
+                         net (fo=0)                   0.000     2.115    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.454     2.569 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.731     3.300    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     3.329 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.864     4.193    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -1.467     2.726 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT1
+                         net (fo=1, routed)           0.576     3.302    analyzer_logic/adc_clkgen/clk130_capture_unbuffered
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     3.331 r  analyzer_logic/adc_clkgen/clk_capture_buf_i/O
+                         net (fo=5618, routed)        0.879     4.210    analyzer_logic/adc_capture/anti_interference_filter/clk_adc_capture
+    SLICE_X90Y43         SRLC32E                                      r  analyzer_logic/adc_capture/anti_interference_filter/fir_history_reg[63][44]_srl32/CLK
+                         clock pessimism             -0.481     3.729    
+    SLICE_X90Y43         SRLC32E (Hold_srlc32e_CLK_D)
+                                                      0.183     3.912    analyzer_logic/adc_capture/anti_interference_filter/fir_history_reg[63][44]_srl32
+  -------------------------------------------------------------------
+                         required time                         -3.912    
+                         arrival time                           3.984    
+  -------------------------------------------------------------------
+                         slack                                  0.072    
+
+
+
+
+
+Pulse Width Checks
+--------------------------------------------------------------------------------------
+Clock Name:         clk130_capture_unbuffered
+Waveform(ns):       { 2.115 5.962 }
+Period(ns):         7.692
+Sources:            { analyzer_logic/adc_clkgen/mmcm_i/CLKOUT1 }
+
+Check Type        Corner  Lib Pin             Reference Pin  Required(ns)  Actual(ns)  Slack(ns)  Location         Pin
+Min Period        n/a     RAMB36E1/CLKARDCLK  n/a            2.170         7.692       5.522      RAMB36_X5Y12     analyzer_logic/adc_capture/sample_ram_reg_0/CLKARDCLK
+Max Period        n/a     MMCME2_ADV/CLKOUT1  n/a            213.360       7.692       205.668    MMCME2_ADV_X1Y0  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT1
+Low Pulse Width   Fast    SRLC32E/CLK         n/a            0.854         3.846       2.992      SLICE_X94Y49     analyzer_logic/adc_capture/anti_interference_filter/fir_history_reg[16][46]_srl17/CLK
+High Pulse Width  Slow    SRLC32E/CLK         n/a            0.854         3.846       2.992      SLICE_X82Y31     analyzer_logic/adc_capture/anti_interference_filter/fir_history_reg[63][13]_srl32/CLK
+
+
+
+---------------------------------------------------------------------------------------------------
+From Clock:  clk130_drive_unbuffered
+  To Clock:  clk130_drive_unbuffered
+
+Setup :           NA  Failing Endpoints,  Worst Slack           NA  ,  Total Violation           NA
+Hold  :           NA  Failing Endpoints,  Worst Slack           NA  ,  Total Violation           NA
+PW    :            0  Failing Endpoints,  Worst Slack        6.100ns,  Total Violation        0.000ns
+---------------------------------------------------------------------------------------------------
+
+
+Pulse Width Checks
+--------------------------------------------------------------------------------------
+Clock Name:         clk130_drive_unbuffered
+Waveform(ns):       { 0.000 3.846 }
+Period(ns):         7.692
+Sources:            { analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0 }
+
+Check Type  Corner  Lib Pin             Reference Pin  Required(ns)  Actual(ns)  Slack(ns)  Location         Pin
+Min Period  n/a     BUFG/I              n/a            1.592         7.692       6.100      BUFGCTRL_X0Y1    analyzer_logic/adc_clkgen/clk_drive_buf_i/I
+Max Period  n/a     MMCME2_ADV/CLKOUT0  n/a            213.360       7.692       205.668    MMCME2_ADV_X1Y0  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
+
+
+
+---------------------------------------------------------------------------------------------------
+From Clock:  clkfb
+  To Clock:  clkfb
+
+Setup :           NA  Failing Endpoints,  Worst Slack           NA  ,  Total Violation           NA
+Hold  :           NA  Failing Endpoints,  Worst Slack           NA  ,  Total Violation           NA
+PW    :            0  Failing Endpoints,  Worst Slack       18.408ns,  Total Violation        0.000ns
+---------------------------------------------------------------------------------------------------
+
+
+Pulse Width Checks
+--------------------------------------------------------------------------------------
+Clock Name:         clkfb
+Waveform(ns):       { 0.000 10.000 }
+Period(ns):         20.000
+Sources:            { analyzer_logic/adc_clkgen/mmcm_i/CLKFBOUT }
+
+Check Type  Corner  Lib Pin             Reference Pin  Required(ns)  Actual(ns)  Slack(ns)  Location         Pin
+Min Period  n/a     BUFG/I              n/a            1.592         20.000      18.408     BUFGCTRL_X0Y3    analyzer_logic/adc_clkgen/clkfb_buf_i/I
+Max Period  n/a     MMCME2_ADV/CLKFBIN  n/a            100.000       20.000      80.000     MMCME2_ADV_X1Y0  analyzer_logic/adc_clkgen/mmcm_i/CLKFBIN
+
+
+
+---------------------------------------------------------------------------------------------------
+From Clock:  clkfb_1
+  To Clock:  clkfb_1
+
+Setup :           NA  Failing Endpoints,  Worst Slack           NA  ,  Total Violation           NA
+Hold  :           NA  Failing Endpoints,  Worst Slack           NA  ,  Total Violation           NA
+PW    :            0  Failing Endpoints,  Worst Slack       18.408ns,  Total Violation        0.000ns
+---------------------------------------------------------------------------------------------------
+
+
+Pulse Width Checks
+--------------------------------------------------------------------------------------
+Clock Name:         clkfb_1
+Waveform(ns):       { 0.000 10.000 }
+Period(ns):         20.000
+Sources:            { analyzer_logic/dac_clkgen/pll_i/CLKFBOUT }
+
+Check Type  Corner  Lib Pin            Reference Pin  Required(ns)  Actual(ns)  Slack(ns)  Location        Pin
+Min Period  n/a     BUFG/I             n/a            1.592         20.000      18.408     BUFGCTRL_X0Y4   analyzer_logic/dac_clkgen/clkfb_buf_i/I
+Max Period  n/a     PLLE2_ADV/CLKFBIN  n/a            52.633        20.000      32.633     PLLE2_ADV_X1Y0  analyzer_logic/dac_clkgen/pll_i/CLKFBIN
+
+
+
+---------------------------------------------------------------------------------------------------
+From Clock:  ltc2208_ch1_clk
+  To Clock:  clk130_capture_unbuffered
+
+Setup :            0  Failing Endpoints,  Worst Slack        0.352ns,  Total Violation        0.000ns
+Hold  :            0  Failing Endpoints,  Worst Slack        0.399ns,  Total Violation        0.000ns
+---------------------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack (MET) :             0.352ns  (required time - arrival time)
+  Source:                 ltc2208_ch1_data_i[14]
+                            (input port clocked by ltc2208_ch1_clk  {rise@0.000ns fall@3.846ns period=7.692ns})
+  Destination:            analyzer_logic/ltc2208_ch1_data_iob_reg[14]/D
+                            (rising edge-triggered cell FDCE clocked by clk130_capture_unbuffered  {rise@2.115ns fall@5.962ns period=7.692ns})
+  Path Group:             clk130_capture_unbuffered
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            9.808ns  (clk130_capture_unbuffered rise@9.808ns - ltc2208_ch1_clk rise@0.000ns)
+  Data Path Delay:        1.521ns  (logic 1.521ns (100.000%)  route 0.000ns (0.000%))
+  Logic Levels:           1  (IBUF=1)
+  Input Delay:            4.000ns
+  Clock Path Skew:        -3.746ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    4.531ns = ( 6.647 - 2.115 ) 
+    Source Clock Delay      (SCD):    8.372ns
+    Clock Pessimism Removal (CPR):    0.095ns
+  Clock Uncertainty:      0.177ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.090ns
+    Phase Error              (PE):    0.120ns
+  Timing Exception:       MultiCycle Path   Setup -end   2    
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock ltc2208_ch1_clk rise edge)
+                                                      0.000     0.000 r  
+    U18                                               0.000     0.000 f  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.429     1.429 f  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.873     3.302    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085     3.387 f  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.552     4.939    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -3.232     1.707 f  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
+                         net (fo=1, routed)           1.597     3.304    analyzer_logic/adc_clkgen/clk130_drive_unbuffered
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.085     3.389 f  analyzer_logic/adc_clkgen/clk_drive_buf_i/O
+                         net (fo=1, routed)           1.605     4.994    analyzer_logic/clk_adc_drive
+    OLOGIC_X1Y88         ODDR (Prop_oddr_C_Q)         0.418     5.412 r  analyzer_logic/adc_ch1_clk_oddr/Q
+                         net (fo=1, routed)           0.001     5.413    ltc2208_ch1_clk_o_OBUF
+    P14                  OBUF (Prop_obuf_I_O)         2.959     8.372 r  ltc2208_ch1_clk_o_OBUF_inst/O
+                         net (fo=0)                   0.000     8.372    ltc2208_ch1_clk_o
+  -------------------------------------------------------------------    -------------------
+                         input delay                  4.000    12.372    
+    U14                                               0.000    12.372 r  ltc2208_ch1_data_i[14] (IN)
+                         net (fo=0)                   0.000    12.372    ltc2208_ch1_data_i[14]
+    U14                  IBUF (Prop_ibuf_I_O)         1.521    13.893 r  ltc2208_ch1_data_i_IBUF[14]_inst/O
+                         net (fo=1, routed)           0.000    13.893    analyzer_logic/ltc2208_ch1_data_iob_reg[15]_0[14]
+    ILOGIC_X1Y78         FDCE                                         r  analyzer_logic/ltc2208_ch1_data_iob_reg[14]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk130_capture_unbuffered rise edge)
+                                                      9.808     9.808 r  
+    U18                                               0.000     9.808 r  clk_50m (IN)
+                         net (fo=0)                   0.000     9.808    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.363    11.171 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.701    12.872    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077    12.949 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.386    14.335    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -2.915    11.420 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT1
+                         net (fo=1, routed)           1.454    12.874    analyzer_logic/adc_clkgen/clk130_capture_unbuffered
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.077    12.951 r  analyzer_logic/adc_clkgen/clk_capture_buf_i/O
+                         net (fo=5618, routed)        1.388    14.339    analyzer_logic/clk_adc_capture
+    ILOGIC_X1Y78         FDCE                                         r  analyzer_logic/ltc2208_ch1_data_iob_reg[14]/C
+                         clock pessimism              0.095    14.434    
+                         clock uncertainty           -0.177    14.257    
+    ILOGIC_X1Y78         FDCE (Setup_fdce_C_D)       -0.012    14.245    analyzer_logic/ltc2208_ch1_data_iob_reg[14]
+  -------------------------------------------------------------------
+                         required time                         14.245    
+                         arrival time                         -13.893    
+  -------------------------------------------------------------------
+                         slack                                  0.352    
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack (MET) :             0.399ns  (arrival time - required time)
+  Source:                 ltc2208_ch1_data_i[3]
+                            (input port clocked by ltc2208_ch1_clk  {rise@0.000ns fall@3.846ns period=7.692ns})
+  Destination:            analyzer_logic/ltc2208_ch1_data_iob_reg[3]/D
+                            (rising edge-triggered cell FDCE clocked by clk130_capture_unbuffered  {rise@2.115ns fall@5.962ns period=7.692ns})
+  Path Group:             clk130_capture_unbuffered
+  Path Type:              Hold (Min at Fast Process Corner)
+  Requirement:            2.115ns  (clk130_capture_unbuffered rise@9.808ns - ltc2208_ch1_clk rise@7.692ns)
+  Data Path Delay:        0.229ns  (logic 0.229ns (100.000%)  route 0.000ns (0.000%))
+  Logic Levels:           1  (IBUF=1)
+  Input Delay:            1.300ns
+  Clock Path Skew:        -1.231ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    2.119ns = ( 4.234 - 2.115 ) 
+    Source Clock Delay      (SCD):    3.152ns = ( 10.844 - 7.692 ) 
+    Clock Pessimism Removal (CPR):    0.198ns
+  Clock Uncertainty:      0.177ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.090ns
+    Phase Error              (PE):    0.120ns
+  Timing Exception:       MultiCycle Path   Setup -end   2    
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock ltc2208_ch1_clk rise edge)
+                                                      7.692     7.692 r  
+    U18                                               0.000     7.692 f  clk_50m (IN)
+                         net (fo=0)                   0.000     7.692    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.266     7.958 f  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.674     8.632    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     8.658 f  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.597     9.255    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -1.150     8.106 f  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
+                         net (fo=1, routed)           0.529     8.634    analyzer_logic/adc_clkgen/clk130_drive_unbuffered
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.026     8.660 f  analyzer_logic/adc_clkgen/clk_drive_buf_i/O
+                         net (fo=1, routed)           0.629     9.289    analyzer_logic/clk_adc_drive
+    OLOGIC_X1Y88         ODDR (Prop_oddr_C_Q)         0.177     9.466 r  analyzer_logic/adc_ch1_clk_oddr/Q
+                         net (fo=1, routed)           0.001     9.467    ltc2208_ch1_clk_o_OBUF
+    P14                  OBUF (Prop_obuf_I_O)         1.377    10.844 r  ltc2208_ch1_clk_o_OBUF_inst/O
+                         net (fo=0)                   0.000    10.844    ltc2208_ch1_clk_o
+  -------------------------------------------------------------------    -------------------
+                         input delay                  1.300    12.144    
+    P18                                               0.000    12.144 r  ltc2208_ch1_data_i[3] (IN)
+                         net (fo=0)                   0.000    12.144    ltc2208_ch1_data_i[3]
+    P18                  IBUF (Prop_ibuf_I_O)         0.229    12.373 r  ltc2208_ch1_data_i_IBUF[3]_inst/O
+                         net (fo=1, routed)           0.000    12.373    analyzer_logic/ltc2208_ch1_data_iob_reg[15]_0[3]
+    ILOGIC_X1Y53         FDCE                                         r  analyzer_logic/ltc2208_ch1_data_iob_reg[3]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk130_capture_unbuffered rise edge)
+                                                      9.808     9.808 r  
+    U18                                               0.000     9.808 r  clk_50m (IN)
+                         net (fo=0)                   0.000     9.808    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.454    10.262 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.731    10.993    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029    11.022 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.864    11.886    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -1.467    10.419 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT1
+                         net (fo=1, routed)           0.576    10.995    analyzer_logic/adc_clkgen/clk130_capture_unbuffered
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029    11.024 r  analyzer_logic/adc_clkgen/clk_capture_buf_i/O
+                         net (fo=5618, routed)        0.903    11.927    analyzer_logic/clk_adc_capture
+    ILOGIC_X1Y53         FDCE                                         r  analyzer_logic/ltc2208_ch1_data_iob_reg[3]/C
+                         clock pessimism             -0.198    11.729    
+                         clock uncertainty            0.177    11.906    
+    ILOGIC_X1Y53         FDCE (Hold_fdce_C_D)         0.068    11.974    analyzer_logic/ltc2208_ch1_data_iob_reg[3]
+  -------------------------------------------------------------------
+                         required time                        -11.974    
+                         arrival time                          12.373    
+  -------------------------------------------------------------------
+                         slack                                  0.399    
+
+
+
+
+
+--------------------------------------------------------------------------------------
+Path Group:  (none)
+From Clock:  
+  To Clock:  
+
+Max Delay             2 Endpoints
+Min Delay             2 Endpoints
+--------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/adc_clkgen/mmcm_i/LOCKED
+                            (internal pin)
+  Destination:            stm32_irq
+                            (output port)
+  Path Group:             (none)
+  Path Type:              Max at Slow Process Corner
+  Data Path Delay:        9.049ns  (logic 3.364ns (37.178%)  route 5.685ns (62.822%))
+  Logic Levels:           1  (OBUF=1)
+  Timing Exception:       False Path
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+    MMCME2_ADV_X1Y0      MMCME2_ADV                   0.000     0.000 r  analyzer_logic/adc_clkgen/mmcm_i/LOCKED
+                         net (fo=17, routed)          5.685     5.685    led_OBUF
+    L16                  OBUF (Prop_obuf_I_O)         3.364     9.049 r  stm32_irq_OBUF_inst/O
+                         net (fo=0)                   0.000     9.049    stm32_irq
+    L16                                                               r  stm32_irq (OUT)
+  -------------------------------------------------------------------    -------------------
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/adc_clkgen/mmcm_i/LOCKED
+                            (internal pin)
+  Destination:            led
+                            (output port)
+  Path Group:             (none)
+  Path Type:              Min at Fast Process Corner
+  Data Path Delay:        3.395ns  (logic 1.298ns (38.237%)  route 2.097ns (61.763%))
+  Logic Levels:           1  (OBUF=1)
+  Timing Exception:       False Path
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+    MMCME2_ADV_X1Y0      MMCME2_ADV                   0.000     0.000 r  analyzer_logic/adc_clkgen/mmcm_i/LOCKED
+                         net (fo=17, routed)          2.097     2.097    led_OBUF
+    T10                  OBUF (Prop_obuf_I_O)         1.298     3.395 r  led_OBUF_inst/O
+                         net (fo=0)                   0.000     3.395    led
+    T10                                                               r  led (OUT)
+  -------------------------------------------------------------------    -------------------
+
+
+
+
+
+--------------------------------------------------------------------------------------
+Path Group:  (none)
+From Clock:  clk_50m
+  To Clock:  
+
+Max Delay             1 Endpoint
+Min Delay             1 Endpoint
+--------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/spi_if/byte_idx_reg[2]/C
+                            (rising edge-triggered cell FDCE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Destination:            stm32_spi_miso
+                            (output port)
+  Path Group:             (none)
+  Path Type:              Max at Slow Process Corner
+  Data Path Delay:        10.863ns  (logic 4.337ns (39.927%)  route 6.526ns (60.073%))
+  Logic Levels:           5  (LUT5=1 LUT6=2 MUXF7=1 OBUFT=1)
+  Clock Uncertainty:      0.025ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.050ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+  Timing Exception:       False Path
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk_50m rise edge)    0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.429     1.429 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.873     3.302    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085     3.387 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.488     4.875    analyzer_logic/spi_if/cfg_clk
+    SLICE_X100Y73        FDCE                                         r  analyzer_logic/spi_if/byte_idx_reg[2]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X100Y73        FDCE (Prop_fdce_C_Q)         0.433     5.308 r  analyzer_logic/spi_if/byte_idx_reg[2]/Q
+                         net (fo=31, routed)          1.743     7.051    analyzer_logic/spi_if/p_0_in[2]
+    SLICE_X104Y67        LUT5 (Prop_lut5_I4_O)        0.105     7.156 r  analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_18/O
+                         net (fo=1, routed)           0.926     8.082    analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_18_n_0
+    SLICE_X101Y69        LUT6 (Prop_lut6_I5_O)        0.105     8.187 r  analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_10/O
+                         net (fo=1, routed)           0.526     8.713    analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_10_n_0
+    SLICE_X100Y70        LUT6 (Prop_lut6_I3_O)        0.105     8.818 r  analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_3/O
+                         net (fo=1, routed)           0.000     8.818    analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_3_n_0
+    SLICE_X100Y70        MUXF7 (Prop_muxf7_I1_O)      0.178     8.996 r  analyzer_logic/spi_if/stm32_spi_miso_OBUFT_inst_i_1/O
+                         net (fo=1, routed)           3.331    12.327    stm32_spi_miso_OBUF
+    K17                  OBUFT (Prop_obuft_I_O)       3.411    15.738 r  stm32_spi_miso_OBUFT_inst/O
+                         net (fo=0)                   0.000    15.738    stm32_spi_miso
+    K17                                                               r  stm32_spi_miso (OUT)
+  -------------------------------------------------------------------    -------------------
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/spi_if/cs_level_reg/C
+                            (rising edge-triggered cell FDPE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Destination:            stm32_spi_miso
+                            (output port)
+  Path Group:             (none)
+  Path Type:              Min at Fast Process Corner
+  Data Path Delay:        2.010ns  (logic 0.965ns (48.005%)  route 1.045ns (51.995%))
+  Logic Levels:           1  (OBUFT=1)
+  Clock Uncertainty:      0.025ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.050ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+  Timing Exception:       False Path
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk_50m rise edge)    0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.266     0.266 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.674     0.940    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     0.966 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.626     1.592    analyzer_logic/spi_if/cfg_clk
+    SLICE_X110Y78        FDPE                                         r  analyzer_logic/spi_if/cs_level_reg/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X110Y78        FDPE (Prop_fdpe_C_Q)         0.141     1.733 r  analyzer_logic/spi_if/cs_level_reg/Q
+                         net (fo=16, routed)          1.045     2.778    stm32_spi_miso_TRI
+    K17                  OBUFT (TriStatD_obuft_T_O)
+                                                      0.824     3.602 r  stm32_spi_miso_OBUFT_inst/O
+                         net (fo=0)                   0.000     3.602    stm32_spi_miso
+    K17                                                               r  stm32_spi_miso (OUT)
+  -------------------------------------------------------------------    -------------------
+
+
+
+
+
+--------------------------------------------------------------------------------------
+Path Group:  (none)
+From Clock:  
+  To Clock:  clk125
+
+Max Delay             1 Endpoint
+Min Delay             1 Endpoint
+--------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 reset_n
+                            (input port)
+  Destination:            analyzer_logic/dac_clk_oddr/R
+                            (rising edge-triggered cell ODDR clocked by clk125  {rise@0.000ns fall@4.000ns period=8.000ns})
+  Path Group:             (none)
+  Path Type:              Setup (Max at Slow Process Corner)
+  Data Path Delay:        5.050ns  (logic 1.522ns (30.147%)  route 3.528ns (69.853%))
+  Logic Levels:           2  (IBUF=1 LUT2=1)
+  Clock Path Skew:        4.696ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    4.696ns
+    Source Clock Delay      (SCD):    0.000ns
+    Clock Pessimism Removal (CPR):    0.000ns
+  Timing Exception:       False Path
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+    T19                                               0.000     0.000 f  reset_n (IN)
+                         net (fo=0)                   0.000     0.000    reset_n
+    T19                  IBUF (Prop_ibuf_I_O)         1.417     1.417 f  reset_n_IBUF_inst/O
+                         net (fo=29, routed)          1.279     2.696    analyzer_logic/dac_clkgen/reset_n_IBUF
+    SLICE_X113Y55        LUT2 (Prop_lut2_I0_O)        0.105     2.801 r  analyzer_logic/dac_clkgen/dac_clk_oddr_i_1/O
+                         net (fo=1, routed)           2.249     5.050    analyzer_logic/R0
+    OLOGIC_X1Y144        ODDR                                         r  analyzer_logic/dac_clk_oddr/R
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk125 rise edge)     0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.363     1.363 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.701     3.064    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077     3.141 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.405     4.546    analyzer_logic/dac_clkgen/cfg_clk
+    PLLE2_ADV_X1Y0       PLLE2_ADV (Prop_plle2_adv_CLKIN1_CLKOUT0)
+                                                     -2.931     1.615 r  analyzer_logic/dac_clkgen/pll_i/CLKOUT0
+                         net (fo=1, routed)           1.451     3.066    analyzer_logic/dac_clkgen/clk125
+    BUFGCTRL_X0Y2        BUFG (Prop_bufg_I_O)         0.077     3.143 r  analyzer_logic/dac_clkgen/clk125_buf_i/O
+                         net (fo=1, routed)           1.553     4.696    analyzer_logic/clk_dac
+    OLOGIC_X1Y144        ODDR                                         r  analyzer_logic/dac_clk_oddr/C
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 reset_n
+                            (input port)
+  Destination:            analyzer_logic/dac_clk_oddr/R
+                            (rising edge-triggered cell ODDR clocked by clk125  {rise@0.000ns fall@4.000ns period=8.000ns})
+  Path Group:             (none)
+  Path Type:              Hold (Min at Fast Process Corner)
+  Data Path Delay:        1.971ns  (logic 0.299ns (15.183%)  route 1.672ns (84.817%))
+  Logic Levels:           2  (IBUF=1 LUT2=1)
+  Clock Path Skew:        2.204ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    2.204ns
+    Source Clock Delay      (SCD):    0.000ns
+    Clock Pessimism Removal (CPR):    -0.000ns
+  Timing Exception:       False Path
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+    T19                                               0.000     0.000 f  reset_n (IN)
+                         net (fo=0)                   0.000     0.000    reset_n
+    T19                  IBUF (Prop_ibuf_I_O)         0.254     0.254 f  reset_n_IBUF_inst/O
+                         net (fo=29, routed)          0.597     0.851    analyzer_logic/dac_clkgen/reset_n_IBUF
+    SLICE_X113Y55        LUT2 (Prop_lut2_I0_O)        0.045     0.896 r  analyzer_logic/dac_clkgen/dac_clk_oddr_i_1/O
+                         net (fo=1, routed)           1.075     1.971    analyzer_logic/R0
+    OLOGIC_X1Y144        ODDR                                         r  analyzer_logic/dac_clk_oddr/R
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk125 rise edge)     0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.869     2.083    analyzer_logic/dac_clkgen/cfg_clk
+    PLLE2_ADV_X1Y0       PLLE2_ADV (Prop_plle2_adv_CLKIN1_CLKOUT0)
+                                                     -1.488     0.595 r  analyzer_logic/dac_clkgen/pll_i/CLKOUT0
+                         net (fo=1, routed)           0.592     1.187    analyzer_logic/dac_clkgen/clk125
+    BUFGCTRL_X0Y2        BUFG (Prop_bufg_I_O)         0.029     1.216 r  analyzer_logic/dac_clkgen/clk125_buf_i/O
+                         net (fo=1, routed)           0.988     2.204    analyzer_logic/clk_dac
+    OLOGIC_X1Y144        ODDR                                         r  analyzer_logic/dac_clk_oddr/C
+
+
+
+
+
+--------------------------------------------------------------------------------------
+Path Group:  (none)
+From Clock:  
+  To Clock:  clk130_capture_unbuffered
+
+Max Delay          5618 Endpoints
+Min Delay          5618 Endpoints
+--------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 reset_n
+                            (input port)
+  Destination:            analyzer_logic/adc_capture/anti_interference_filter/cic_phase_reg[1]/CLR
+                            (recovery check against rising-edge clock clk130_capture_unbuffered  {rise@2.115ns fall@5.962ns period=7.692ns})
+  Path Group:             (none)
+  Path Type:              Recovery (Max at Slow Process Corner)
+  Data Path Delay:        8.222ns  (logic 1.522ns (18.517%)  route 6.699ns (81.483%))
+  Logic Levels:           2  (IBUF=1 LUT1=1)
+  Clock Path Skew:        4.494ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    4.494ns = ( 6.609 - 2.115 ) 
+    Source Clock Delay      (SCD):    0.000ns
+    Clock Pessimism Removal (CPR):    0.000ns
+  Timing Exception:       False Path
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+    T19                                               0.000     0.000 r  reset_n (IN)
+                         net (fo=0)                   0.000     0.000    reset_n
+    T19                  IBUF (Prop_ibuf_I_O)         1.417     1.417 r  reset_n_IBUF_inst/O
+                         net (fo=29, routed)          2.997     4.414    analyzer_logic/adc_capture/anti_interference_filter/reset_n_IBUF
+    SLICE_X99Y30         LUT1 (Prop_lut1_I0_O)        0.105     4.519 f  analyzer_logic/adc_capture/anti_interference_filter/cic_phase[1]_i_2/O
+                         net (fo=122, routed)         3.703     8.222    analyzer_logic/adc_capture/anti_interference_filter/cic_phase[1]_i_2_n_0
+    SLICE_X103Y50        FDCE                                         f  analyzer_logic/adc_capture/anti_interference_filter/cic_phase_reg[1]/CLR
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk130_capture_unbuffered rise edge)
+                                                      2.115     2.115 r  
+    U18                                               0.000     2.115 r  clk_50m (IN)
+                         net (fo=0)                   0.000     2.115    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.363     3.479 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.701     5.180    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077     5.257 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.386     6.643    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -2.915     3.727 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT1
+                         net (fo=1, routed)           1.454     5.182    analyzer_logic/adc_clkgen/clk130_capture_unbuffered
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.077     5.259 r  analyzer_logic/adc_clkgen/clk_capture_buf_i/O
+                         net (fo=5618, routed)        1.350     6.609    analyzer_logic/adc_capture/anti_interference_filter/clk_adc_capture
+    SLICE_X103Y50        FDCE                                         r  analyzer_logic/adc_capture/anti_interference_filter/cic_phase_reg[1]/C
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 reset_n
+                            (input port)
+  Destination:            analyzer_logic/adc_capture/ram_write_enable_adc_reg/D
+                            (rising edge-triggered cell FDRE clocked by clk130_capture_unbuffered  {rise@2.115ns fall@5.962ns period=7.692ns})
+  Path Group:             (none)
+  Path Type:              Hold (Min at Fast Process Corner)
+  Data Path Delay:        1.087ns  (logic 0.299ns (27.533%)  route 0.788ns (72.467%))
+  Logic Levels:           2  (IBUF=1 LUT3=1)
+  Clock Path Skew:        2.122ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    2.122ns = ( 4.237 - 2.115 ) 
+    Source Clock Delay      (SCD):    0.000ns
+    Clock Pessimism Removal (CPR):    -0.000ns
+  Timing Exception:       False Path
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+    T19                                               0.000     0.000 r  reset_n (IN)
+                         net (fo=0)                   0.000     0.000    reset_n
+    T19                  IBUF (Prop_ibuf_I_O)         0.254     0.254 r  reset_n_IBUF_inst/O
+                         net (fo=29, routed)          0.788     1.042    analyzer_logic/adc_capture/anti_interference_filter/reset_n_IBUF
+    SLICE_X107Y58        LUT3 (Prop_lut3_I1_O)        0.045     1.087 r  analyzer_logic/adc_capture/anti_interference_filter/ram_write_enable_adc_i_1/O
+                         net (fo=1, routed)           0.000     1.087    analyzer_logic/adc_capture/anti_interference_filter_n_274
+    SLICE_X107Y58        FDRE                                         r  analyzer_logic/adc_capture/ram_write_enable_adc_reg/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk130_capture_unbuffered rise edge)
+                                                      2.115     2.115 r  
+    U18                                               0.000     2.115 r  clk_50m (IN)
+                         net (fo=0)                   0.000     2.115    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.454     2.569 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.731     3.300    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     3.329 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.864     4.193    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -1.467     2.726 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT1
+                         net (fo=1, routed)           0.576     3.302    analyzer_logic/adc_clkgen/clk130_capture_unbuffered
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     3.331 r  analyzer_logic/adc_clkgen/clk_capture_buf_i/O
+                         net (fo=5618, routed)        0.906     4.237    analyzer_logic/adc_capture/clk_adc_capture
+    SLICE_X107Y58        FDRE                                         r  analyzer_logic/adc_capture/ram_write_enable_adc_reg/C
+
+
+
+
+
+--------------------------------------------------------------------------------------
+Path Group:  (none)
+From Clock:  clk_50m
+  To Clock:  clk130_capture_unbuffered
+
+Max Delay            50 Endpoints
+Min Delay            50 Endpoints
+--------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/adc_capture/filter_enable_cfg_reg/C
+                            (rising edge-triggered cell FDCE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Destination:            analyzer_logic/adc_capture/filter_enable_meta_reg/D
+                            (rising edge-triggered cell FDCE clocked by clk130_capture_unbuffered  {rise@2.115ns fall@5.962ns period=7.692ns})
+  Path Group:             (none)
+  Path Type:              Setup (Max at Slow Process Corner)
+  Data Path Delay:        1.361ns  (logic 0.379ns (27.846%)  route 0.982ns (72.154%))
+  Logic Levels:           0  
+  Clock Path Skew:        -0.327ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    4.561ns = ( 6.676 - 2.115 ) 
+    Source Clock Delay      (SCD):    4.887ns
+    Clock Pessimism Removal (CPR):    0.000ns
+  Clock Uncertainty:      0.140ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.090ns
+    Phase Error              (PE):    0.083ns
+  Timing Exception:       False Path
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk_50m rise edge)    0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.429     1.429 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.873     3.302    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085     3.387 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.500     4.887    analyzer_logic/adc_capture/cfg_clk
+    SLICE_X105Y64        FDCE                                         r  analyzer_logic/adc_capture/filter_enable_cfg_reg/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X105Y64        FDCE (Prop_fdce_C_Q)         0.379     5.266 r  analyzer_logic/adc_capture/filter_enable_cfg_reg/Q
+                         net (fo=3, routed)           0.982     6.248    analyzer_logic/adc_capture/filter_enable_cfg
+    SLICE_X112Y56        FDCE                                         r  analyzer_logic/adc_capture/filter_enable_meta_reg/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk130_capture_unbuffered rise edge)
+                                                      2.115     2.115 r  
+    U18                                               0.000     2.115 r  clk_50m (IN)
+                         net (fo=0)                   0.000     2.115    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.363     3.479 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.701     5.180    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077     5.257 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.386     6.643    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -2.915     3.727 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT1
+                         net (fo=1, routed)           1.454     5.182    analyzer_logic/adc_clkgen/clk130_capture_unbuffered
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.077     5.259 r  analyzer_logic/adc_clkgen/clk_capture_buf_i/O
+                         net (fo=5618, routed)        1.417     6.676    analyzer_logic/adc_capture/clk_adc_capture
+    SLICE_X112Y56        FDCE                                         r  analyzer_logic/adc_capture/filter_enable_meta_reg/C
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/adc_capture/decimation_cfg_reg[4]/C
+                            (rising edge-triggered cell FDCE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Destination:            analyzer_logic/adc_capture/decimation_meta_reg[4]/D
+                            (rising edge-triggered cell FDCE clocked by clk130_capture_unbuffered  {rise@2.115ns fall@5.962ns period=7.692ns})
+  Path Group:             (none)
+  Path Type:              Hold (Min at Fast Process Corner)
+  Data Path Delay:        0.266ns  (logic 0.141ns (53.052%)  route 0.125ns (46.948%))
+  Logic Levels:           0  
+  Clock Path Skew:        0.523ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    2.096ns = ( 4.211 - 2.115 ) 
+    Source Clock Delay      (SCD):    1.573ns
+    Clock Pessimism Removal (CPR):    -0.000ns
+  Clock Uncertainty:      0.140ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.090ns
+    Phase Error              (PE):    0.083ns
+  Timing Exception:       False Path
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk_50m rise edge)    0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.266     0.266 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.674     0.940    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     0.966 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.607     1.573    analyzer_logic/adc_capture/cfg_clk
+    SLICE_X103Y58        FDCE                                         r  analyzer_logic/adc_capture/decimation_cfg_reg[4]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X103Y58        FDCE (Prop_fdce_C_Q)         0.141     1.714 r  analyzer_logic/adc_capture/decimation_cfg_reg[4]/Q
+                         net (fo=2, routed)           0.125     1.839    analyzer_logic/adc_capture/decimation_cfg_reg_n_0_[4]
+    SLICE_X104Y57        FDCE                                         r  analyzer_logic/adc_capture/decimation_meta_reg[4]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk130_capture_unbuffered rise edge)
+                                                      2.115     2.115 r  
+    U18                                               0.000     2.115 r  clk_50m (IN)
+                         net (fo=0)                   0.000     2.115    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.454     2.569 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.731     3.300    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     3.329 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.864     4.193    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -1.467     2.726 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT1
+                         net (fo=1, routed)           0.576     3.302    analyzer_logic/adc_clkgen/clk130_capture_unbuffered
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     3.331 r  analyzer_logic/adc_clkgen/clk_capture_buf_i/O
+                         net (fo=5618, routed)        0.880     4.211    analyzer_logic/adc_capture/clk_adc_capture
+    SLICE_X104Y57        FDCE                                         r  analyzer_logic/adc_capture/decimation_meta_reg[4]/C
+
+
+
+
+
+--------------------------------------------------------------------------------------
+Path Group:  (none)
+From Clock:  
+  To Clock:  clk130_drive_unbuffered
+
+Max Delay             1 Endpoint
+Min Delay             1 Endpoint
+--------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 reset_n
+                            (input port)
+  Destination:            analyzer_logic/adc_ch1_clk_oddr/R
+                            (rising edge-triggered cell ODDR clocked by clk130_drive_unbuffered  {rise@0.000ns fall@3.846ns period=7.692ns})
+  Path Group:             (none)
+  Path Type:              Setup (Max at Slow Process Corner)
+  Data Path Delay:        6.084ns  (logic 1.543ns (25.368%)  route 4.541ns (74.632%))
+  Logic Levels:           2  (IBUF=1 LUT2=1)
+  Clock Path Skew:        4.539ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    4.539ns
+    Source Clock Delay      (SCD):    0.000ns
+    Clock Pessimism Removal (CPR):    0.000ns
+  Timing Exception:       False Path
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+    T19                                               0.000     0.000 f  reset_n (IN)
+                         net (fo=0)                   0.000     0.000    reset_n
+    T19                  IBUF (Prop_ibuf_I_O)         1.417     1.417 f  reset_n_IBUF_inst/O
+                         net (fo=29, routed)          1.610     3.028    analyzer_logic/adc_clkgen/reset_n_IBUF
+    SLICE_X106Y54        LUT2 (Prop_lut2_I1_O)        0.126     3.154 r  analyzer_logic/adc_clkgen/ram_write_data_adc[19]_i_1/O
+                         net (fo=49, routed)          2.931     6.084    analyzer_logic/adc_clkgen_n_2
+    OLOGIC_X1Y88         ODDR                                         r  analyzer_logic/adc_ch1_clk_oddr/R
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk130_drive_unbuffered rise edge)
+                                                      0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.363     1.363 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.701     3.064    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077     3.141 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.386     4.527    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -2.915     1.612 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
+                         net (fo=1, routed)           1.454     3.066    analyzer_logic/adc_clkgen/clk130_drive_unbuffered
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.077     3.143 r  analyzer_logic/adc_clkgen/clk_drive_buf_i/O
+                         net (fo=1, routed)           1.396     4.539    analyzer_logic/clk_adc_drive
+    OLOGIC_X1Y88         ODDR                                         r  analyzer_logic/adc_ch1_clk_oddr/C
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 reset_n
+                            (input port)
+  Destination:            analyzer_logic/adc_ch1_clk_oddr/R
+                            (rising edge-triggered cell ODDR clocked by clk130_drive_unbuffered  {rise@0.000ns fall@3.846ns period=7.692ns})
+  Path Group:             (none)
+  Path Type:              Hold (Min at Fast Process Corner)
+  Data Path Delay:        2.571ns  (logic 0.300ns (11.678%)  route 2.271ns (88.322%))
+  Logic Levels:           2  (IBUF=1 LUT2=1)
+  Clock Path Skew:        2.118ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    2.118ns
+    Source Clock Delay      (SCD):    0.000ns
+    Clock Pessimism Removal (CPR):    -0.000ns
+  Timing Exception:       False Path
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+    T19                                               0.000     0.000 f  reset_n (IN)
+                         net (fo=0)                   0.000     0.000    reset_n
+    T19                  IBUF (Prop_ibuf_I_O)         0.254     0.254 f  reset_n_IBUF_inst/O
+                         net (fo=29, routed)          0.760     1.014    analyzer_logic/adc_clkgen/reset_n_IBUF
+    SLICE_X106Y54        LUT2 (Prop_lut2_I1_O)        0.046     1.060 r  analyzer_logic/adc_clkgen/ram_write_data_adc[19]_i_1/O
+                         net (fo=49, routed)          1.511     2.571    analyzer_logic/adc_clkgen_n_2
+    OLOGIC_X1Y88         ODDR                                         r  analyzer_logic/adc_ch1_clk_oddr/R
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk130_drive_unbuffered rise edge)
+                                                      0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.864     2.078    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -1.467     0.611 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
+                         net (fo=1, routed)           0.576     1.187    analyzer_logic/adc_clkgen/clk130_drive_unbuffered
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.029     1.216 r  analyzer_logic/adc_clkgen/clk_drive_buf_i/O
+                         net (fo=1, routed)           0.902     2.118    analyzer_logic/clk_adc_drive
+    OLOGIC_X1Y88         ODDR                                         r  analyzer_logic/adc_ch1_clk_oddr/C
+
+
+
+
+
+--------------------------------------------------------------------------------------
+Path Group:  (none)
+From Clock:  
+  To Clock:  clk_50m
+
+Max Delay           441 Endpoints
+Min Delay           441 Endpoints
+--------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 reset_n
+                            (input port)
+  Destination:            analyzer_logic/spi_if/cs_level_reg/PRE
+                            (recovery check against rising-edge clock clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Path Group:             (none)
+  Path Type:              Recovery (Max at Slow Process Corner)
+  Data Path Delay:        7.713ns  (logic 1.522ns (19.740%)  route 6.190ns (80.260%))
+  Logic Levels:           2  (IBUF=1 LUT1=1)
+  Clock Path Skew:        4.545ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    4.545ns
+    Source Clock Delay      (SCD):    0.000ns
+    Clock Pessimism Removal (CPR):    0.000ns
+  Timing Exception:       False Path
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+    T19                                               0.000     0.000 r  reset_n (IN)
+                         net (fo=0)                   0.000     0.000    reset_n
+    T19                  IBUF (Prop_ibuf_I_O)         1.417     1.417 r  reset_n_IBUF_inst/O
+                         net (fo=29, routed)          2.526     3.943    analyzer_logic/adc_capture/reset_n_IBUF
+    SLICE_X96Y65         LUT1 (Prop_lut1_I0_O)        0.105     4.048 f  analyzer_logic/adc_capture/trigger_mode_sync[1]_i_1/O
+                         net (fo=122, routed)         3.664     7.713    analyzer_logic/spi_if/read_snapshot_reg[0]_0
+    SLICE_X110Y78        FDPE                                         f  analyzer_logic/spi_if/cs_level_reg/PRE
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_50m rise edge)    0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.363     1.363 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.701     3.064    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077     3.141 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.403     4.545    analyzer_logic/spi_if/cfg_clk
+    SLICE_X110Y78        FDPE                                         r  analyzer_logic/spi_if/cs_level_reg/C
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 reset_n
+                            (input port)
+  Destination:            analyzer_logic/adc_capture/latest_sample_meta_reg[15]/CLR
+                            (removal check against rising-edge clock clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Path Group:             (none)
+  Path Type:              Removal (Min at Fast Process Corner)
+  Data Path Delay:        1.247ns  (logic 0.299ns (23.997%)  route 0.948ns (76.003%))
+  Logic Levels:           2  (IBUF=1 LUT1=1)
+  Clock Path Skew:        2.121ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    2.121ns
+    Source Clock Delay      (SCD):    0.000ns
+    Clock Pessimism Removal (CPR):    -0.000ns
+  Timing Exception:       False Path
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+    T19                                               0.000     0.000 r  reset_n (IN)
+                         net (fo=0)                   0.000     0.000    reset_n
+    T19                  IBUF (Prop_ibuf_I_O)         0.254     0.254 r  reset_n_IBUF_inst/O
+                         net (fo=29, routed)          0.703     0.957    analyzer_logic/adc_capture/anti_interference_filter/reset_n_IBUF
+    SLICE_X108Y56        LUT1 (Prop_lut1_I0_O)        0.045     1.002 f  analyzer_logic/adc_capture/anti_interference_filter/cic_phase[6]_i_3/O
+                         net (fo=122, routed)         0.245     1.247    analyzer_logic/adc_capture/reset_n_1
+    SLICE_X111Y58        FDCE                                         f  analyzer_logic/adc_capture/latest_sample_meta_reg[15]/CLR
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_50m rise edge)    0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.907     2.121    analyzer_logic/adc_capture/cfg_clk
+    SLICE_X111Y58        FDCE                                         r  analyzer_logic/adc_capture/latest_sample_meta_reg[15]/C
+
+
+
+
+
+--------------------------------------------------------------------------------------
+Path Group:  (none)
+From Clock:  clk130_capture_unbuffered
+  To Clock:  clk_50m
+
+Max Delay           129 Endpoints
+Min Delay           129 Endpoints
+--------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/adc_capture/sample_max_adc_reg[8]/C
+                            (rising edge-triggered cell FDCE clocked by clk130_capture_unbuffered  {rise@2.115ns fall@5.962ns period=7.692ns})
+  Destination:            analyzer_logic/adc_capture/sample_max_meta_reg[8]/D
+                            (rising edge-triggered cell FDCE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Path Group:             (none)
+  Path Type:              Setup (Max at Slow Process Corner)
+  Data Path Delay:        1.606ns  (logic 0.433ns (26.964%)  route 1.173ns (73.036%))
+  Logic Levels:           0  
+  Clock Path Skew:        -0.418ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    4.543ns
+    Source Clock Delay      (SCD):    4.960ns = ( 7.076 - 2.115 ) 
+    Clock Pessimism Removal (CPR):    0.000ns
+  Clock Uncertainty:      0.140ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.090ns
+    Phase Error              (PE):    0.083ns
+  Timing Exception:       False Path
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk130_capture_unbuffered rise edge)
+                                                      2.115     2.115 r  
+    U18                                               0.000     2.115 r  clk_50m (IN)
+                         net (fo=0)                   0.000     2.115    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.429     3.545 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.873     5.418    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085     5.503 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.552     7.055    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -3.232     3.823 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT1
+                         net (fo=1, routed)           1.597     5.420    analyzer_logic/adc_clkgen/clk130_capture_unbuffered
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.085     5.505 r  analyzer_logic/adc_clkgen/clk_capture_buf_i/O
+                         net (fo=5618, routed)        1.571     7.076    analyzer_logic/adc_capture/clk_adc_capture
+    SLICE_X108Y62        FDCE                                         r  analyzer_logic/adc_capture/sample_max_adc_reg[8]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X108Y62        FDCE (Prop_fdce_C_Q)         0.433     7.509 r  analyzer_logic/adc_capture/sample_max_adc_reg[8]/Q
+                         net (fo=3, routed)           1.173     8.682    analyzer_logic/adc_capture/sample_max_adc_reg_n_0_[8]
+    SLICE_X108Y72        FDCE                                         r  analyzer_logic/adc_capture/sample_max_meta_reg[8]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_50m rise edge)    0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.363     1.363 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.701     3.064    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077     3.141 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.401     4.543    analyzer_logic/adc_capture/cfg_clk
+    SLICE_X108Y72        FDCE                                         r  analyzer_logic/adc_capture/sample_max_meta_reg[8]/C
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/adc_capture/sample_sum_adc_reg[25]/C
+                            (rising edge-triggered cell FDCE clocked by clk130_capture_unbuffered  {rise@2.115ns fall@5.962ns period=7.692ns})
+  Destination:            analyzer_logic/adc_capture/sample_sum_meta_reg[25]/D
+                            (rising edge-triggered cell FDCE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Path Group:             (none)
+  Path Type:              Hold (Min at Fast Process Corner)
+  Data Path Delay:        0.251ns  (logic 0.141ns (56.190%)  route 0.110ns (43.810%))
+  Logic Levels:           0  
+  Clock Path Skew:        0.513ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    2.110ns
+    Source Clock Delay      (SCD):    1.597ns = ( 3.712 - 2.115 ) 
+    Clock Pessimism Removal (CPR):    -0.000ns
+  Clock Uncertainty:      0.140ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.090ns
+    Phase Error              (PE):    0.083ns
+  Timing Exception:       False Path
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk130_capture_unbuffered rise edge)
+                                                      2.115     2.115 r  
+    U18                                               0.000     2.115 r  clk_50m (IN)
+                         net (fo=0)                   0.000     2.115    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.266     2.381 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.674     3.056    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     3.082 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.597     3.678    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -1.150     2.529 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT1
+                         net (fo=1, routed)           0.529     3.058    analyzer_logic/adc_clkgen/clk130_capture_unbuffered
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.026     3.084 r  analyzer_logic/adc_clkgen/clk_capture_buf_i/O
+                         net (fo=5618, routed)        0.629     3.712    analyzer_logic/adc_capture/clk_adc_capture
+    SLICE_X110Y70        FDCE                                         r  analyzer_logic/adc_capture/sample_sum_adc_reg[25]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X110Y70        FDCE (Prop_fdce_C_Q)         0.141     3.853 r  analyzer_logic/adc_capture/sample_sum_adc_reg[25]/Q
+                         net (fo=2, routed)           0.110     3.963    analyzer_logic/adc_capture/sample_sum_adc_reg[25]
+    SLICE_X112Y71        FDCE                                         r  analyzer_logic/adc_capture/sample_sum_meta_reg[25]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_50m rise edge)    0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.896     2.110    analyzer_logic/adc_capture/cfg_clk
+    SLICE_X112Y71        FDCE                                         r  analyzer_logic/adc_capture/sample_sum_meta_reg[25]/C
+
+
+
+
+
+--------------------------------------------------------------------------------------
+Path Group:  (none)
+From Clock:  clk125
+  To Clock:  
+
+Max Delay             1 Endpoint
+Min Delay             1 Endpoint
+--------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/dac_clk_oddr/C
+                            (falling edge-triggered cell ODDR clocked by clk125  {rise@0.000ns fall@4.000ns period=8.000ns})
+  Destination:            ad9708_clk_o
+                            (output port)
+  Path Group:             (none)
+  Path Type:              Max at Slow Process Corner
+  Data Path Delay:        3.315ns  (logic 3.314ns (99.970%)  route 0.001ns (0.030%))
+  Logic Levels:           1  (OBUF=1)
+  Clock Uncertainty:      0.123ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.050ns
+    Discrete Jitter          (DJ):    0.061ns
+    Phase Error              (PE):    0.084ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk125 fall edge)     4.000     4.000 f  
+    U18                                               0.000     4.000 f  clk_50m (IN)
+                         net (fo=0)                   0.000     4.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.429     5.429 f  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.873     7.302    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085     7.387 f  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.573     8.960    analyzer_logic/dac_clkgen/cfg_clk
+    PLLE2_ADV_X1Y0       PLLE2_ADV (Prop_plle2_adv_CLKIN1_CLKOUT0)
+                                                     -3.250     5.710 f  analyzer_logic/dac_clkgen/pll_i/CLKOUT0
+                         net (fo=1, routed)           1.594     7.304    analyzer_logic/dac_clkgen/clk125
+    BUFGCTRL_X0Y2        BUFG (Prop_bufg_I_O)         0.085     7.389 f  analyzer_logic/dac_clkgen/clk125_buf_i/O
+                         net (fo=1, routed)           1.778     9.167    analyzer_logic/clk_dac
+    OLOGIC_X1Y144        ODDR                                         f  analyzer_logic/dac_clk_oddr/C
+  -------------------------------------------------------------------    -------------------
+    OLOGIC_X1Y144        ODDR (Prop_oddr_C_Q)         0.418     9.585 r  analyzer_logic/dac_clk_oddr/Q
+                         net (fo=1, routed)           0.001     9.586    ad9708_clk_o_OBUF
+    E17                  OBUF (Prop_obuf_I_O)         2.896    12.483 r  ad9708_clk_o_OBUF_inst/O
+                         net (fo=0)                   0.000    12.483    ad9708_clk_o
+    E17                                                               r  ad9708_clk_o (OUT)
+  -------------------------------------------------------------------    -------------------
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/dac_clk_oddr/C
+                            (rising edge-triggered cell ODDR clocked by clk125  {rise@0.000ns fall@4.000ns period=8.000ns})
+  Destination:            ad9708_clk_o
+                            (output port)
+  Path Group:             (none)
+  Path Type:              Min at Fast Process Corner
+  Data Path Delay:        1.493ns  (logic 1.492ns (99.933%)  route 0.001ns (0.067%))
+  Logic Levels:           1  (OBUF=1)
+  Clock Uncertainty:      0.123ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.050ns
+    Discrete Jitter          (DJ):    0.061ns
+    Phase Error              (PE):    0.084ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk125 rise edge)     0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.266     0.266 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.674     0.940    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     0.966 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.602     1.568    analyzer_logic/dac_clkgen/cfg_clk
+    PLLE2_ADV_X1Y0       PLLE2_ADV (Prop_plle2_adv_CLKIN1_CLKOUT0)
+                                                     -1.169     0.398 r  analyzer_logic/dac_clkgen/pll_i/CLKOUT0
+                         net (fo=1, routed)           0.544     0.942    analyzer_logic/dac_clkgen/clk125
+    BUFGCTRL_X0Y2        BUFG (Prop_bufg_I_O)         0.026     0.968 r  analyzer_logic/dac_clkgen/clk125_buf_i/O
+                         net (fo=1, routed)           0.711     1.679    analyzer_logic/clk_dac
+    OLOGIC_X1Y144        ODDR                                         r  analyzer_logic/dac_clk_oddr/C
+  -------------------------------------------------------------------    -------------------
+    OLOGIC_X1Y144        ODDR (Prop_oddr_C_Q)         0.177     1.856 r  analyzer_logic/dac_clk_oddr/Q
+                         net (fo=1, routed)           0.001     1.857    ad9708_clk_o_OBUF
+    E17                  OBUF (Prop_obuf_I_O)         1.315     3.172 r  ad9708_clk_o_OBUF_inst/O
+                         net (fo=0)                   0.000     3.172    ad9708_clk_o
+    E17                                                               r  ad9708_clk_o (OUT)
+  -------------------------------------------------------------------    -------------------
+
+
+
+
+
+--------------------------------------------------------------------------------------
+Path Group:  (none)
+From Clock:  clk130_drive_unbuffered
+  To Clock:  
+
+Max Delay             1 Endpoint
+Min Delay             1 Endpoint
+--------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/adc_ch1_clk_oddr/C
+                            (falling edge-triggered cell ODDR clocked by clk130_drive_unbuffered  {rise@0.000ns fall@3.846ns period=7.692ns})
+  Destination:            ltc2208_ch1_clk_o
+                            (output port)
+  Path Group:             (none)
+  Path Type:              Max at Slow Process Corner
+  Data Path Delay:        3.378ns  (logic 3.377ns (99.970%)  route 0.001ns (0.030%))
+  Logic Levels:           1  (OBUF=1)
+  Clock Uncertainty:      0.134ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.050ns
+    Discrete Jitter          (DJ):    0.090ns
+    Phase Error              (PE):    0.083ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk130_drive_unbuffered fall edge)
+                                                      3.846     3.846 f  
+    U18                                               0.000     3.846 f  clk_50m (IN)
+                         net (fo=0)                   0.000     3.846    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.429     5.276 f  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.873     7.149    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085     7.234 f  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.552     8.786    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -3.232     5.554 f  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
+                         net (fo=1, routed)           1.597     7.151    analyzer_logic/adc_clkgen/clk130_drive_unbuffered
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.085     7.236 f  analyzer_logic/adc_clkgen/clk_drive_buf_i/O
+                         net (fo=1, routed)           1.605     8.840    analyzer_logic/clk_adc_drive
+    OLOGIC_X1Y88         ODDR                                         f  analyzer_logic/adc_ch1_clk_oddr/C
+  -------------------------------------------------------------------    -------------------
+    OLOGIC_X1Y88         ODDR (Prop_oddr_C_Q)         0.418     9.258 r  analyzer_logic/adc_ch1_clk_oddr/Q
+                         net (fo=1, routed)           0.001     9.259    ltc2208_ch1_clk_o_OBUF
+    P14                  OBUF (Prop_obuf_I_O)         2.959    12.218 r  ltc2208_ch1_clk_o_OBUF_inst/O
+                         net (fo=0)                   0.000    12.218    ltc2208_ch1_clk_o
+    P14                                                               r  ltc2208_ch1_clk_o (OUT)
+  -------------------------------------------------------------------    -------------------
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/adc_ch1_clk_oddr/C
+                            (rising edge-triggered cell ODDR clocked by clk130_drive_unbuffered  {rise@0.000ns fall@3.846ns period=7.692ns})
+  Destination:            ltc2208_ch1_clk_o
+                            (output port)
+  Path Group:             (none)
+  Path Type:              Min at Fast Process Corner
+  Data Path Delay:        1.555ns  (logic 1.554ns (99.936%)  route 0.001ns (0.064%))
+  Logic Levels:           1  (OBUF=1)
+  Clock Uncertainty:      0.134ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.050ns
+    Discrete Jitter          (DJ):    0.090ns
+    Phase Error              (PE):    0.083ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk130_drive_unbuffered rise edge)
+                                                      0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.266     0.266 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.674     0.940    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     0.966 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.597     1.563    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -1.150     0.413 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
+                         net (fo=1, routed)           0.529     0.942    analyzer_logic/adc_clkgen/clk130_drive_unbuffered
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.026     0.968 r  analyzer_logic/adc_clkgen/clk_drive_buf_i/O
+                         net (fo=1, routed)           0.629     1.597    analyzer_logic/clk_adc_drive
+    OLOGIC_X1Y88         ODDR                                         r  analyzer_logic/adc_ch1_clk_oddr/C
+  -------------------------------------------------------------------    -------------------
+    OLOGIC_X1Y88         ODDR (Prop_oddr_C_Q)         0.177     1.774 r  analyzer_logic/adc_ch1_clk_oddr/Q
+                         net (fo=1, routed)           0.001     1.775    ltc2208_ch1_clk_o_OBUF
+    P14                  OBUF (Prop_obuf_I_O)         1.377     3.152 r  ltc2208_ch1_clk_o_OBUF_inst/O
+                         net (fo=0)                   0.000     3.152    ltc2208_ch1_clk_o
+    P14                                                               r  ltc2208_ch1_clk_o (OUT)
+  -------------------------------------------------------------------    -------------------
+
+
+
+
+
+--------------------------------------------------------------------------------------
+Path Group:  (none)
+From Clock:  clkfb
+  To Clock:  
+
+Max Delay             1 Endpoint
+Min Delay             1 Endpoint
+--------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/adc_clkgen/mmcm_i/CLKFBOUT
+                            (clock source 'clkfb'  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Destination:            analyzer_logic/adc_clkgen/mmcm_i/CLKFBIN
+  Path Group:             (none)
+  Path Type:              Max at Slow Process Corner
+  Data Path Delay:        3.232ns  (logic 0.085ns (2.630%)  route 3.147ns (97.370%))
+  Logic Levels:           1  (BUFG=1)
+  Clock Uncertainty:      0.125ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.050ns
+    Discrete Jitter          (DJ):    0.067ns
+    Phase Error              (PE):    0.083ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clkfb fall edge)     10.000    10.000 f  
+    U18                                               0.000    10.000 f  clk_50m (IN)
+                         net (fo=0)                   0.000    10.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.429    11.429 f  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.873    13.302    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085    13.387 f  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.552    14.939    analyzer_logic/adc_clkgen/cfg_clk
+  -------------------------------------------------------------------    -------------------
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKFBOUT)
+                                                     -3.232    11.707 f  analyzer_logic/adc_clkgen/mmcm_i/CLKFBOUT
+                         net (fo=1, routed)           1.597    13.304    analyzer_logic/adc_clkgen/clkfb
+    BUFGCTRL_X0Y3        BUFG (Prop_bufg_I_O)         0.085    13.389 f  analyzer_logic/adc_clkgen/clkfb_buf_i/O
+                         net (fo=1, routed)           1.550    14.939    analyzer_logic/adc_clkgen/clkfb_buf
+    MMCME2_ADV_X1Y0      MMCME2_ADV                                   f  analyzer_logic/adc_clkgen/mmcm_i/CLKFBIN
+  -------------------------------------------------------------------    -------------------
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/adc_clkgen/mmcm_i/CLKFBOUT
+                            (clock source 'clkfb'  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Destination:            analyzer_logic/adc_clkgen/mmcm_i/CLKFBIN
+  Path Group:             (none)
+  Path Type:              Min at Fast Process Corner
+  Data Path Delay:        1.150ns  (logic 0.026ns (2.262%)  route 1.123ns (97.738%))
+  Logic Levels:           1  (BUFG=1)
+  Clock Uncertainty:      0.125ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.050ns
+    Discrete Jitter          (DJ):    0.067ns
+    Phase Error              (PE):    0.083ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clkfb rise edge)      0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.266     0.266 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.674     0.940    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     0.966 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.597     1.563    analyzer_logic/adc_clkgen/cfg_clk
+  -------------------------------------------------------------------    -------------------
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKFBOUT)
+                                                     -1.150     0.413 r  analyzer_logic/adc_clkgen/mmcm_i/CLKFBOUT
+                         net (fo=1, routed)           0.529     0.942    analyzer_logic/adc_clkgen/clkfb
+    BUFGCTRL_X0Y3        BUFG (Prop_bufg_I_O)         0.026     0.968 r  analyzer_logic/adc_clkgen/clkfb_buf_i/O
+                         net (fo=1, routed)           0.595     1.563    analyzer_logic/adc_clkgen/clkfb_buf
+    MMCME2_ADV_X1Y0      MMCME2_ADV                                   r  analyzer_logic/adc_clkgen/mmcm_i/CLKFBIN
+  -------------------------------------------------------------------    -------------------
+
+
+
+
+
+--------------------------------------------------------------------------------------
+Path Group:  (none)
+From Clock:  clkfb_1
+  To Clock:  
+
+Max Delay             1 Endpoint
+Min Delay             1 Endpoint
+--------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/dac_clkgen/pll_i/CLKFBOUT
+                            (clock source 'clkfb_1'  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Destination:            analyzer_logic/dac_clkgen/pll_i/CLKFBIN
+  Path Group:             (none)
+  Path Type:              Max at Slow Process Corner
+  Data Path Delay:        3.250ns  (logic 0.085ns (2.615%)  route 3.165ns (97.385%))
+  Logic Levels:           1  (BUFG=1)
+  Clock Uncertainty:      0.117ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.050ns
+    Discrete Jitter          (DJ):    0.042ns
+    Phase Error              (PE):    0.084ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clkfb_1 fall edge)   10.000    10.000 f  
+    U18                                               0.000    10.000 f  clk_50m (IN)
+                         net (fo=0)                   0.000    10.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.429    11.429 f  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.873    13.302    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.085    13.387 f  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.573    14.960    analyzer_logic/dac_clkgen/cfg_clk
+  -------------------------------------------------------------------    -------------------
+    PLLE2_ADV_X1Y0       PLLE2_ADV (Prop_plle2_adv_CLKIN1_CLKFBOUT)
+                                                     -3.250    11.710 f  analyzer_logic/dac_clkgen/pll_i/CLKFBOUT
+                         net (fo=1, routed)           1.594    13.304    analyzer_logic/dac_clkgen/clkfb
+    BUFGCTRL_X0Y4        BUFG (Prop_bufg_I_O)         0.085    13.389 f  analyzer_logic/dac_clkgen/clkfb_buf_i/O
+                         net (fo=1, routed)           1.571    14.960    analyzer_logic/dac_clkgen/clkfb_buf
+    PLLE2_ADV_X1Y0       PLLE2_ADV                                    f  analyzer_logic/dac_clkgen/pll_i/CLKFBIN
+  -------------------------------------------------------------------    -------------------
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/dac_clkgen/pll_i/CLKFBOUT
+                            (clock source 'clkfb_1'  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Destination:            analyzer_logic/dac_clkgen/pll_i/CLKFBIN
+  Path Group:             (none)
+  Path Type:              Min at Fast Process Corner
+  Data Path Delay:        1.169ns  (logic 0.026ns (2.223%)  route 1.143ns (97.777%))
+  Logic Levels:           1  (BUFG=1)
+  Clock Uncertainty:      0.117ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.050ns
+    Discrete Jitter          (DJ):    0.042ns
+    Phase Error              (PE):    0.084ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clkfb_1 rise edge)    0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.266     0.266 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.674     0.940    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026     0.966 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.602     1.568    analyzer_logic/dac_clkgen/cfg_clk
+  -------------------------------------------------------------------    -------------------
+    PLLE2_ADV_X1Y0       PLLE2_ADV (Prop_plle2_adv_CLKIN1_CLKFBOUT)
+                                                     -1.169     0.398 r  analyzer_logic/dac_clkgen/pll_i/CLKFBOUT
+                         net (fo=1, routed)           0.544     0.942    analyzer_logic/dac_clkgen/clkfb
+    BUFGCTRL_X0Y4        BUFG (Prop_bufg_I_O)         0.026     0.968 r  analyzer_logic/dac_clkgen/clkfb_buf_i/O
+                         net (fo=1, routed)           0.600     1.568    analyzer_logic/dac_clkgen/clkfb_buf
+    PLLE2_ADV_X1Y0       PLLE2_ADV                                    r  analyzer_logic/dac_clkgen/pll_i/CLKFBIN
+  -------------------------------------------------------------------    -------------------
+
+
+
+
+
+--------------------------------------------------------------------------------------
+Path Group:  (none)
+From Clock:  
+  To Clock:  clk125
+
+Max Delay             1 Endpoint
+Min Delay             1 Endpoint
+--------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/dac_clkgen/pll_i/LOCKED
+                            (internal pin)
+  Destination:            analyzer_logic/dac_clk_oddr/R
+                            (rising edge-triggered cell ODDR clocked by clk125  {rise@0.000ns fall@4.000ns period=8.000ns})
+  Path Group:             (none)
+  Path Type:              Setup (Max at Slow Process Corner)
+  Data Path Delay:        3.273ns  (logic 0.105ns (3.208%)  route 3.168ns (96.792%))
+  Logic Levels:           1  (LUT2=1)
+  Clock Uncertainty:      0.123ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.050ns
+    Discrete Jitter          (DJ):    0.061ns
+    Phase Error              (PE):    0.084ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+    PLLE2_ADV_X1Y0       PLLE2_ADV                    0.000     0.000 f  analyzer_logic/dac_clkgen/pll_i/LOCKED
+                         net (fo=1, routed)           0.919     0.919    analyzer_logic/dac_clkgen/dac_pll_locked
+    SLICE_X113Y55        LUT2 (Prop_lut2_I1_O)        0.105     1.024 r  analyzer_logic/dac_clkgen/dac_clk_oddr_i_1/O
+                         net (fo=1, routed)           2.249     3.273    analyzer_logic/R0
+    OLOGIC_X1Y144        ODDR                                         r  analyzer_logic/dac_clk_oddr/R
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk125 rise edge)     0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.363     1.363 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.701     3.064    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077     3.141 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.405     4.546    analyzer_logic/dac_clkgen/cfg_clk
+    PLLE2_ADV_X1Y0       PLLE2_ADV (Prop_plle2_adv_CLKIN1_CLKOUT0)
+                                                     -2.931     1.615 r  analyzer_logic/dac_clkgen/pll_i/CLKOUT0
+                         net (fo=1, routed)           1.451     3.066    analyzer_logic/dac_clkgen/clk125
+    BUFGCTRL_X0Y2        BUFG (Prop_bufg_I_O)         0.077     3.143 r  analyzer_logic/dac_clkgen/clk125_buf_i/O
+                         net (fo=1, routed)           1.553     4.696    analyzer_logic/clk_dac
+    OLOGIC_X1Y144        ODDR                                         r  analyzer_logic/dac_clk_oddr/C
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/dac_clkgen/pll_i/LOCKED
+                            (internal pin)
+  Destination:            analyzer_logic/dac_clk_oddr/R
+                            (rising edge-triggered cell ODDR clocked by clk125  {rise@0.000ns fall@4.000ns period=8.000ns})
+  Path Group:             (none)
+  Path Type:              Hold (Min at Fast Process Corner)
+  Data Path Delay:        1.551ns  (logic 0.045ns (2.901%)  route 1.506ns (97.099%))
+  Logic Levels:           1  (LUT2=1)
+  Clock Uncertainty:      0.123ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.050ns
+    Discrete Jitter          (DJ):    0.061ns
+    Phase Error              (PE):    0.084ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+    PLLE2_ADV_X1Y0       PLLE2_ADV                    0.000     0.000 f  analyzer_logic/dac_clkgen/pll_i/LOCKED
+                         net (fo=1, routed)           0.431     0.431    analyzer_logic/dac_clkgen/dac_pll_locked
+    SLICE_X113Y55        LUT2 (Prop_lut2_I1_O)        0.045     0.476 r  analyzer_logic/dac_clkgen/dac_clk_oddr_i_1/O
+                         net (fo=1, routed)           1.075     1.551    analyzer_logic/R0
+    OLOGIC_X1Y144        ODDR                                         r  analyzer_logic/dac_clk_oddr/R
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk125 rise edge)     0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.869     2.083    analyzer_logic/dac_clkgen/cfg_clk
+    PLLE2_ADV_X1Y0       PLLE2_ADV (Prop_plle2_adv_CLKIN1_CLKOUT0)
+                                                     -1.488     0.595 r  analyzer_logic/dac_clkgen/pll_i/CLKOUT0
+                         net (fo=1, routed)           0.592     1.187    analyzer_logic/dac_clkgen/clk125
+    BUFGCTRL_X0Y2        BUFG (Prop_bufg_I_O)         0.029     1.216 r  analyzer_logic/dac_clkgen/clk125_buf_i/O
+                         net (fo=1, routed)           0.988     2.204    analyzer_logic/clk_dac
+    OLOGIC_X1Y144        ODDR                                         r  analyzer_logic/dac_clk_oddr/C
+
+
+
+
+
+--------------------------------------------------------------------------------------
+Path Group:  (none)
+From Clock:  
+  To Clock:  clk130_capture_unbuffered
+
+Max Delay           243 Endpoints
+Min Delay           243 Endpoints
+--------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/adc_clkgen/mmcm_i/LOCKED
+                            (internal pin)
+  Destination:            analyzer_logic/ltc2208_ch1_data_iob_reg[13]/CLR
+                            (recovery check against rising-edge clock clk130_capture_unbuffered  {rise@2.115ns fall@5.962ns period=7.692ns})
+  Path Group:             (none)
+  Path Type:              Recovery (Max at Slow Process Corner)
+  Data Path Delay:        5.355ns  (logic 0.115ns (2.147%)  route 5.240ns (97.853%))
+  Logic Levels:           1  (LUT2=1)
+  Clock Uncertainty:      0.134ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.050ns
+    Discrete Jitter          (DJ):    0.090ns
+    Phase Error              (PE):    0.083ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+    MMCME2_ADV_X1Y0      MMCME2_ADV                   0.000     0.000 r  analyzer_logic/adc_clkgen/mmcm_i/LOCKED
+                         net (fo=17, routed)          2.090     2.090    analyzer_logic/adc_clkgen/locked
+    SLICE_X106Y54        LUT2 (Prop_lut2_I0_O)        0.115     2.205 f  analyzer_logic/adc_clkgen/ram_write_data_adc[19]_i_1/O
+                         net (fo=49, routed)          3.150     5.355    analyzer_logic/adc_clkgen_n_2
+    ILOGIC_X1Y90         FDCE                                         f  analyzer_logic/ltc2208_ch1_data_iob_reg[13]/CLR
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk130_capture_unbuffered rise edge)
+                                                      2.115     2.115 r  
+    U18                                               0.000     2.115 r  clk_50m (IN)
+                         net (fo=0)                   0.000     2.115    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.363     3.479 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.701     5.180    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077     5.257 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.386     6.643    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -2.915     3.727 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT1
+                         net (fo=1, routed)           1.454     5.182    analyzer_logic/adc_clkgen/clk130_capture_unbuffered
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.077     5.259 r  analyzer_logic/adc_clkgen/clk_capture_buf_i/O
+                         net (fo=5618, routed)        1.398     6.657    analyzer_logic/clk_adc_capture
+    ILOGIC_X1Y90         FDCE                                         r  analyzer_logic/ltc2208_ch1_data_iob_reg[13]/C
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/adc_clkgen/mmcm_i/LOCKED
+                            (internal pin)
+  Destination:            analyzer_logic/adc_capture/busy_adc_reg/D
+                            (rising edge-triggered cell FDCE clocked by clk130_capture_unbuffered  {rise@2.115ns fall@5.962ns period=7.692ns})
+  Path Group:             (none)
+  Path Type:              Hold (Min at Fast Process Corner)
+  Data Path Delay:        1.120ns  (logic 0.045ns (4.018%)  route 1.075ns (95.982%))
+  Logic Levels:           1  (LUT6=1)
+  Clock Uncertainty:      0.134ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.050ns
+    Discrete Jitter          (DJ):    0.090ns
+    Phase Error              (PE):    0.083ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+    MMCME2_ADV_X1Y0      MMCME2_ADV                   0.000     0.000 r  analyzer_logic/adc_clkgen/mmcm_i/LOCKED
+                         net (fo=17, routed)          1.075     1.075    analyzer_logic/adc_capture/anti_interference_filter/locked
+    SLICE_X104Y54        LUT6 (Prop_lut6_I0_O)        0.045     1.120 r  analyzer_logic/adc_capture/anti_interference_filter/busy_adc_i_1/O
+                         net (fo=1, routed)           0.000     1.120    analyzer_logic/adc_capture/anti_interference_filter_n_272
+    SLICE_X104Y54        FDCE                                         r  analyzer_logic/adc_capture/busy_adc_reg/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk130_capture_unbuffered rise edge)
+                                                      2.115     2.115 r  
+    U18                                               0.000     2.115 r  clk_50m (IN)
+                         net (fo=0)                   0.000     2.115    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.454     2.569 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.731     3.300    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     3.329 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.864     4.193    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -1.467     2.726 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT1
+                         net (fo=1, routed)           0.576     3.302    analyzer_logic/adc_clkgen/clk130_capture_unbuffered
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029     3.331 r  analyzer_logic/adc_clkgen/clk_capture_buf_i/O
+                         net (fo=5618, routed)        0.881     4.212    analyzer_logic/adc_capture/clk_adc_capture
+    SLICE_X104Y54        FDCE                                         r  analyzer_logic/adc_capture/busy_adc_reg/C
+
+
+
+
+
+--------------------------------------------------------------------------------------
+Path Group:  (none)
+From Clock:  
+  To Clock:  clk130_drive_unbuffered
+
+Max Delay             1 Endpoint
+Min Delay             1 Endpoint
+--------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/adc_clkgen/mmcm_i/LOCKED
+                            (internal pin)
+  Destination:            analyzer_logic/adc_ch1_clk_oddr/R
+                            (rising edge-triggered cell ODDR clocked by clk130_drive_unbuffered  {rise@0.000ns fall@3.846ns period=7.692ns})
+  Path Group:             (none)
+  Path Type:              Setup (Max at Slow Process Corner)
+  Data Path Delay:        5.136ns  (logic 0.115ns (2.239%)  route 5.021ns (97.761%))
+  Logic Levels:           1  (LUT2=1)
+  Clock Uncertainty:      0.134ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.050ns
+    Discrete Jitter          (DJ):    0.090ns
+    Phase Error              (PE):    0.083ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+    MMCME2_ADV_X1Y0      MMCME2_ADV                   0.000     0.000 f  analyzer_logic/adc_clkgen/mmcm_i/LOCKED
+                         net (fo=17, routed)          2.090     2.090    analyzer_logic/adc_clkgen/locked
+    SLICE_X106Y54        LUT2 (Prop_lut2_I0_O)        0.115     2.205 r  analyzer_logic/adc_clkgen/ram_write_data_adc[19]_i_1/O
+                         net (fo=49, routed)          2.931     5.136    analyzer_logic/adc_clkgen_n_2
+    OLOGIC_X1Y88         ODDR                                         r  analyzer_logic/adc_ch1_clk_oddr/R
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk130_drive_unbuffered rise edge)
+                                                      0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.363     1.363 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.701     3.064    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077     3.141 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.386     4.527    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -2.915     1.612 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
+                         net (fo=1, routed)           1.454     3.066    analyzer_logic/adc_clkgen/clk130_drive_unbuffered
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.077     3.143 r  analyzer_logic/adc_clkgen/clk_drive_buf_i/O
+                         net (fo=1, routed)           1.396     4.539    analyzer_logic/clk_adc_drive
+    OLOGIC_X1Y88         ODDR                                         r  analyzer_logic/adc_ch1_clk_oddr/C
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/adc_clkgen/mmcm_i/LOCKED
+                            (internal pin)
+  Destination:            analyzer_logic/adc_ch1_clk_oddr/R
+                            (rising edge-triggered cell ODDR clocked by clk130_drive_unbuffered  {rise@0.000ns fall@3.846ns period=7.692ns})
+  Path Group:             (none)
+  Path Type:              Hold (Min at Fast Process Corner)
+  Data Path Delay:        2.529ns  (logic 0.044ns (1.740%)  route 2.485ns (98.260%))
+  Logic Levels:           1  (LUT2=1)
+  Clock Uncertainty:      0.134ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.050ns
+    Discrete Jitter          (DJ):    0.090ns
+    Phase Error              (PE):    0.083ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+    MMCME2_ADV_X1Y0      MMCME2_ADV                   0.000     0.000 f  analyzer_logic/adc_clkgen/mmcm_i/LOCKED
+                         net (fo=17, routed)          0.974     0.974    analyzer_logic/adc_clkgen/locked
+    SLICE_X106Y54        LUT2 (Prop_lut2_I0_O)        0.044     1.018 r  analyzer_logic/adc_clkgen/ram_write_data_adc[19]_i_1/O
+                         net (fo=49, routed)          1.511     2.529    analyzer_logic/adc_clkgen_n_2
+    OLOGIC_X1Y88         ODDR                                         r  analyzer_logic/adc_ch1_clk_oddr/R
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk130_drive_unbuffered rise edge)
+                                                      0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.864     2.078    analyzer_logic/adc_clkgen/cfg_clk
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -1.467     0.611 r  analyzer_logic/adc_clkgen/mmcm_i/CLKOUT0
+                         net (fo=1, routed)           0.576     1.187    analyzer_logic/adc_clkgen/clk130_drive_unbuffered
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.029     1.216 r  analyzer_logic/adc_clkgen/clk_drive_buf_i/O
+                         net (fo=1, routed)           0.902     2.118    analyzer_logic/clk_adc_drive
+    OLOGIC_X1Y88         ODDR                                         r  analyzer_logic/adc_ch1_clk_oddr/C
+
+
+
+
+
+--------------------------------------------------------------------------------------
+Path Group:  (none)
+From Clock:  
+  To Clock:  clk_50m
+
+Max Delay             1 Endpoint
+Min Delay             1 Endpoint
+--------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/adc_clkgen/mmcm_i/LOCKED
+                            (internal pin)
+  Destination:            analyzer_logic/spi_if/read_snapshot_reg[0]/D
+                            (rising edge-triggered cell FDCE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Path Group:             (none)
+  Path Type:              Setup (Max at Slow Process Corner)
+  Data Path Delay:        3.155ns  (logic 0.210ns (6.656%)  route 2.945ns (93.344%))
+  Logic Levels:           2  (LUT6=2)
+  Clock Uncertainty:      0.025ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.050ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+    MMCME2_ADV_X1Y0      MMCME2_ADV                   0.000     0.000 r  analyzer_logic/adc_clkgen/mmcm_i/LOCKED
+                         net (fo=17, routed)          2.687     2.687    analyzer_logic/spi_if/led
+    SLICE_X103Y64        LUT6 (Prop_lut6_I0_O)        0.105     2.792 r  analyzer_logic/spi_if/read_snapshot[0]_i_3/O
+                         net (fo=1, routed)           0.258     3.050    analyzer_logic/spi_if/read_snapshot[0]_i_3_n_0
+    SLICE_X104Y64        LUT6 (Prop_lut6_I4_O)        0.105     3.155 r  analyzer_logic/spi_if/read_snapshot[0]_i_1/O
+                         net (fo=1, routed)           0.000     3.155    analyzer_logic/spi_if/spi_rdata[0]
+    SLICE_X104Y64        FDCE                                         r  analyzer_logic/spi_if/read_snapshot_reg[0]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_50m rise edge)    0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         1.363     1.363 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           1.701     3.064    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.077     3.141 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         1.344     4.486    analyzer_logic/spi_if/cfg_clk
+    SLICE_X104Y64        FDCE                                         r  analyzer_logic/spi_if/read_snapshot_reg[0]/C
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack:                    inf
+  Source:                 analyzer_logic/adc_clkgen/mmcm_i/LOCKED
+                            (internal pin)
+  Destination:            analyzer_logic/spi_if/read_snapshot_reg[0]/D
+                            (rising edge-triggered cell FDCE clocked by clk_50m  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Path Group:             (none)
+  Path Type:              Hold (Min at Fast Process Corner)
+  Data Path Delay:        1.545ns  (logic 0.090ns (5.826%)  route 1.455ns (94.174%))
+  Logic Levels:           2  (LUT6=2)
+  Clock Uncertainty:      0.025ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.050ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+    MMCME2_ADV_X1Y0      MMCME2_ADV                   0.000     0.000 r  analyzer_logic/adc_clkgen/mmcm_i/LOCKED
+                         net (fo=17, routed)          1.343     1.343    analyzer_logic/spi_if/led
+    SLICE_X103Y64        LUT6 (Prop_lut6_I0_O)        0.045     1.388 r  analyzer_logic/spi_if/read_snapshot[0]_i_3/O
+                         net (fo=1, routed)           0.112     1.500    analyzer_logic/spi_if/read_snapshot[0]_i_3_n_0
+    SLICE_X104Y64        LUT6 (Prop_lut6_I4_O)        0.045     1.545 r  analyzer_logic/spi_if/read_snapshot[0]_i_1/O
+                         net (fo=1, routed)           0.000     1.545    analyzer_logic/spi_if/spi_rdata[0]
+    SLICE_X104Y64        FDCE                                         r  analyzer_logic/spi_if/read_snapshot_reg[0]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_50m rise edge)    0.000     0.000 r  
+    U18                                               0.000     0.000 r  clk_50m (IN)
+                         net (fo=0)                   0.000     0.000    clk_50m
+    U18                  IBUF (Prop_ibuf_I_O)         0.454     0.454 r  clk_50m_IBUF_inst/O
+                         net (fo=1, routed)           0.731     1.185    clk_50m_IBUF
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029     1.214 r  clk_50m_IBUF_BUFG_inst/O
+                         net (fo=443, routed)         0.874     2.088    analyzer_logic/spi_if/cfg_clk
+    SLICE_X104Y64        FDCE                                         r  analyzer_logic/spi_if/read_snapshot_reg[0]/C
+
+
+
+
+
