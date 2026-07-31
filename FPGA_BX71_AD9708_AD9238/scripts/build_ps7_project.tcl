@@ -92,13 +92,21 @@ update_compile_order -fileset sources_1
 # Build the PS7 output product first to avoid Vivado 2018.3 directory races.
 set_property synth_checkpoint_mode Hierarchical [get_files $bd_file]
 set ip_run [get_runs -quiet sys_processing_system7_0_0_synth_1]
-if {[llength $ip_run] == 1} {
-    launch_runs $ip_run -jobs 1
-    wait_on_run $ip_run
-    set ip_status [get_property STATUS $ip_run]
-    if {![string match "*Complete*" $ip_status]} {
-        error "PS7 IP synthesis failed: $ip_status"
-    }
+if {[llength $ip_run] == 0} {
+    # A freshly created project does not expose the BD OOC run until it is
+    # created explicitly.  Launching synth_1 first can leave the top run at
+    # "Scripts Generated" while the PS7 child is still running.
+    create_ip_run [get_files $bd_file]
+    set ip_run [get_runs -quiet sys_processing_system7_0_0_synth_1]
+}
+if {[llength $ip_run] != 1} {
+    error "Expected one PS7 OOC synthesis run, found [llength $ip_run]"
+}
+launch_runs $ip_run -jobs 1
+wait_on_run $ip_run
+set ip_status [get_property STATUS $ip_run]
+if {![string match "*Complete*" $ip_status]} {
+    error "PS7 IP synthesis failed: $ip_status"
 }
 
 launch_runs synth_1 -jobs 8

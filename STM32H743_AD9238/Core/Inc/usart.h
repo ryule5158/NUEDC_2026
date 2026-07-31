@@ -48,6 +48,14 @@ void MX_USART3_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
+/*
+ * USART1 printf 使用非阻塞中断发送队列。下面两个回调由统一的 HAL
+ * UART 回调分发器调用；统计接口用于串口助手检查队列是否溢出。
+ */
+void DebugUart1_TxComplete(UART_HandleTypeDef *huart);
+uint32_t DebugUart1_GetPendingByteCount(void);
+uint32_t DebugUart1_GetDroppedByteCount(void);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

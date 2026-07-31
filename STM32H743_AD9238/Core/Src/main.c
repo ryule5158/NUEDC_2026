@@ -7,10 +7,15 @@
 #include "g_contest_cli.h"
 #include "g_tjc_ui.h"
 
+#include <stdio.h>
+
 void SystemClock_Config(void);
 
 int main(void)
 {
+  G_TjcUiMode last_display_mode = G_TJC_MODE_WAVE_1T;
+  uint8_t has_display_result = 0U;
+
   SCB_EnableICache();
   SCB_EnableDCache();
 
@@ -38,10 +43,35 @@ int main(void)
   while (1)
   {
     G_TjcUiMode display_mode;
+    G_TjcUiPage page_event;
     uint8_t waveform_cycles = 1U;
     uint8_t measurement_requested = 0U;
 
     GContestCli_Poll();
+    if (G_TjcUi_TakePageEvent(&page_event) != 0U)
+    {
+      if (page_event == G_TJC_PAGE_MAIN)
+      {
+        const PeriodicAnalyzer_Result *cached_result =
+            GContest_GetLastResult();
+
+        if ((has_display_result != 0U) &&
+            (cached_result != NULL) &&
+            (cached_result->valid != 0U) &&
+            (cached_result->status == PERIODIC_ANALYZER_OK))
+        {
+          /*
+           * main 控件为页面私有对象；从 index/set 返回时重新发布最近
+           * 一帧，用户不会看到恢复成占位符的空页面。
+           */
+          (void)G_TjcUi_Publish(cached_result, last_display_mode);
+        }
+        else
+        {
+          (void)G_TjcUi_ShowIdle();
+        }
+      }
+    }
     if (G_TjcUi_TakeRequest(&display_mode) != 0U)
     {
       waveform_cycles =
@@ -69,7 +99,21 @@ int main(void)
           (result->valid != 0U) &&
           (result->status == PERIODIC_ANALYZER_OK))
       {
-        (void)G_TjcUi_Publish(result, display_mode);
+        HAL_StatusTypeDef display_status;
+        const uint32_t display_start_ms = HAL_GetTick();
+
+        /*
+         * 先完成坐标轴、曲线和数值的屏幕发布，再格式化并排队完整
+         * 串口报告。USART1 的线速不再位于屏幕响应关键路径。
+         */
+        display_status = G_TjcUi_Publish(result, display_mode);
+        last_display_mode = display_mode;
+        has_display_result = 1U;
+        printf("[UI] mode=%u publish=%lums status=%d\r\n",
+               (unsigned)display_mode,
+               (unsigned long)(HAL_GetTick() - display_start_ms),
+               (int)display_status);
+        GContest_PrintLastReport(waveform_cycles);
       }
       else if ((result != NULL) &&
                (result->status == PERIODIC_ANALYZER_E_NO_SIGNAL))

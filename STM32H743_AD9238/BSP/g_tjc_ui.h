@@ -12,11 +12,21 @@ typedef enum {
     G_TJC_MODE_SPECTRUM = 4
 } G_TjcUiMode;
 
+typedef enum {
+    G_TJC_PAGE_UNKNOWN = 0,
+    G_TJC_PAGE_INDEX,
+    G_TJC_PAGE_MAIN,
+    G_TJC_PAGE_SET
+} G_TjcUiPage;
+
 HAL_StatusTypeDef G_TjcUi_Init(void);
 uint8_t G_TjcUi_IsHealthy(void);
 uint8_t G_TjcUi_CanReinitialize(void);
 uint8_t G_TjcUi_TakeRequest(G_TjcUiMode *mode);
+uint8_t G_TjcUi_TakePageEvent(G_TjcUiPage *page);
+uint8_t G_TjcUi_IsMainPageActive(void);
 
+HAL_StatusTypeDef G_TjcUi_ShowIdle(void);
 HAL_StatusTypeDef G_TjcUi_ShowAcquiring(G_TjcUiMode mode);
 HAL_StatusTypeDef G_TjcUi_ShowError(const char *status_text);
 HAL_StatusTypeDef G_TjcUi_Publish(

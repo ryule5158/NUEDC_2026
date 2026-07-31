@@ -1,5 +1,6 @@
 #include "g_tjc_ui.h"
 
+#include "g_tjc_plot_scale.h"
 #include "usart.h"
 
 #include <math.h>
@@ -9,7 +10,6 @@
 
 #define G_TJC_WAVEFORM_ID          1U
 #define G_TJC_WAVEFORM_CHANNEL     0U
-#define G_TJC_PLOT_POINTS          270U
 #define G_TJC_TX_TIMEOUT_MS        50U
 #define G_TJC_BULK_READY_TIMEOUT_MS 250U
 #define G_TJC_BULK_DONE_TIMEOUT_MS  250U
@@ -37,6 +37,8 @@ static char s_rx_command[G_TJC_COMMAND_CAPACITY];
 static uint8_t s_rx_command_length;
 static uint8_t s_rx_terminator_count;
 static volatile uint8_t s_pending_mode;
+static volatile uint8_t s_active_page;
+static volatile uint8_t s_pending_page;
 static volatile uint8_t s_transfer_state;
 static volatile uint8_t s_reinitialize_safe;
 static uint8_t s_plot[G_TJC_PLOT_POINTS];
@@ -51,6 +53,12 @@ static uint8_t G_TjcUi_IsUart2(const UART_HandleTypeDef *huart)
 {
     return ((huart == &huart2) ||
             ((huart != NULL) && (huart->Instance == USART2))) ? 1U : 0U;
+}
+
+static uint8_t G_TjcUi_CanAccessMainObjects(void)
+{
+    return ((s_active_page == (uint8_t)G_TJC_PAGE_UNKNOWN) ||
+            (s_active_page == (uint8_t)G_TJC_PAGE_MAIN)) ? 1U : 0U;
 }
 
 static uint8_t G_TjcUi_IsPanelError(uint8_t value)
@@ -297,109 +305,11 @@ static HAL_StatusTypeDef G_TjcUi_SendText(const char *object,
     return G_TjcUi_SendCommand("%s.txt=\"%s\"", object, text);
 }
 
-static HAL_StatusTypeDef G_TjcUi_SendAxisInteger(const char *object,
-                                                int32_t value)
-{
-    char text[12];
-
-    (void)snprintf(text, sizeof(text), "%ld", (long)value);
-    return G_TjcUi_SendText(object, text);
-}
-
-static uint16_t G_TjcUi_RoundScale10(float required,
-                                    uint16_t minimum,
-                                    uint16_t maximum)
-{
-    uint16_t units;
-    uint16_t scale;
-
-    if (!(required > 0.0f)) return minimum;
-    units = (uint16_t)(required / 10.0f);
-    if ((float)(10U * units) < required) units++;
-    scale = (uint16_t)(10U * units);
-    if (scale < minimum) scale = minimum;
-    if (scale > maximum) scale = maximum;
-    return scale;
-}
-
 static HAL_StatusTypeDef G_TjcUi_ClearPlot(void)
 {
     return G_TjcUi_SendCommand("cle %u,%u",
                                (unsigned)G_TJC_WAVEFORM_ID,
                                (unsigned)G_TJC_WAVEFORM_CHANNEL);
-}
-
-static HAL_StatusTypeDef G_TjcUi_SetTimeAxis(uint16_t full_scale_mv,
-                                            uint8_t cycles)
-{
-    HAL_StatusTypeDef status = HAL_OK;
-
-    if (G_TjcUi_SendText("tyunit", "mV") != HAL_OK) status = HAL_ERROR;
-    if (G_TjcUi_SendAxisInteger("tymax", full_scale_mv) != HAL_OK) {
-        status = HAL_ERROR;
-    }
-    if (G_TjcUi_SendText("tymid", "0") != HAL_OK) status = HAL_ERROR;
-    if (G_TjcUi_SendAxisInteger("tymin",
-                                -(int32_t)full_scale_mv) != HAL_OK) {
-        status = HAL_ERROR;
-    }
-    if (G_TjcUi_SendText("tx0", "0") != HAL_OK) status = HAL_ERROR;
-    if (cycles == 3U) {
-        if (G_TjcUi_SendText("txmid", "1.5T") != HAL_OK) {
-            status = HAL_ERROR;
-        }
-        if (G_TjcUi_SendText("txmax", "3T") != HAL_OK) {
-            status = HAL_ERROR;
-        }
-    } else {
-        if (G_TjcUi_SendText("txmid", "0.5T") != HAL_OK) {
-            status = HAL_ERROR;
-        }
-        if (G_TjcUi_SendText("txmax", "1T") != HAL_OK) {
-            status = HAL_ERROR;
-        }
-    }
-    return status;
-}
-
-static uint32_t G_TjcUi_SelectFrequencyScale(float maximum_hz)
-{
-    if (maximum_hz <= 50000.0f) return 50000U;
-    if (maximum_hz <= 100000.0f) return 100000U;
-    if (maximum_hz <= 200000.0f) return 200000U;
-    return 500000U;
-}
-
-static HAL_StatusTypeDef G_TjcUi_SetSpectrumAxis(
-    uint16_t amplitude_full_scale_mv,
-    uint32_t frequency_full_scale_hz)
-{
-    char text[12];
-    HAL_StatusTypeDef status = HAL_OK;
-
-    if (G_TjcUi_SendText("tyunit", "mV") != HAL_OK) status = HAL_ERROR;
-    if (G_TjcUi_SendAxisInteger("tymax",
-                                amplitude_full_scale_mv) != HAL_OK) {
-        status = HAL_ERROR;
-    }
-    if (G_TjcUi_SendAxisInteger("tymid",
-                                amplitude_full_scale_mv / 2U) != HAL_OK) {
-        status = HAL_ERROR;
-    }
-    if (G_TjcUi_SendText("tymin", "0") != HAL_OK) status = HAL_ERROR;
-    if (G_TjcUi_SendText("tx0", "0") != HAL_OK) status = HAL_ERROR;
-
-    (void)snprintf(text,
-                   sizeof(text),
-                   "%luk",
-                   (unsigned long)(frequency_full_scale_hz / 2000U));
-    if (G_TjcUi_SendText("txmid", text) != HAL_OK) status = HAL_ERROR;
-    (void)snprintf(text,
-                   sizeof(text),
-                   "%luk",
-                   (unsigned long)(frequency_full_scale_hz / 1000U));
-    if (G_TjcUi_SendText("txmax", text) != HAL_OK) status = HAL_ERROR;
-    return status;
 }
 
 static uint8_t G_TjcUi_GetSortedComponents(
@@ -436,28 +346,15 @@ static HAL_StatusTypeDef G_TjcUi_SendMeasurements(
 
     (void)snprintf(text,
                    sizeof(text),
-                   "U:%.1fmV",
+                   "%.3fmV",
                    (double)(1000.0f * result->vpp_v));
     if (G_TjcUi_SendText("tupp", text) != HAL_OK) status = HAL_ERROR;
 
     (void)snprintf(text,
                    sizeof(text),
-                   "R:%.1fmV",
+                   "%.3fmV",
                    (double)(1000.0f * result->true_rms_v));
     if (G_TjcUi_SendText("trms", text) != HAL_OK) status = HAL_ERROR;
-
-    if (result->fundamental_hz < 100000.0f) {
-        (void)snprintf(text,
-                       sizeof(text),
-                       "f:%.3fk",
-                       (double)(result->fundamental_hz / 1000.0f));
-    } else {
-        (void)snprintf(text,
-                       sizeof(text),
-                       "f:%.1fk",
-                       (double)(result->fundamental_hz / 1000.0f));
-    }
-    if (G_TjcUi_SendText("tf1", text) != HAL_OK) status = HAL_ERROR;
 
     count = G_TjcUi_GetSortedComponents(result, indices);
     for (uint8_t row = 0U; row < G_TJC_COMPONENT_ROWS; ++row) {
@@ -469,27 +366,13 @@ static HAL_StatusTypeDef G_TjcUi_SendMeasurements(
             const float amplitude_mv =
                 1000.0f * component->peak_amplitude_v;
 
-            /*
-             * The 16-pixel full-width font fits at most nine characters in
-             * the 153-pixel row. Keep one frequency decimal only when the
-             * amplitude has fewer than three integer digits.
-             */
-            if ((frequency_khz < 100.0f) &&
-                (amplitude_mv < 99.5f)) {
-                (void)snprintf(text,
-                               sizeof(text),
-                               "%.1fk%.0fmV",
-                               (double)frequency_khz,
-                               (double)amplitude_mv);
-            } else {
-                (void)snprintf(text,
-                               sizeof(text),
-                               "%.0fk%.0fmV",
-                               (double)frequency_khz,
-                               (double)amplitude_mv);
-            }
+            (void)snprintf(text,
+                           sizeof(text),
+                           "%.3f/%.3f",
+                           (double)frequency_khz,
+                           (double)amplitude_mv);
         } else {
-            (void)strcpy(text, "--.-k--mV");
+            (void)strcpy(text, "---.---/----.---");
         }
         if (G_TjcUi_SendText(rows[row], text) != HAL_OK) {
             status = HAL_ERROR;
@@ -502,7 +385,7 @@ static HAL_StatusTypeDef G_TjcUi_SendTimePlot(
     const PeriodicAnalyzer_Result *result,
     uint8_t cycles)
 {
-    float maximum_abs_mv = 0.0f;
+    float maximum_abs_mv;
     uint16_t full_scale_mv;
     HAL_StatusTypeDef status = HAL_OK;
 
@@ -511,28 +394,23 @@ static HAL_StatusTypeDef G_TjcUi_SendTimePlot(
             (float)cycles * (float)i / (float)(G_TJC_PLOT_POINTS - 1U);
         const float value_mv =
             1000.0f * PeriodicAnalyzer_Evaluate(result, phase_turns);
-        const float absolute_mv = fabsf(value_mv);
 
         s_plot_mv[i] = value_mv;
-        if (absolute_mv > maximum_abs_mv) maximum_abs_mv = absolute_mv;
     }
-    full_scale_mv = G_TjcUi_RoundScale10(1.15f * maximum_abs_mv,
-                                         30U,
-                                         5000U);
+    maximum_abs_mv = G_TjcPlotScale_RemoveDisplayDc(
+        s_plot_mv,
+        G_TJC_PLOT_POINTS);
+    full_scale_mv = G_TjcPlotScale_SelectAmplitudeAxis(
+        1.15f * maximum_abs_mv,
+        30U,
+        5000U);
 
-    if (G_TjcUi_SetTimeAxis(full_scale_mv, cycles) != HAL_OK) {
-        status = HAL_ERROR;
-    }
     if (G_TjcUi_ClearPlot() != HAL_OK) status = HAL_ERROR;
 
     for (uint32_t i = 0U; i < G_TJC_PLOT_POINTS; ++i) {
-        const float value_mv = s_plot_mv[i];
-        float mapped = 128.0f +
-                       120.0f * value_mv / (float)full_scale_mv;
-
-        if (mapped < 8.0f) mapped = 8.0f;
-        if (mapped > 248.0f) mapped = 248.0f;
-        s_plot[i] = (uint8_t)(mapped + 0.5f);
+        s_plot[i] = G_TjcPlotScale_MapBipolar(
+            s_plot_mv[i],
+            (float)full_scale_mv);
     }
     if (status != HAL_OK) return status;
     status = G_TjcUi_SendPlotBulk();
@@ -565,32 +443,28 @@ static HAL_StatusTypeDef G_TjcUi_SendSpectrumPlot(
     }
 
     frequency_full_scale_hz =
-        G_TjcUi_SelectFrequencyScale(maximum_frequency_hz);
+        G_TjcPlotScale_SelectFrequencyAxis(maximum_frequency_hz);
     amplitude_full_scale_mv =
-        G_TjcUi_RoundScale10(1.15f * maximum_amplitude_mv, 10U, 5000U);
+        G_TjcPlotScale_SelectAmplitudeAxis(
+            1.15f * maximum_amplitude_mv,
+            10U,
+            5000U);
 
     for (uint8_t i = 0U; i < count; ++i) {
         const PeriodicAnalyzer_Component *component =
             &result->component[indices[i]];
         const float amplitude_mv =
             1000.0f * component->peak_amplitude_v;
-        uint32_t x = 1U + (uint32_t)(
-            component->frequency_hz *
-            (float)(G_TJC_PLOT_POINTS - 3U) /
+        const uint32_t x = G_TjcPlotScale_MapFrequencyX(
+            component->frequency_hz,
             (float)frequency_full_scale_hz);
-        uint32_t height = (uint32_t)(
-            240.0f * amplitude_mv /
-            (float)amplitude_full_scale_mv + 0.5f);
+        const uint8_t height = G_TjcPlotScale_MapUnipolar(
+            amplitude_mv,
+            (float)amplitude_full_scale_mv);
 
-        if (x > G_TJC_PLOT_POINTS - 2U) x = G_TJC_PLOT_POINTS - 2U;
-        if (height > 240U) height = 240U;
-        if (height > s_plot[x]) s_plot[x] = (uint8_t)height;
+        if (height > s_plot[x]) s_plot[x] = height;
     }
 
-    if (G_TjcUi_SetSpectrumAxis(amplitude_full_scale_mv,
-                                frequency_full_scale_hz) != HAL_OK) {
-        status = HAL_ERROR;
-    }
     if (G_TjcUi_ClearPlot() != HAL_OK) status = HAL_ERROR;
     if (status != HAL_OK) return status;
     status = G_TjcUi_SendPlotBulk();
@@ -600,9 +474,27 @@ static HAL_StatusTypeDef G_TjcUi_SendSpectrumPlot(
 static void G_TjcUi_AcceptCommand(void)
 {
     G_TjcUiMode mode;
+    G_TjcUiPage page;
 
-    if ((s_rx_command_length != 2U) ||
-        (s_rx_command[0] != 'G')) {
+    if (s_rx_command_length != 2U) return;
+
+    if (s_rx_command[0] == 'P') {
+        if (s_rx_command[1] == 'I') {
+            page = G_TJC_PAGE_INDEX;
+        } else if (s_rx_command[1] == 'M') {
+            page = G_TJC_PAGE_MAIN;
+        } else if (s_rx_command[1] == 'S') {
+            page = G_TJC_PAGE_SET;
+        } else {
+            return;
+        }
+        s_active_page = (uint8_t)page;
+        s_pending_page = (uint8_t)page;
+        return;
+    }
+
+    if ((s_rx_command[0] != 'G') ||
+        (G_TjcUi_CanAccessMainObjects() == 0U)) {
         return;
     }
     if (s_rx_command[1] == '1') {
@@ -635,13 +527,17 @@ HAL_StatusTypeDef G_TjcUi_Init(void)
     s_reinitialize_safe = 1U;
     /* Measurement starts only after a touch command or a USART1 command. */
     s_pending_mode = 0U;
+    s_active_page = (uint8_t)G_TJC_PAGE_UNKNOWN;
+    s_pending_page = (uint8_t)G_TJC_PAGE_UNKNOWN;
 
     if (HAL_UART_Receive_IT(&huart2, &s_rx_byte, 1U) != HAL_OK) {
         return HAL_ERROR;
     }
-    if (G_TjcUi_SendCommand("page main") != HAL_OK) return HAL_ERROR;
-    if (G_TjcUi_SendText("tview", "WAIT") != HAL_OK) return HAL_ERROR;
-    return G_TjcUi_ClearPlot();
+    /*
+     * 页面跳转完全由 HMI 本地事件完成。MCU 不在启动时强制 main，
+     * 这样 index 页面可作为真正首页，也不会打断 set 页面。
+     */
+    return HAL_OK;
 }
 
 uint8_t G_TjcUi_IsHealthy(void)
@@ -675,9 +571,48 @@ uint8_t G_TjcUi_TakeRequest(G_TjcUiMode *mode)
     return 1U;
 }
 
+uint8_t G_TjcUi_TakePageEvent(G_TjcUiPage *page)
+{
+    uint8_t pending;
+    uint32_t primask;
+
+    if (page == NULL) return 0U;
+    primask = __get_PRIMASK();
+    __disable_irq();
+    pending = s_pending_page;
+    s_pending_page = (uint8_t)G_TJC_PAGE_UNKNOWN;
+    if (primask == 0U) __enable_irq();
+
+    if ((pending != (uint8_t)G_TJC_PAGE_INDEX) &&
+        (pending != (uint8_t)G_TJC_PAGE_MAIN) &&
+        (pending != (uint8_t)G_TJC_PAGE_SET)) {
+        return 0U;
+    }
+    *page = (G_TjcUiPage)pending;
+    return 1U;
+}
+
+uint8_t G_TjcUi_IsMainPageActive(void)
+{
+    return G_TjcUi_CanAccessMainObjects();
+}
+
+HAL_StatusTypeDef G_TjcUi_ShowIdle(void)
+{
+    HAL_StatusTypeDef status = HAL_OK;
+
+    if (G_TjcUi_CanAccessMainObjects() == 0U) return HAL_BUSY;
+    if (G_TjcUi_SendText("tview", "WAIT") != HAL_OK) {
+        status = HAL_ERROR;
+    }
+    if (G_TjcUi_ClearPlot() != HAL_OK) status = HAL_ERROR;
+    return status;
+}
+
 HAL_StatusTypeDef G_TjcUi_ShowAcquiring(G_TjcUiMode mode)
 {
     (void)mode;
+    if (G_TjcUi_CanAccessMainObjects() == 0U) return HAL_BUSY;
     return G_TjcUi_SendText("tview", "ACQUIRING");
 }
 
@@ -687,23 +622,21 @@ HAL_StatusTypeDef G_TjcUi_ShowError(const char *status_text)
     const char *text = (status_text != NULL) ?
                        status_text : "MEASURE ERROR";
 
+    if (G_TjcUi_CanAccessMainObjects() == 0U) return HAL_BUSY;
     if (G_TjcUi_SendText("tview", text) != HAL_OK) status = HAL_ERROR;
-    if (G_TjcUi_SendText("tupp", "U:---.-mV") != HAL_OK) {
+    if (G_TjcUi_SendText("tupp", "-----.---mV") != HAL_OK) {
         status = HAL_ERROR;
     }
-    if (G_TjcUi_SendText("trms", "R:---.-mV") != HAL_OK) {
+    if (G_TjcUi_SendText("trms", "-----.---mV") != HAL_OK) {
         status = HAL_ERROR;
     }
-    if (G_TjcUi_SendText("tf1", "f:---.---k") != HAL_OK) {
+    if (G_TjcUi_SendText("tc1", "---.---/----.---") != HAL_OK) {
         status = HAL_ERROR;
     }
-    if (G_TjcUi_SendText("tc1", "--.-k--mV") != HAL_OK) {
+    if (G_TjcUi_SendText("tc2", "---.---/----.---") != HAL_OK) {
         status = HAL_ERROR;
     }
-    if (G_TjcUi_SendText("tc2", "--.-k--mV") != HAL_OK) {
-        status = HAL_ERROR;
-    }
-    if (G_TjcUi_SendText("tc3", "--.-k--mV") != HAL_OK) {
+    if (G_TjcUi_SendText("tc3", "---.---/----.---") != HAL_OK) {
         status = HAL_ERROR;
     }
     if (G_TjcUi_ClearPlot() != HAL_OK) status = HAL_ERROR;
@@ -723,7 +656,11 @@ HAL_StatusTypeDef G_TjcUi_Publish(
         return G_TjcUi_ShowError("NO SIGNAL");
     }
 
-    if (G_TjcUi_SendMeasurements(result) != HAL_OK) return HAL_ERROR;
+    if (G_TjcUi_CanAccessMainObjects() == 0U) return HAL_BUSY;
+    /*
+     * 坐标轴和曲线处于用户感知的关键路径，先发送；右侧数值和状态
+     * 随后更新，比原顺序更早约一组文本命令时间看到完整曲线。
+     */
     if (mode == G_TJC_MODE_SPECTRUM) {
         if (G_TjcUi_SendSpectrumPlot(result) != HAL_OK) return HAL_ERROR;
         title = "SPECTRUM";
@@ -734,6 +671,8 @@ HAL_StatusTypeDef G_TjcUi_Publish(
         if (G_TjcUi_SendTimePlot(result, 1U) != HAL_OK) return HAL_ERROR;
         title = "1 PERIOD";
     }
+    if (G_TjcUi_CanAccessMainObjects() == 0U) return HAL_BUSY;
+    if (G_TjcUi_SendMeasurements(result) != HAL_OK) return HAL_ERROR;
     if (result->clipped != 0U) title = "OVERLOAD";
     if (G_TjcUi_SendText("tview", title) != HAL_OK) status = HAL_ERROR;
     return status;

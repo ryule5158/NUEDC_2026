@@ -13,11 +13,18 @@
 #define G_CONTEST_MAX_WAVEFORM_CYCLES       3U
 
 /*
- * Three ascending, independently measured amplitude points are enabled in
- * g_contest_app.c. The last factor is held to 500 kHz only as an explicitly
- * reported inference; FIR307+CIC3/R25 remains a separate first layer.
+ * Measured voltage gain from the external BNC input to the ADC input.
+ * All reported amplitudes, RMS values and Vpp values are referred back to
+ * the BNC input by multiplying ADC-side volts by the reciprocal of this gain.
  */
-#define G_CONTEST_EMPIRICAL_CAL_POINT_COUNT 3U
+#define G_CONTEST_FRONTEND_VOLTAGE_GAIN     9.55f
+
+/*
+ * Eight ascending empirical amplitude points are enabled in g_contest_app.c.
+ * They correct the residual BNC-to-reported response after the exact
+ * FIR307+CIC3/R25 inverse.
+ */
+#define G_CONTEST_EMPIRICAL_CAL_POINT_COUNT 8U
 #if G_CONTEST_EMPIRICAL_CAL_POINT_COUNT > 8U
 #error "G contest supports at most eight empirical calibration points"
 #endif

@@ -11,7 +11,7 @@
 #define PA_MAX_PEAKS             PERIODIC_ANALYZER_MAX_SPECTRUM_COMPONENTS
 #define PA_PEAK_EXCLUSION_BINS   8U
 #define PA_HARMONIC_TOL_BINS     2.25f
-#define PA_BAND_EDGE_TOL_BINS    0.05f
+#define PA_BAND_EDGE_TOL_HZ      1000.0f
 #define PA_VPP_GRID_POINTS       2048U
 #define PA_SOLVER_MAX_ORDER      (1U + 2U * PERIODIC_ANALYZER_MAX_COMPONENTS)
 #define PA_REFINE_STAGES         4U
@@ -30,6 +30,30 @@ static float s_centered[PERIODIC_ANALYZER_MAX_FFT_POINTS];
 static float PA_AbsF(float x)
 {
     return (x < 0.0f) ? -x : x;
+}
+
+static uint8_t PA_IsFrequencyWithinBandTolerance(
+    const PeriodicAnalyzer_Config *config,
+    float frequency_hz)
+{
+    return ((frequency_hz >=
+             config->min_frequency_hz - PA_BAND_EDGE_TOL_HZ) &&
+            (frequency_hz <=
+             config->max_frequency_hz + PA_BAND_EDGE_TOL_HZ))
+        ? 1U : 0U;
+}
+
+static float PA_ClampReportedFrequencyToBand(
+    const PeriodicAnalyzer_Config *config,
+    float frequency_hz)
+{
+    if (frequency_hz < config->min_frequency_hz) {
+        return config->min_frequency_hz;
+    }
+    if (frequency_hz > config->max_frequency_hz) {
+        return config->max_frequency_hz;
+    }
+    return frequency_hz;
 }
 
 static float PA_WrapPhase(float phase)
@@ -389,8 +413,15 @@ static uint8_t PA_CollectPeaks(const PeriodicAnalyzer_Config *config,
     uint8_t selected_count = 0U;
     const float fs = config->sample_rate_hz;
     const float df = fs / (float)n;
-    uint32_t min_bin = (uint32_t)floorf(config->min_frequency_hz / df);
-    uint32_t max_bin = (uint32_t)ceilf(config->max_frequency_hz / df);
+    const float scan_min_hz =
+        (config->min_frequency_hz > PA_BAND_EDGE_TOL_HZ)
+            ? config->min_frequency_hz - PA_BAND_EDGE_TOL_HZ
+            : 0.0f;
+    const float scan_max_hz =
+        config->max_frequency_hz + PA_BAND_EDGE_TOL_HZ;
+    const float interpolation_edge_margin_hz = df;
+    uint32_t min_bin = (uint32_t)floorf(scan_min_hz / df);
+    uint32_t max_bin = (uint32_t)ceilf(scan_max_hz / df);
     float global_max = 0.0f;
 
     if (min_bin < 2U) min_bin = 2U;
@@ -412,23 +443,18 @@ static uint8_t PA_CollectPeaks(const PeriodicAnalyzer_Config *config,
 
         PA_InterpPeak(FFT_normalized_output, n, k, fs, &interpolated);
         if ((interpolated.frequency_hz <
-             config->min_frequency_hz -
-             PA_BAND_EDGE_TOL_BINS * df) ||
+             scan_min_hz - interpolation_edge_margin_hz) ||
             (interpolated.frequency_hz >
-             config->max_frequency_hz +
-             PA_BAND_EDGE_TOL_BINS * df)) {
+             scan_max_hz + interpolation_edge_margin_hz)) {
             continue;
         }
         /*
-         * A tone exactly on a configured band edge can interpolate a few Hz
-         * outside the range. Keep that edge tone and report the legal edge.
+         * Keep the physical interpolated frequency through harmonic selection
+         * and least-squares fitting. A coarse FFT estimate may temporarily
+         * overshoot the 9/501 kHz tolerance endpoints by part of one bin; the
+         * refined frequency is checked strictly later. Only the reported
+         * frequency is clamped to 10/500 kHz.
          */
-        if (interpolated.frequency_hz < config->min_frequency_hz) {
-            interpolated.frequency_hz = config->min_frequency_hz;
-        }
-        if (interpolated.frequency_hz > config->max_frequency_hz) {
-            interpolated.frequency_hz = config->max_frequency_hz;
-        }
         if (interpolated.amplitude_adc_v > global_max) {
             global_max = interpolated.amplitude_adc_v;
         }
@@ -954,14 +980,22 @@ static float PA_RefineFundamental(const float *data,
 {
     const double bin_width =
         (double)config->sample_rate_hz / (double)n;
-    double min_hz = (double)config->min_frequency_hz;
-    double max_hz = (double)config->max_frequency_hz;
+    double min_hz = (double)config->min_frequency_hz -
+                    (double)PA_BAND_EDGE_TOL_HZ;
+    double max_hz = (double)config->max_frequency_hz +
+                    (double)PA_BAND_EDGE_TOL_HZ;
     double refined = (double)initial_hz;
+
+    if (min_hz < 0.0) {
+        min_hz = 0.0;
+    }
     double step_hz = bin_width / 8.0;
 
     for (uint8_t c = 0U; c < component_count; ++c) {
         const double band_limit =
-            (double)config->max_frequency_hz / (double)orders[c];
+            ((double)config->max_frequency_hz +
+             (double)PA_BAND_EDGE_TOL_HZ) /
+            (double)orders[c];
         const double nyquist_limit =
             (0.5 * (double)config->sample_rate_hz -
              0.5 * bin_width) / (double)orders[c];
@@ -1065,11 +1099,15 @@ PeriodicAnalyzer_Status PeriodicAnalyzer_Analyze(
     result->spectrum_component_count = peak_count;
     for (uint8_t i = 0U; i < peak_count; ++i) {
         float amp_corr;
+        const float reported_frequency_hz =
+            PA_ClampReportedFrequencyToBand(
+                config,
+                peaks[i].frequency_hz);
         PA_InterpolateCalibration(config,
-                                  peaks[i].frequency_hz,
+                                  reported_frequency_hz,
                                   &amp_corr,
                                   NULL);
-        result->spectrum[i].frequency_hz = peaks[i].frequency_hz;
+        result->spectrum[i].frequency_hz = reported_frequency_hz;
         result->spectrum[i].peak_amplitude_v =
             peaks[i].amplitude_adc_v *
             config->input_volts_per_adc_volt * amp_corr;
@@ -1083,8 +1121,12 @@ PeriodicAnalyzer_Status PeriodicAnalyzer_Analyze(
         orders,
         &f0);
     if ((component_count == 0U) ||
-        !(f0 >= config->min_frequency_hz) ||
-        !(f0 <= config->max_frequency_hz)) {
+        (f0 < config->min_frequency_hz -
+              PA_BAND_EDGE_TOL_HZ -
+              config->sample_rate_hz / (float)length) ||
+        (f0 > config->max_frequency_hz +
+              PA_BAND_EDGE_TOL_HZ +
+              config->sample_rate_hz / (float)length)) {
         return PERIODIC_ANALYZER_E_NO_SIGNAL;
     }
 
@@ -1094,6 +1136,14 @@ PeriodicAnalyzer_Status PeriodicAnalyzer_Analyze(
                               orders,
                               component_count,
                               f0);
+    /*
+     * The contest permits 1 kHz absolute fundamental-frequency error. Preserve
+     * the physical estimate for amplitude/phase fitting, accept 9..501 kHz at
+     * the configured band edges, and clamp only the reported frequency.
+     */
+    if (PA_IsFrequencyWithinBandTolerance(config, f0) == 0U) {
+        return PERIODIC_ANALYZER_E_NO_SIGNAL;
+    }
 
     if (PA_FitComponents(s_centered,
                          length,
@@ -1125,23 +1175,28 @@ PeriodicAnalyzer_Status PeriodicAnalyzer_Analyze(
     }
 
     result->component_count = component_count;
-    result->fundamental_hz = f0;
+    result->fundamental_hz =
+        PA_ClampReportedFrequencyToBand(config, f0);
     for (uint8_t c = 0U; c < component_count; ++c) {
         float amp_corr;
         float phase_corr;
         const float sin_coeff = (float)solution[1U + 2U * c];
         const float cos_coeff = (float)solution[2U + 2U * c];
-        const float frequency = (float)orders[c] * f0;
+        const float physical_frequency = (float)orders[c] * f0;
+        const float reported_frequency =
+            PA_ClampReportedFrequencyToBand(
+                config,
+                physical_frequency);
         float amplitude_adc =
             sqrtf(sin_coeff * sin_coeff + cos_coeff * cos_coeff);
         float phase = atan2f(cos_coeff, sin_coeff);
 
         PA_InterpolateCalibration(config,
-                                  frequency,
+                                  reported_frequency,
                                   &amp_corr,
                                   &phase_corr);
         result->component[c].harmonic_order = orders[c];
-        result->component[c].frequency_hz = frequency;
+        result->component[c].frequency_hz = reported_frequency;
         result->component[c].peak_amplitude_v =
             amplitude_adc * config->input_volts_per_adc_volt * amp_corr;
         result->component[c].phase_rad = PA_WrapPhase(phase + phase_corr);

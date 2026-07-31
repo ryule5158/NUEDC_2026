@@ -139,21 +139,39 @@ if (-not $SkipVivado) {
 }
 
 # Vivado 2018.3 child processes can fail when the project path contains
-# non-ASCII characters. Use a short temporary junction only when required.
+# non-ASCII characters. A junction is not sufficient because Tcl file
+# normalization resolves it back to the Unicode target. Use a temporary subst
+# drive so every Vivado parent and child process sees a genuinely ASCII path.
 $toolFpgaRoot = $fpgaRoot
-$asciiLink = $null
+$asciiDrive = $null
+$substExe = Join-Path $env:SystemRoot 'System32\subst.exe'
 if ($fpgaRoot -match '[^\x00-\x7F]') {
-    $asciiLink = Join-Path $env:TEMP 'NF'
-    if (Test-Path -LiteralPath $asciiLink) {
-        $linkItem = Get-Item -LiteralPath $asciiLink -Force
-        if (($linkItem.LinkType -ne 'Junction') -or
-            ($linkItem.Target -notcontains $fpgaRoot)) {
-            throw "ASCII build path is occupied: $asciiLink"
-        }
-        [System.IO.Directory]::Delete($asciiLink)
+    if (-not (Test-Path -LiteralPath $substExe -PathType Leaf)) {
+        throw "Windows subst.exe was not found: $substExe"
     }
-    New-Item -ItemType Junction -Path $asciiLink -Target $fpgaRoot | Out-Null
-    $toolFpgaRoot = $asciiLink
+    $usedDriveNames = @(
+        Get-PSDrive -PSProvider FileSystem | ForEach-Object {
+            "$($_.Name):"
+        }
+    )
+    foreach ($candidate in @('Z:', 'Y:', 'X:', 'W:', 'V:', 'U:', 'T:', 'S:', 'R:', 'Q:', 'P:')) {
+        if ($candidate -notin $usedDriveNames) {
+            $asciiDrive = $candidate
+            break
+        }
+    }
+    if ($null -eq $asciiDrive) {
+        throw 'No free drive letter is available for the ASCII Vivado build path.'
+    }
+    $substOutput = @(& $substExe $asciiDrive $fpgaRoot 2>&1)
+    if ($LASTEXITCODE -ne 0) {
+        throw "Unable to create ASCII build drive $asciiDrive`n$($substOutput | Out-String)"
+    }
+    $toolFpgaRoot = "$asciiDrive\"
+    if (-not (Test-Path -LiteralPath $toolFpgaRoot -PathType Container)) {
+        throw "ASCII build drive was not mounted: $toolFpgaRoot"
+    }
+    Write-Host "Vivado ASCII build root: $toolFpgaRoot"
 }
 
 try {
@@ -167,8 +185,11 @@ try {
         }
     }
 } finally {
-    if (($null -ne $asciiLink) -and (Test-Path -LiteralPath $asciiLink)) {
-        [System.IO.Directory]::Delete($asciiLink)
+    if ($null -ne $asciiDrive) {
+        $substRemoveOutput = @(& $substExe $asciiDrive /D 2>&1)
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Unable to remove temporary build drive $asciiDrive`n$($substRemoveOutput | Out-String)"
+        }
     }
 }
 

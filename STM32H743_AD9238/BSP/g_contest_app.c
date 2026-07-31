@@ -5,26 +5,34 @@
 #include <stdio.h>
 #include <string.h>
 
+#define G_CONTEST_PI 3.14159265358979323846f
+
 static float s_input_volts[G_CONTEST_SAMPLE_COUNT];
 static PeriodicAnalyzer_Config s_analyzer_config;
 static PeriodicAnalyzer_Result s_result;
 static uint32_t s_frame_number;
 static uint32_t s_last_latency_ms;
+static float s_raw_vpp_v;
 
 /*
  * Residual whole-chain calibration after the exact FIR307+CIC3/R25 inverse.
- * Each amplitude factor is the average of two user measurements:
- *   100 kHz: 25.000 mVpp / {25.002010, 25.000788} mVpp
- *   200 kHz: 12.500 mVpp / {13.232144, 13.217731} mVpp
- *   400 kHz: {140,190} mVpp / {147.838654,200.661011} mVpp
- * Above 400 kHz, the last factor is held explicitly as an inference only.
- * Phase remains zero because only amplitude references were supplied.
+ * The eight amplitude factors are a least-squares fit of the A/B acceptance
+ * captures after changing the measured front-end gain to 9.55. B02 is omitted
+ * because its successful capture used 10.2 kHz instead of the 10.0 kHz target;
+ * the C-group interference cases are validation data and are not fitted.
+ * Phase remains zero because the measured relative phase errors were already
+ * negligible and no independent phase references were supplied.
  */
 static const PeriodicAnalyzer_CalPoint s_empirical_chain_calibration[
     PERIODIC_ANALYZER_MAX_CAL_POINTS] = {
-    {100000.0f, 0.999944044f, 0.0f},
-    {200000.0f, 0.945184332f, 0.0f},
-    {400000.0f, 0.946924430f, 0.0f}
+    { 10000.0f, 1.001023484f, 0.0f},
+    {100000.0f, 0.999631811f, 0.0f},
+    {125000.0f, 0.958007731f, 0.0f},
+    {150000.0f, 0.959031761f, 0.0f},
+    {200000.0f, 0.962626228f, 0.0f},
+    {250000.0f, 0.963263043f, 0.0f},
+    {400000.0f, 0.960504456f, 0.0f},
+    {500000.0f, 0.963777730f, 0.0f}
 };
 
 static const char *GContest_EmpiricalStatusName(
@@ -78,6 +86,75 @@ static uint8_t GContest_NormalizeWaveformCycles(uint8_t waveform_cycles)
            G_CONTEST_MAX_WAVEFORM_CYCLES : 1U;
 }
 
+static float GContest_WrapPhaseRad(float phase_rad)
+{
+    const float two_pi = 2.0f * G_CONTEST_PI;
+    while (phase_rad > G_CONTEST_PI) phase_rad -= two_pi;
+    while (phase_rad <= -G_CONTEST_PI) phase_rad += two_pi;
+    return phase_rad;
+}
+
+static float GContest_ComputeRawVppV(const float *samples,
+                                     uint32_t sample_count)
+{
+    float minimum;
+    float maximum;
+
+    if ((samples == NULL) || (sample_count == 0U)) return 0.0f;
+    minimum = samples[0];
+    maximum = samples[0];
+    for (uint32_t i = 1U; i < sample_count; ++i) {
+        if (samples[i] < minimum) minimum = samples[i];
+        if (samples[i] > maximum) maximum = samples[i];
+    }
+    return maximum - minimum;
+}
+
+static void GContest_PrintPhaseDiagnostics(void)
+{
+    float fundamental_phase_rad = 0.0f;
+    uint8_t fundamental_phase_valid = 0U;
+
+    for (uint8_t i = 0U; i < s_result.component_count; ++i) {
+        if (s_result.component[i].harmonic_order == 1U) {
+            fundamental_phase_rad = s_result.component[i].phase_rad;
+            fundamental_phase_valid = 1U;
+            break;
+        }
+    }
+
+    printf("[PHASE] begin count=%u "
+           "columns=component,frequency_Hz,phase_deg,psi_deg "
+           "psi=wrap(phi_h-h*phi_1)\r\n",
+           (unsigned)s_result.component_count);
+    for (uint8_t i = 0U; i < s_result.component_count; ++i) {
+        const PeriodicAnalyzer_Component *component =
+            &s_result.component[i];
+        const float phase_deg =
+            component->phase_rad * (180.0f / G_CONTEST_PI);
+
+        if (fundamental_phase_valid != 0U) {
+            const float relative_phase_rad = GContest_WrapPhaseRad(
+                component->phase_rad -
+                (float)component->harmonic_order *
+                fundamental_phase_rad);
+            const float relative_phase_deg =
+                relative_phase_rad * (180.0f / G_CONTEST_PI);
+            printf("PHASE,H%u,%.2f,%.6f,%.6f\r\n",
+                   (unsigned)component->harmonic_order,
+                   (double)component->frequency_hz,
+                   (double)phase_deg,
+                   (double)relative_phase_deg);
+        } else {
+            printf("PHASE,H%u,%.2f,%.6f,NA\r\n",
+                   (unsigned)component->harmonic_order,
+                   (double)component->frequency_hz,
+                   (double)phase_deg);
+        }
+    }
+    printf("[PHASE] end\r\n");
+}
+
 static void GContest_PrintWaveform(uint8_t waveform_cycles)
 {
     const uint8_t cycles =
@@ -116,6 +193,13 @@ static void GContest_PrintMeasurementAndSpectrum(void)
            (double)s_result.fundamental_hz,
            (double)(1000.0f * s_result.residual_rms_v),
            (unsigned)s_result.clipped);
+    printf("[VPP] VPP_MODEL=%.6fmV VPP_RAW=%.6fmV "
+           "RAW_MINUS_MODEL=%.6fmV "
+           "raw_domain=post_FIR307_CIC3_R25_BNC_equivalent\r\n",
+           (double)(1000.0f * s_result.vpp_v),
+           (double)(1000.0f * s_raw_vpp_v),
+           (double)(1000.0f *
+                    (s_raw_vpp_v - s_result.vpp_v)));
 
     printf("[SPEC] begin band=%.0f..%.0fHz count=%u "
            "columns=component,frequency_Hz,peak_mV,vpp_mV "
@@ -145,6 +229,7 @@ static void GContest_PrintMeasurementAndSpectrum(void)
         }
     }
     printf("[SPEC] end\r\n");
+    GContest_PrintPhaseDiagnostics();
 
     printf("[RESP] begin count=%u "
            "columns=component,frequency_Hz,transport_vpp_mV,"
@@ -257,7 +342,8 @@ HAL_StatusTypeDef GContest_Init(void)
         adc_info->output_sample_rate_hz;
     s_analyzer_config.min_frequency_hz = G_CONTEST_MIN_FREQ_HZ;
     s_analyzer_config.max_frequency_hz = G_CONTEST_MAX_FREQ_HZ;
-    s_analyzer_config.input_volts_per_adc_volt = 1.0f;
+    s_analyzer_config.input_volts_per_adc_volt =
+        1.0f / G_CONTEST_FRONTEND_VOLTAGE_GAIN;
     s_analyzer_config.min_component_peak_v =
         G_CONTEST_MIN_COMPONENT_PEAK_V;
     s_analyzer_config.relative_peak_threshold = 0.01f;
@@ -266,8 +352,7 @@ HAL_StatusTypeDef GContest_Init(void)
         (float)adc_info->physical_sample_clock_hz);
     /*
      * Layer 1 is the exact FIR307 plus CIC3/R25 RTL inverse. Layer 2
-     * interpolates only the repeated 100/200/400 kHz source measurements.
-     * The 400 kHz factor is explicitly held to 500 kHz as an inference.
+     * interpolates the eight measured residual BNC-referred response points.
      */
     s_analyzer_config.cal_count =
         (uint8_t)G_CONTEST_EMPIRICAL_CAL_POINT_COUNT;
@@ -303,6 +388,7 @@ HAL_StatusTypeDef GContest_Init(void)
     memset(&s_result, 0, sizeof(s_result));
     s_frame_number = 0U;
     s_last_latency_ms = 0U;
+    s_raw_vpp_v = 0.0f;
 
     printf("[G] READY ADC=%s physicalFs=%luHz Fs=%.0fHz "
            "N=%lu df=%.5fHz\r\n",
@@ -318,6 +404,11 @@ HAL_StatusTypeDef GContest_Init(void)
            (double)(1000.0f * adc_info->nominal_lsb_v),
            adc_info->transport_format,
            (double)(1000.0f * adc_info->transport_lsb_v));
+    printf("[G] frontend_voltage_gain=%.6f "
+           "input_volts_per_adc_volt=%.9f "
+           "reference_plane=BNC_before_amplifier\r\n",
+           (double)G_CONTEST_FRONTEND_VOLTAGE_GAIN,
+           (double)s_analyzer_config.input_volts_per_adc_volt);
     if (adc_diagnostic != NULL) {
         printf("[G] FPGA device=0x%08lX protocol=0x%08lX "
                "sample_word=S%uQ%u ready=%u\r\n",
@@ -394,6 +485,10 @@ void GContest_Process(uint8_t waveform_cycles)
         return;
     }
     s_analyzer_config.sample_rate_hz = frame.sample_rate_hz;
+    s_raw_vpp_v = GContest_ComputeRawVppV(
+        s_input_volts,
+        G_CONTEST_SAMPLE_COUNT) *
+        s_analyzer_config.input_volts_per_adc_volt;
 
     analyzer_status = PeriodicAnalyzer_Analyze(s_input_volts,
                                                 G_CONTEST_SAMPLE_COUNT,
@@ -403,19 +498,27 @@ void GContest_Process(uint8_t waveform_cycles)
     s_frame_number++;
     s_last_latency_ms = HAL_GetTick() - start_ms;
 
-    if (analyzer_status == PERIODIC_ANALYZER_OK) {
-        printf("[G] frame=%lu capture_analyze=%lums model_lines=%u\r\n",
-               (unsigned long)s_frame_number,
-               (unsigned long)s_last_latency_ms,
-               (unsigned)s_result.component_count);
-        GContest_PrintWaveform(waveform_cycles);
-        GContest_PrintMeasurementAndSpectrum();
-        printf("[DONE] frame=%lu\r\n", (unsigned long)s_frame_number);
-    } else {
+    if (analyzer_status != PERIODIC_ANALYZER_OK) {
         printf("[G] analyzer status=%d latency=%lums\r\n",
                (int)analyzer_status,
                (unsigned long)s_last_latency_ms);
     }
+}
+
+void GContest_PrintLastReport(uint8_t waveform_cycles)
+{
+    if ((s_result.valid == 0U) ||
+        (s_result.status != PERIODIC_ANALYZER_OK)) {
+        return;
+    }
+
+    printf("[G] frame=%lu capture_analyze=%lums model_lines=%u\r\n",
+           (unsigned long)s_frame_number,
+           (unsigned long)s_last_latency_ms,
+           (unsigned)s_result.component_count);
+    GContest_PrintWaveform(waveform_cycles);
+    GContest_PrintMeasurementAndSpectrum();
+    printf("[DONE] frame=%lu\r\n", (unsigned long)s_frame_number);
 }
 
 const PeriodicAnalyzer_Result *GContest_GetLastResult(void)

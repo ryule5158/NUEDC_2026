@@ -19,7 +19,8 @@ param(
     [string]$FlashType = 'qspi-x1-single',
     [switch]$BlankCheck,
     [switch]$NoVerify,
-    [switch]$ProbeOnly
+    [switch]$ProbeOnly,
+    [switch]$ValidateOnly
 )
 
 Set-StrictMode -Version 2.0
@@ -29,8 +30,14 @@ $ErrorActionPreference = 'Stop'
 
 $fpgaRoot = Split-Path -Parent $PSScriptRoot
 $outputDir = Join-Path $fpgaRoot 'output'
+$projectImage = Join-Path $outputDir 'BOOT_G_ANALYZER.bin'
+$buildManifest = Join-Path $outputDir 'LATEST_G_QSPI_BUILD.txt'
+$buildValidator = Join-Path $PSScriptRoot 'Build-QspiBoot.ps1'
 if ([string]::IsNullOrWhiteSpace($Image)) {
-    $Image = Join-Path $outputDir 'BOOT_G_ANALYZER.bin'
+    $Image = $projectImage
+}
+if ($ProbeOnly -and $ValidateOnly) {
+    throw 'ProbeOnly and ValidateOnly cannot be used together.'
 }
 if ([string]::IsNullOrWhiteSpace($Fsbl)) {
     $asciiFsbl = Join-Path $fpgaRoot 'boot\FSBL.elf'
@@ -57,6 +64,74 @@ $candidateList
 "@
         }
         $Fsbl = $fsblCandidates[0].FullName
+    }
+}
+
+if (-not $ProbeOnly) {
+    if (-not (Test-Path -LiteralPath $buildValidator -PathType Leaf)) {
+        throw "Release-image validator was not found: $buildValidator"
+    }
+
+    # Re-discover current RTL/XDC/IP/BD/FSBL inputs and require the existing
+    # routed bitstream to match their recorded source digest.  SkipVivado does
+    # not accept a stale bitstream: it only re-packages a manifest-matched one.
+    & $buildValidator -SkipVivado -Fsbl $Fsbl
+
+    foreach ($requiredReleaseFile in @(
+            $projectImage,
+            $buildManifest
+        )) {
+        if (-not (Test-Path -LiteralPath $requiredReleaseFile -PathType Leaf)) {
+            throw "Validated release file was not found: $requiredReleaseFile"
+        }
+    }
+
+    $projectImage = (Resolve-Path -LiteralPath $projectImage).Path
+    $requestedImage = (Resolve-Path -LiteralPath $Image).Path
+    $projectImageHash =
+        (Get-FileHash -LiteralPath $projectImage -Algorithm SHA256).Hash
+    $requestedImageHash =
+        (Get-FileHash -LiteralPath $requestedImage -Algorithm SHA256).Hash
+    $buildManifestText = Get-Content -Raw -LiteralPath $buildManifest
+    $manifestBootHashMatch = [regex]::Match(
+        $buildManifestText,
+        '(?im)^BootSHA256:\s*([0-9A-F]{64})\s*$'
+    )
+    $manifestSourceDigestMatch = [regex]::Match(
+        $buildManifestText,
+        '(?im)^SourceDigest:\s*([0-9A-F]{64})\s*$'
+    )
+    if ((-not $manifestBootHashMatch.Success) -or
+        (-not $manifestSourceDigestMatch.Success)) {
+        throw "Release manifest is incomplete: $buildManifest"
+    }
+    $manifestBootHash =
+        $manifestBootHashMatch.Groups[1].Value.ToUpperInvariant()
+    $releaseSourceDigest =
+        $manifestSourceDigestMatch.Groups[1].Value.ToUpperInvariant()
+    if ($projectImageHash -ne $manifestBootHash) {
+        throw @"
+STALE IMAGE BLOCKED: project BOOT image does not match the latest build manifest.
+Image:    $projectImageHash
+Manifest: $manifestBootHash
+"@
+    }
+    if ($requestedImageHash -ne $projectImageHash) {
+        throw @"
+WRONG IMAGE BLOCKED: requested QSPI image is not the current project image.
+Requested: $requestedImage ($requestedImageHash)
+Current:   $projectImage ($projectImageHash)
+"@
+    }
+    $Image = $requestedImage
+    Write-Host 'LATEST PROJECT IMAGE VALIDATION PASSED.'
+    Write-Host "Source digest: $releaseSourceDigest"
+    Write-Host "Image SHA256:  $projectImageHash"
+    Write-Host ''
+
+    if ($ValidateOnly) {
+        Write-Host 'Validation-only mode: JTAG and QSPI were not accessed.'
+        return
     }
 }
 
@@ -284,6 +359,8 @@ try {
         "Image:      $Image"
         "Length:     $($imageItem.Length)"
         "SHA256:     $imageHash"
+        "SourceDigest: $releaseSourceDigest"
+        "BuildManifest: $buildManifest"
         "FlashType:  $FlashType"
         "Target:     $detectedTarget"
         "BootMode:   0x$bootMode"

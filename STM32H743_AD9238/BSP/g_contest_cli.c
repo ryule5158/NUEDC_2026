@@ -85,13 +85,15 @@ static void GContestCli_PrintStatus(void)
     const PeriodicAnalyzer_Result *result = GContest_GetLastResult();
 
     printf("[CLI] state=%s pending_cycles=%u frame=%lu latency=%lums "
-           "rx_overflow=%lu commands=%lu\r\n",
+           "rx_overflow=%lu commands=%lu tx_pending=%lu tx_drop=%lu\r\n",
            (s_pending_cycles != 0U) ? "PENDING" : "IDLE",
            (unsigned)s_pending_cycles,
            (unsigned long)GContest_GetFrameNumber(),
            (unsigned long)GContest_GetLastLatencyMs(),
            (unsigned long)s_rx_overflow_count,
-           (unsigned long)s_command_count);
+           (unsigned long)s_command_count,
+           (unsigned long)DebugUart1_GetPendingByteCount(),
+           (unsigned long)DebugUart1_GetDroppedByteCount());
     if ((result != NULL) && (result->valid != 0U)) {
         printf("[CLI] latest f0=%.2fHz vpp=%.3fmV rms=%.3fmV lines=%u clip=%u\r\n",
                (double)result->fundamental_hz,
@@ -276,6 +278,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         return;
     }
     G_TjcUi_UartRxComplete(huart);
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+    DebugUart1_TxComplete(huart);
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)

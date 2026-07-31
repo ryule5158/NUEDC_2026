@@ -1,5 +1,6 @@
 #include "g_tjc_ui.h"
 
+#include "g_tjc_plot_scale.h"
 #include "usart.h"
 
 #include <math.h>
@@ -9,7 +10,6 @@
 
 #define G_TJC_WAVEFORM_ID          1U
 #define G_TJC_WAVEFORM_CHANNEL     0U
-#define G_TJC_PLOT_POINTS          270U
 #define G_TJC_TX_TIMEOUT_MS        50U
 #define G_TJC_BULK_READY_TIMEOUT_MS 250U
 #define G_TJC_BULK_DONE_TIMEOUT_MS  250U
@@ -502,7 +502,7 @@ static HAL_StatusTypeDef G_TjcUi_SendTimePlot(
     const PeriodicAnalyzer_Result *result,
     uint8_t cycles)
 {
-    float maximum_abs_mv = 0.0f;
+    float maximum_abs_mv;
     uint16_t full_scale_mv;
     HAL_StatusTypeDef status = HAL_OK;
 
@@ -511,11 +511,12 @@ static HAL_StatusTypeDef G_TjcUi_SendTimePlot(
             (float)cycles * (float)i / (float)(G_TJC_PLOT_POINTS - 1U);
         const float value_mv =
             1000.0f * PeriodicAnalyzer_Evaluate(result, phase_turns);
-        const float absolute_mv = fabsf(value_mv);
 
         s_plot_mv[i] = value_mv;
-        if (absolute_mv > maximum_abs_mv) maximum_abs_mv = absolute_mv;
     }
+    maximum_abs_mv = G_TjcPlotScale_RemoveDisplayDc(
+        s_plot_mv,
+        G_TJC_PLOT_POINTS);
     full_scale_mv = G_TjcUi_RoundScale10(1.15f * maximum_abs_mv,
                                          30U,
                                          5000U);
@@ -526,13 +527,9 @@ static HAL_StatusTypeDef G_TjcUi_SendTimePlot(
     if (G_TjcUi_ClearPlot() != HAL_OK) status = HAL_ERROR;
 
     for (uint32_t i = 0U; i < G_TJC_PLOT_POINTS; ++i) {
-        const float value_mv = s_plot_mv[i];
-        float mapped = 128.0f +
-                       120.0f * value_mv / (float)full_scale_mv;
-
-        if (mapped < 8.0f) mapped = 8.0f;
-        if (mapped > 248.0f) mapped = 248.0f;
-        s_plot[i] = (uint8_t)(mapped + 0.5f);
+        s_plot[i] = G_TjcPlotScale_MapBipolar(
+            s_plot_mv[i],
+            (float)full_scale_mv);
     }
     if (status != HAL_OK) return status;
     status = G_TjcUi_SendPlotBulk();
@@ -578,13 +575,12 @@ static HAL_StatusTypeDef G_TjcUi_SendSpectrumPlot(
             component->frequency_hz *
             (float)(G_TJC_PLOT_POINTS - 3U) /
             (float)frequency_full_scale_hz);
-        uint32_t height = (uint32_t)(
-            240.0f * amplitude_mv /
-            (float)amplitude_full_scale_mv + 0.5f);
+        const uint8_t height = G_TjcPlotScale_MapUnipolar(
+            amplitude_mv,
+            (float)amplitude_full_scale_mv);
 
         if (x > G_TJC_PLOT_POINTS - 2U) x = G_TJC_PLOT_POINTS - 2U;
-        if (height > 240U) height = 240U;
-        if (height > s_plot[x]) s_plot[x] = (uint8_t)height;
+        if (height > s_plot[x]) s_plot[x] = height;
     }
 
     if (G_TjcUi_SetSpectrumAxis(amplitude_full_scale_mv,

@@ -174,9 +174,20 @@ static int run_case(const TestCase *tc)
         return 2;
     }
     for (unsigned c = 0U; c < tc->count; ++c) {
+        float expected_frequency =
+            tc->f0 * (float)tc->order[c];
+        if ((expected_frequency >= 9000.0f) &&
+            (expected_frequency < 10000.0f)) {
+            expected_frequency = 10000.0f;
+        } else if ((expected_frequency > 500000.0f) &&
+                   (expected_frequency <= 501000.0f)) {
+            expected_frequency = 500000.0f;
+        }
         if (result.component[c].harmonic_order != tc->order[c] ||
             absf_local(result.component[c].peak_amplitude_v - tc->amp[c]) >
-            0.005f) {
+                0.005f ||
+            absf_local(result.component[c].frequency_hz -
+                       expected_frequency) > 250.0f) {
             fprintf(stderr, "%s: line%u order=%u amp=%f\n", tc->name,
                     c, (unsigned)result.component[c].harmonic_order,
                     result.component[c].peak_amplitude_v);
@@ -874,11 +885,17 @@ int main(void)
          {0.028f, 0.009f, 0.0f}, {-1.01f, 0.47f, 0.0f}},
         {"exact_10k_weak_f0", 10000.0f, 3U, {1U, 2U, 3U},
          {0.050f, 0.48235f, 0.28235f}, {0.20f, -0.50f, 1.00f}},
+        {"exact_10k_h1_h5_h8", 10000.0f, 3U, {1U, 5U, 8U},
+         {0.040f, 0.010f, 0.0025f}, {0.0f, 0.0f, 0.0f}},
+        {"tolerated_9k_h1_h5_h8", 9000.0f, 3U, {1U, 5U, 8U},
+         {0.040f, 0.010f, 0.0025f}, {0.0f, 0.0f, 0.0f}},
         {"high_edge_3lines", 166431.0f, 3U, {1U, 2U, 3U},
          {0.035f, 0.018f, 0.012f}, {0.20f, 1.70f, -0.50f}},
         {"weak_fundamental", 70031.0f, 3U, {1U, 2U, 3U},
          {0.010f, 0.080f, 0.025f}, {-0.30f, 0.80f, 2.00f}},
         {"near_500k_2lines", 249877.0f, 2U, {1U, 2U, 0U},
+         {0.080f, 0.030f, 0.0f}, {0.90f, -1.20f, 0.0f}},
+        {"tolerated_501k_h2", 250500.0f, 2U, {1U, 2U, 0U},
          {0.080f, 0.030f, 0.0f}, {0.90f, -1.20f, 0.0f}}
     };
 

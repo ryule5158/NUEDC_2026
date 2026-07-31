@@ -10,3 +10,6 @@ MDK-ARM/*.bak
 
 # AD9238 target build directory (reproducible from the uvprojx).
 MDK-ARM/STM32H743_AD9238/
+
+# Host-side diagnostic scratch directory.
+tests/.debug_edge/
