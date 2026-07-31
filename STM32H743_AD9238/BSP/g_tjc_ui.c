@@ -305,85 +305,11 @@ static HAL_StatusTypeDef G_TjcUi_SendText(const char *object,
     return G_TjcUi_SendCommand("%s.txt=\"%s\"", object, text);
 }
 
-static HAL_StatusTypeDef G_TjcUi_SendAxisInteger(const char *object,
-                                                int32_t value)
-{
-    char text[12];
-
-    (void)snprintf(text, sizeof(text), "%ld", (long)value);
-    return G_TjcUi_SendText(object, text);
-}
-
 static HAL_StatusTypeDef G_TjcUi_ClearPlot(void)
 {
     return G_TjcUi_SendCommand("cle %u,%u",
                                (unsigned)G_TJC_WAVEFORM_ID,
                                (unsigned)G_TJC_WAVEFORM_CHANNEL);
-}
-
-static HAL_StatusTypeDef G_TjcUi_SetTimeAxis(uint16_t full_scale_mv,
-                                            uint8_t cycles)
-{
-    HAL_StatusTypeDef status = HAL_OK;
-
-    if (G_TjcUi_SendText("tyunit", "mV") != HAL_OK) status = HAL_ERROR;
-    if (G_TjcUi_SendAxisInteger("tymax", full_scale_mv) != HAL_OK) {
-        status = HAL_ERROR;
-    }
-    if (G_TjcUi_SendText("tymid", "0") != HAL_OK) status = HAL_ERROR;
-    if (G_TjcUi_SendAxisInteger("tymin",
-                                -(int32_t)full_scale_mv) != HAL_OK) {
-        status = HAL_ERROR;
-    }
-    if (G_TjcUi_SendText("tx0", "0") != HAL_OK) status = HAL_ERROR;
-    if (cycles == 3U) {
-        if (G_TjcUi_SendText("txmid", "1.5T") != HAL_OK) {
-            status = HAL_ERROR;
-        }
-        if (G_TjcUi_SendText("txmax", "3T") != HAL_OK) {
-            status = HAL_ERROR;
-        }
-    } else {
-        if (G_TjcUi_SendText("txmid", "0.5T") != HAL_OK) {
-            status = HAL_ERROR;
-        }
-        if (G_TjcUi_SendText("txmax", "1T") != HAL_OK) {
-            status = HAL_ERROR;
-        }
-    }
-    return status;
-}
-
-static HAL_StatusTypeDef G_TjcUi_SetSpectrumAxis(
-    uint16_t amplitude_full_scale_mv,
-    uint32_t frequency_full_scale_hz)
-{
-    char text[12];
-    HAL_StatusTypeDef status = HAL_OK;
-
-    if (G_TjcUi_SendText("tyunit", "mV") != HAL_OK) status = HAL_ERROR;
-    if (G_TjcUi_SendAxisInteger("tymax",
-                                amplitude_full_scale_mv) != HAL_OK) {
-        status = HAL_ERROR;
-    }
-    if (G_TjcUi_SendAxisInteger("tymid",
-                                amplitude_full_scale_mv / 2U) != HAL_OK) {
-        status = HAL_ERROR;
-    }
-    if (G_TjcUi_SendText("tymin", "0") != HAL_OK) status = HAL_ERROR;
-    if (G_TjcUi_SendText("tx0", "0") != HAL_OK) status = HAL_ERROR;
-
-    (void)snprintf(text,
-                   sizeof(text),
-                   "%luk",
-                   (unsigned long)(frequency_full_scale_hz / 2000U));
-    if (G_TjcUi_SendText("txmid", text) != HAL_OK) status = HAL_ERROR;
-    (void)snprintf(text,
-                   sizeof(text),
-                   "%luk",
-                   (unsigned long)(frequency_full_scale_hz / 1000U));
-    if (G_TjcUi_SendText("txmax", text) != HAL_OK) status = HAL_ERROR;
-    return status;
 }
 
 static uint8_t G_TjcUi_GetSortedComponents(
@@ -479,9 +405,6 @@ static HAL_StatusTypeDef G_TjcUi_SendTimePlot(
         30U,
         5000U);
 
-    if (G_TjcUi_SetTimeAxis(full_scale_mv, cycles) != HAL_OK) {
-        status = HAL_ERROR;
-    }
     if (G_TjcUi_ClearPlot() != HAL_OK) status = HAL_ERROR;
 
     for (uint32_t i = 0U; i < G_TJC_PLOT_POINTS; ++i) {
@@ -542,10 +465,6 @@ static HAL_StatusTypeDef G_TjcUi_SendSpectrumPlot(
         if (height > s_plot[x]) s_plot[x] = height;
     }
 
-    if (G_TjcUi_SetSpectrumAxis(amplitude_full_scale_mv,
-                                frequency_full_scale_hz) != HAL_OK) {
-        status = HAL_ERROR;
-    }
     if (G_TjcUi_ClearPlot() != HAL_OK) status = HAL_ERROR;
     if (status != HAL_OK) return status;
     status = G_TjcUi_SendPlotBulk();

@@ -6,11 +6,11 @@
 #include <stdint.h>
 
 /*
- * 7 寸 800x480 串口屏中的 s0 波形控件为 660x220，ID=1、通道=0。
+ * 7 寸 800x480 串口屏中的 s0 波形控件为 760x232，ID=1、通道=0。
  * add/addt 数据码按控件纵向像素使用，尺寸变化时必须同步修改这里。
  */
-#define G_TJC_PLOT_POINTS      660U
-#define G_TJC_PLOT_HEIGHT      220U
+#define G_TJC_PLOT_POINTS      760U
+#define G_TJC_PLOT_HEIGHT      232U
 #define G_TJC_PLOT_MARGIN        8U
 #define G_TJC_PLOT_CODE_MIN    G_TJC_PLOT_MARGIN
 #define G_TJC_PLOT_CODE_MAX    \

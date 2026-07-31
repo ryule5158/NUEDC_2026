@@ -228,11 +228,12 @@ int main(void)
     const float centered_maximum_abs =
         G_TjcPlotScale_RemoveDisplayDc(asymmetric_values, 3U);
 
-    Check(G_TJC_PLOT_POINTS == 660U, "HMI plot width changed");
-    Check(G_TJC_PLOT_HEIGHT == 220U, "HMI plot height changed");
+    Check(G_TJC_PLOT_POINTS == 760U, "HMI plot width changed");
+    Check(G_TJC_PLOT_HEIGHT == 232U, "HMI plot height changed");
     Check(G_TJC_PLOT_CODE_MAX < G_TJC_PLOT_HEIGHT,
           "maximum plot code is outside component");
-    Check(G_TjcPlotScale_MapBipolar(0.0f, 100.0f) == 110U,
+    Check(G_TjcPlotScale_MapBipolar(0.0f, 100.0f) ==
+              G_TJC_PLOT_HEIGHT / 2U,
           "zero is not centered");
     Check(G_TjcPlotScale_MapBipolar(-100.0f, 100.0f) ==
               G_TJC_PLOT_CODE_MIN,
