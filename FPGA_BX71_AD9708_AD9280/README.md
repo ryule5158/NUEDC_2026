@@ -100,11 +100,11 @@ NCO 只在 FIFO 输出有效样本时推进，因此相位增量按实际 ADC �
 
 JTAG 临时调试应下载最终的 `output/BX71_G_ANALYZER_PS7.bit`。掉电保存使用以下任一入口，不需要打开 SDK、不需要 SDK workspace，也不需要导入 HDF：
 
-- `scripts/Program-Qspi.cmd`：烧录现有的 `output/BOOT_G_ANALYZER.bin`，适合确认镜像后重复烧录。
+- `scripts/Program-Qspi.cmd`：安全入口；始终先干净重建当前工程，再打包、烧录并写后校验，不会直接烧录未经核对的旧 BIN。
 - `scripts/Build-And-Program-Qspi.cmd`：重新构建位流、打包完整启动镜像、烧录 QSPI 并写后校验。
 - `scripts/Probe-Qspi.cmd`：只检查工具、JTAG 和 XC7Z020，不擦除、不写入 Flash。
 
-脚本固定使用 BX71 所需的 `qspi-x1-single`、Offset 0 和工程内 `启动支持/boot/FSBL.elf`。它会自动寻找任意盘符及常见安装目录中的 Vivado/SDK 2018.3，自动连接或启动 `hw_server`，确认 JTAG 链中存在 XC7Z020，自动选择唯一的 Zynq ARM DAP，并把烧录输入暂存到纯 ASCII 短路径，避免工程目录变化、空格或中文路径导致 Xilinx 2018.3 失败。烧录成功后默认执行 Xilinx 写后校验，并在 `output/` 保存本机日志及 `LAST_PROGRAMMED_G_QSPI.txt`。
+脚本固定使用 BX71 所需的 `qspi-x1-single`、Offset 0 和工程内 `启动支持/boot/FSBL.elf`。它会自动寻找任意盘符及常见安装目录中的 Vivado/SDK 2018.3，自动连接或启动 `hw_server`，确认 JTAG 链中存在 XC7Z020，自动选择唯一的 Zynq ARM DAP，并把烧录输入暂存到纯 ASCII 短路径，避免工程目录变化、空格或中文路径导致 Xilinx 2018.3 失败。底层烧录器还会在接触 Flash 前重新核对当前源码指纹、构建清单和 BOOT SHA-256，阻止旧镜像或其他工程镜像。烧录成功后默认执行 Xilinx 写后校验，并在 `output/` 保存本机日志及 `LAST_PROGRAMMED_G_QSPI.txt`。
 
 跨电脑使用时只需完整复制/拉取本工程，并安装 Vivado 2018.3 与 SDK 2018.3。工具可安装在不同盘符；若采用非常规目录，可先运行 Xilinx 的 `settings64.bat`，或直接给 PowerShell 脚本传入 `-Vivado`、`-Bootgen`、`-ProgramFlash`、`-HwServer` 的完整路径。烧录时只能连接一块 Zynq；检测到多块 Zynq 时脚本会拒绝继续，避免写错设备。
 

@@ -10,13 +10,13 @@ extern "C" {
 
 #define AD9280_SAMPLE_CLOCK_HZ       32000000UL /* AD9280额定最高采样时钟，单位Hz。 */
 #define AD9280_BUFFER_MAX_SAMPLES    4096U      /* FPGA块RAM最多保存的采样点数。 */
-#define AD9280_DECIMATION_MIN        1U         /* FPGA最小抽取倍数。 */
-#define AD9280_DECIMATION_MAX        65535U     /* FPGA最大抽取倍数。 */
+#define AD9280_DECIMATION_FIXED      16U        /* Protocol v1.4 fixed CIC3 decimation. */
 #define AD9280_READY_TIMEOUT_MS      100U       /* 等待ADC采样时钟锁定的超时时间。 */
 #define AD9280_MODULE_INPUT_MIN_V    (-5.0f)    /* 高速AD/DA模块标称最小输入电压。 */
 #define AD9280_MODULE_INPUT_MAX_V    5.0f       /* 高速AD/DA模块标称最大输入电压。 */
 #define AD9280_IDEAL_VOLTS_PER_CODE  (10.0f / 256.0f) /* 模块理想每码输入电压。 */
-#define AD9280_CAPTURE_PROTOCOL_Q8_8_VERSION 0x00010003UL
+#define AD9280_CAPTURE_PROTOCOL_VERSION           0x00010004UL
+#define AD9280_RESPONSE_PROFILE_CIC3_R16          0x00030010UL
 #define AD9280_SAMPLE_WORD_BITS       16U
 #define AD9280_SAMPLE_FRACTION_BITS   8U
 
@@ -34,7 +34,7 @@ typedef enum
   AD9280_ERROR_NOT_INIT,  /* 驱动尚未初始化。 */
   AD9280_ERROR_LINK,      /* STM32与FPGA通信失败。 */
   AD9280_ERROR_DEVICE,    /* FPGA采集固件标识或版本不匹配。 */
-  AD9280_ERROR_FORMAT,    /* FPGA sample protocol is not signed 16-bit Q8.8. */
+  AD9280_ERROR_FORMAT,    /* FPGA protocol, response profile or sample format mismatch. */
   AD9280_ERROR_NOT_READY, /* FPGA的32MHz采样时钟未锁定。 */
   AD9280_ERROR_BUSY,      /* FPGA正在执行上一次采集。 */
   AD9280_ERROR_TIMEOUT,   /* 等待触发或采集完成超时。 */
@@ -54,7 +54,7 @@ typedef enum
 typedef struct
 {
   uint16_t sample_count;              /* 保存点数，范围1~4096。 */
-  uint16_t decimation;                /* 抽取倍数，范围1~65535。 */
+  uint16_t decimation;                /* 兼容字段；协议v1.4只允许固定值16。 */
   AD9280_TriggerTypeDef trigger_mode; /* 触发模式。 */
   uint8_t trigger_threshold;          /* 8位原始码触发阈值。 */
 } AD9280_CaptureConfigTypeDef;
@@ -84,6 +84,7 @@ typedef struct
   uint8_t initialized;                 /* 底层驱动初始化标志。 */
   uint32_t device_id;                  /* FPGA采集单元设备标识。 */
   uint32_t firmware_version;           /* FPGA采集协议版本。 */
+  uint32_t response_profile;           /* FPGA deterministic DSP response identifier. */
   uint32_t sample_clock_hz;            /* ADC物理采样时钟，单位Hz。 */
   uint8_t sample_word_bits;            /* SPI sample word width. */
   uint8_t sample_fraction_bits;        /* Signed fixed-point fraction width. */
@@ -106,9 +107,10 @@ AD9280_StatusTypeDef AD9280_StartCapture(
 /* 等待触发和采集完成，超时后保持当前状态供调用者决定是否终止。 */
 AD9280_StatusTypeDef AD9280_WaitCapture(uint32_t timeout_ms);
 
-/* 从FPGA块RAM读取最近一次完整采样块。 */
+/* 从FPGA块RAM读取最近一次完整采样块，并限制整个块读取时间。 */
 AD9280_StatusTypeDef AD9280_ReadCapture(AD9280_SampleTypeDef *samples,
                                         uint16_t capacity,
+                                        uint32_t timeout_ms,
                                         uint16_t *sample_count);
 
 /* 读取FPGA采集状态和统计结果。 */
@@ -116,11 +118,6 @@ AD9280_StatusTypeDef AD9280_GetCaptureInfo(AD9280_CaptureInfoTypeDef *info);
 
 /* 终止正在等待触发或正在进行的采集。 */
 AD9280_StatusTypeDef AD9280_AbortCapture(void);
-/* Enable the FPGA CIC3/R16 anti-alias decimator (firmware 1.2+ only). */
-AD9280_StatusTypeDef AD9280_SetCic3Filter(uint8_t enable);
-
-
-
 /* 获取AD9280底层运行数据，只读使用。 */
 const AD9280_DataTypeDef *AD9280_GetData(void);
 

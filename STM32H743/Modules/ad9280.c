@@ -1,5 +1,7 @@
 #include "ad9280.h"
 
+#define AD9280_REG_RESPONSE_PROFILE    0x2FU /* Deterministic FPGA DSP response profile. */
+
 #define AD9280_REG_CONTROL             0x20U /* 采集启动和终止寄存器地址。 */
 #define AD9280_REG_STATUS              0x21U /* 采集状态寄存器地址。 */
 #define AD9280_REG_SAMPLE_COUNT        0x22U /* 目标保存点数寄存器地址。 */
@@ -15,7 +17,6 @@
 #define AD9280_REG_MIN_MAX             0x2CU /* 样本最小值和最大值地址。 */
 #define AD9280_REG_SUM                 0x2DU /* 样本累加和地址。 */
 #define AD9280_REG_LATEST              0x2EU /* 最近物理采样码地址。 */
-#define AD9280_REG_FILTER              0x2FU /* bit0 enables the G-mode CIC3/R16 filter. */
 
 #define AD9280_DEVICE_ID               0xAD928001UL /* 预期FPGA采集单元标识。 */
 #define AD9280_CONTROL_START           0x00000001UL /* 启动一次采集的控制位。 */
@@ -78,7 +79,7 @@ void AD9280_GetDefaultCaptureConfig(AD9280_CaptureConfigTypeDef *config)
   }
 
   config->sample_count = 1024U;
-  config->decimation = AD9280_DECIMATION_MIN;
+  config->decimation = AD9280_DECIMATION_FIXED;
   config->trigger_mode = AD9280_TRIGGER_IMMEDIATE;
   config->trigger_threshold = 128U;
 }
@@ -130,7 +131,7 @@ AD9280_StatusTypeDef AD9280_Init(SPI_HandleTypeDef *hspi)
     return AD9280_Return(status);
   }
   if (s_ad9280_data.firmware_version !=
-      AD9280_CAPTURE_PROTOCOL_Q8_8_VERSION)
+      AD9280_CAPTURE_PROTOCOL_VERSION)
   {
     /*
      * Firmware 1.1/1.2 returns unsigned 8-bit samples in another bit layout.
@@ -138,6 +139,22 @@ AD9280_StatusTypeDef AD9280_Init(SPI_HandleTypeDef *hspi)
      */
     return AD9280_Return(AD9280_ERROR_FORMAT);
   }
+  status = AD9280_ReadReg(AD9280_REG_RESPONSE_PROFILE,
+                          &s_ad9280_data.response_profile);
+  if (status != AD9280_OK)
+  {
+    return AD9280_Return(status);
+  }
+  if (s_ad9280_data.response_profile !=
+      AD9280_RESPONSE_PROFILE_CIC3_R16)
+  {
+    /*
+     * Protocol 1.4 identifies the fixed CIC response explicitly.  Never
+     * analyze samples with a response model that does not match the FPGA.
+     */
+    return AD9280_Return(AD9280_ERROR_FORMAT);
+  }
+
   s_ad9280_data.sample_word_bits = AD9280_SAMPLE_WORD_BITS;
   s_ad9280_data.sample_fraction_bits = AD9280_SAMPLE_FRACTION_BITS;
 
@@ -306,11 +323,13 @@ AD9280_StatusTypeDef AD9280_WaitCapture(uint32_t timeout_ms)
  ************************************************************/
 AD9280_StatusTypeDef AD9280_ReadCapture(AD9280_SampleTypeDef *samples,
                                         uint16_t capacity,
+                                        uint32_t timeout_ms,
                                         uint16_t *sample_count)
 {
   AD9280_CaptureInfoTypeDef info;
   AD9280_StatusTypeDef status;
   uint32_t value;
+  uint32_t start_tick;
   uint16_t index;
 
   status = AD9280_RequireInit();
@@ -318,10 +337,12 @@ AD9280_StatusTypeDef AD9280_ReadCapture(AD9280_SampleTypeDef *samples,
   {
     return AD9280_Return(status);
   }
-  if ((samples == NULL) || (sample_count == NULL))
+  if ((samples == NULL) || (sample_count == NULL) ||
+      (timeout_ms == 0U))
   {
     return AD9280_Return(AD9280_ERROR_PARAM);
   }
+  start_tick = HAL_GetTick();
   *sample_count = 0U;
   s_ad9280_data.read_progress = 0U;
 
@@ -339,6 +360,10 @@ AD9280_StatusTypeDef AD9280_ReadCapture(AD9280_SampleTypeDef *samples,
   {
     return AD9280_Return(AD9280_ERROR_PARAM);
   }
+  if ((HAL_GetTick() - start_tick) >= timeout_ms)
+  {
+    return AD9280_Return(AD9280_ERROR_TIMEOUT);
+  }
 
   status = AD9280_FromLink(FPGA_Link_Begin(&s_ad9280_link));
   if (status != AD9280_OK)
@@ -350,15 +375,32 @@ AD9280_StatusTypeDef AD9280_ReadCapture(AD9280_SampleTypeDef *samples,
        (index < info.captured_count) && (status == AD9280_OK);
        index++)
   {
+    if ((HAL_GetTick() - start_tick) >= timeout_ms)
+    {
+      status = AD9280_ERROR_TIMEOUT;
+      break;
+    }
     status = AD9280_ReadReg(AD9280_REG_READ_DATA, &value);
     if ((status == AD9280_OK) &&
         (((value >> AD9280_READ_DATA_ADDR_SHIFT) &
           AD9280_READ_DATA_ADDR_MASK) != index))
     {
+      if ((HAL_GetTick() - start_tick) >= timeout_ms)
+      {
+        status = AD9280_ERROR_TIMEOUT;
+        break;
+      }
       status = AD9280_WriteReg(AD9280_REG_READ_ADDR, index);
       if (status == AD9280_OK)
       {
-        status = AD9280_ReadReg(AD9280_REG_READ_DATA, &value);
+        if ((HAL_GetTick() - start_tick) >= timeout_ms)
+        {
+          status = AD9280_ERROR_TIMEOUT;
+        }
+        else
+        {
+          status = AD9280_ReadReg(AD9280_REG_READ_DATA, &value);
+        }
       }
     }
     if ((status == AD9280_OK) &&
@@ -482,32 +524,6 @@ AD9280_StatusTypeDef AD9280_AbortCapture(void)
   return AD9280_Return(status);
 }
 
-
-AD9280_StatusTypeDef AD9280_SetCic3Filter(uint8_t enable)
-{
-  AD9280_StatusTypeDef status;
-
-  status = AD9280_RequireInit();
-  if (status != AD9280_OK)
-  {
-    return AD9280_Return(status);
-  }
-  if (enable > 1U)
-  {
-    return AD9280_Return(AD9280_ERROR_PARAM);
-  }
-  if ((enable != 0U) &&
-      (s_ad9280_data.firmware_version !=
-       AD9280_CAPTURE_PROTOCOL_Q8_8_VERSION))
-  {
-    return AD9280_Return(AD9280_ERROR_DEVICE);
-  }
-
-  status = AD9280_WriteVerify(AD9280_REG_FILTER,
-                              (uint32_t)enable,
-                              0x00000001UL);
-  return AD9280_Return(status);
-}
 /************************************************************
  * Function :       AD9280_GetData
  * Comment  :       返回AD9280底层运行数据的只读指针
@@ -643,8 +659,7 @@ static uint8_t AD9280_ConfigValid(const AD9280_CaptureConfigTypeDef *config)
   if ((config == NULL) ||
       (config->sample_count == 0U) ||
       (config->sample_count > AD9280_BUFFER_MAX_SAMPLES) ||
-      (config->decimation < AD9280_DECIMATION_MIN) ||
-      (config->decimation > AD9280_DECIMATION_MAX) ||
+      (config->decimation != AD9280_DECIMATION_FIXED) ||
       (config->trigger_mode > AD9280_TRIGGER_EITHER))
   {
     return 0U;

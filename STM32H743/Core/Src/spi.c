@@ -22,12 +22,14 @@
 
 /* USER CODE BEGIN 0 */
 
+static volatile uint8_t s_spi2_msp_failed;
+
 /* USER CODE END 0 */
 
 SPI_HandleTypeDef hspi2;
 
 /* SPI2 init function */
-void MX_SPI2_Init(void)
+HAL_StatusTypeDef MX_SPI2_Init(void)
 {
 
   /* USER CODE BEGIN SPI2_Init 0 */
@@ -37,6 +39,11 @@ void MX_SPI2_Init(void)
   /* USER CODE BEGIN SPI2_Init 1 */
 
   /* USER CODE END SPI2_Init 1 */
+  if (hspi2.State != HAL_SPI_STATE_RESET)
+  {
+    (void)HAL_SPI_DeInit(&hspi2);
+  }
+  s_spi2_msp_failed = 0U;
   hspi2.Instance = SPI2;
   hspi2.Init.Mode = SPI_MODE_MASTER;
   hspi2.Init.Direction = SPI_DIRECTION_2LINES;
@@ -59,14 +66,17 @@ void MX_SPI2_Init(void)
   hspi2.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
   hspi2.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_DISABLE;
   hspi2.Init.IOSwap = SPI_IO_SWAP_DISABLE;
-  if (HAL_SPI_Init(&hspi2) != HAL_OK)
+  if ((HAL_SPI_Init(&hspi2) != HAL_OK) ||
+      (s_spi2_msp_failed != 0U))
   {
-    Error_Handler();
+    (void)HAL_SPI_DeInit(&hspi2);
+    return HAL_ERROR;
   }
   /* USER CODE BEGIN SPI2_Init 2 */
 
   /* USER CODE END SPI2_Init 2 */
 
+  return HAL_OK;
 }
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
@@ -82,11 +92,18 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 
   /** Initializes the peripherals clock
   */
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI2;
-    PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL;
+    /*
+     * Use HSI through CKPER so the FPGA link remains available when the
+     * primary HSE/PLL clock has fallen back to HSI.
+     */
+    PeriphClkInitStruct.PeriphClockSelection =
+        RCC_PERIPHCLK_SPI2 | RCC_PERIPHCLK_CKPER;
+    PeriphClkInitStruct.CkperClockSelection = RCC_CLKPSOURCE_HSI;
+    PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_CLKP;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
-      Error_Handler();
+      s_spi2_msp_failed = 1U;
+      return;
     }
 
     /* SPI2 clock enable */

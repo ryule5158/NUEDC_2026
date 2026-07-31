@@ -1,0 +1,9 @@
+﻿Time:       2026-07-30 12:59:24 +08:00
+Image:      D:\NUEDC\省赛\Integrated_Project\tmp\qspi_program_844ceca_6696\FPGA_BX71_AD9708_AD9238\output\BOOT_G_ANALYZER_AD9238.bin
+Length:     2059296
+SHA256:     7868F1515F32743012DCB1BBF9019EDE2DF114882C56B243EFAEF3F7F43472D1
+FlashType:  qspi-x1-single
+Target:     jsn-JTAG-SMT2-C3072498ABCD-4ba00477-0
+BootMode:   0x00000000
+Verified:   True
+Log:        D:\NUEDC\省赛\Integrated_Project\tmp\qspi_program_844ceca_6696\FPGA_BX71_AD9708_AD9238\output\program_g_qspi_20260730_125804.log

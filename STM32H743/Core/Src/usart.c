@@ -23,12 +23,72 @@
 /* USER CODE BEGIN 0 */
 #include <stdio.h>
 
+#define USART1_DEBUG_TX_SPIN_LIMIT  100000UL
+
+static uint8_t s_usart1_debug_wait_timed_out;
+static volatile uint8_t s_usart1_msp_failed;
+static volatile uint8_t s_usart2_msp_failed;
+
+static uint8_t USART1_DebugPutByte(uint8_t data)
+{
+  USART_TypeDef *instance = huart1.Instance;
+  uint32_t spins = USART1_DEBUG_TX_SPIN_LIMIT;
+
+  if ((instance != USART1) ||
+      ((instance->CR1 & (USART_CR1_UE | USART_CR1_TE)) !=
+       (USART_CR1_UE | USART_CR1_TE)))
+  {
+    return 0U;
+  }
+
+  /*
+   * After one bounded wait expires, later characters are dropped immediately
+   * until hardware reports TXE again.  A long printf can therefore never
+   * multiply the timeout by every character.
+   */
+  if ((s_usart1_debug_wait_timed_out != 0U) &&
+      ((instance->ISR & USART_ISR_TXE_TXFNF) == 0U))
+  {
+    return 0U;
+  }
+  while (((instance->ISR & USART_ISR_TXE_TXFNF) == 0U) &&
+         (spins > 0U))
+  {
+    spins--;
+  }
+  if (spins == 0U)
+  {
+    s_usart1_debug_wait_timed_out = 1U;
+    return 0U;
+  }
+
+  s_usart1_debug_wait_timed_out = 0U;
+  instance->TDR = data;
+  return 1U;
+}
+
+uint32_t USART1_DebugWrite(const uint8_t *data, uint32_t length)
+{
+  uint32_t written = 0U;
+
+  if (data == NULL)
+  {
+    return 0U;
+  }
+  while ((written < length) &&
+         (USART1_DebugPutByte(data[written]) != 0U))
+  {
+    written++;
+  }
+  return written;
+}
+
 int fputc(int ch, FILE *f)
 {
   uint8_t data = (uint8_t)ch;
 
   (void)f;
-  (void)HAL_UART_Transmit(&huart1, &data, 1U, 0xFFFFU);
+  (void)USART1_DebugWrite(&data, 1U);
   return ch;
 }
 
@@ -36,7 +96,7 @@ int __io_putchar(int ch)
 {
   uint8_t data = (uint8_t)ch;
 
-  (void)HAL_UART_Transmit(&huart1, &data, 1U, 0xFFFFU);
+  (void)USART1_DebugWrite(&data, 1U);
   return ch;
 }
 
@@ -48,7 +108,7 @@ UART_HandleTypeDef huart3;
 
 /* USART1 init function */
 
-void MX_USART1_UART_Init(void)
+HAL_StatusTypeDef MX_USART1_UART_Init(void)
 {
 
   /* USER CODE BEGIN USART1_Init 0 */
@@ -58,6 +118,11 @@ void MX_USART1_UART_Init(void)
   /* USER CODE BEGIN USART1_Init 1 */
 
   /* USER CODE END USART1_Init 1 */
+  if (huart1.gState != HAL_UART_STATE_RESET)
+  {
+    (void)HAL_UART_DeInit(&huart1);
+  }
+  s_usart1_msp_failed = 0U;
   huart1.Instance = USART1;
   huart1.Init.BaudRate = 115200;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
@@ -69,30 +134,37 @@ void MX_USART1_UART_Init(void)
   huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
   huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart1) != HAL_OK)
+  if ((HAL_UART_Init(&huart1) != HAL_OK) ||
+      (s_usart1_msp_failed != 0U))
   {
-    Error_Handler();
+    (void)HAL_UART_DeInit(&huart1);
+    return HAL_ERROR;
   }
   if (HAL_UARTEx_SetTxFifoThreshold(&huart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
   {
-    Error_Handler();
+    (void)HAL_UART_DeInit(&huart1);
+    return HAL_ERROR;
   }
   if (HAL_UARTEx_SetRxFifoThreshold(&huart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
   {
-    Error_Handler();
+    (void)HAL_UART_DeInit(&huart1);
+    return HAL_ERROR;
   }
   if (HAL_UARTEx_DisableFifoMode(&huart1) != HAL_OK)
   {
-    Error_Handler();
+    (void)HAL_UART_DeInit(&huart1);
+    return HAL_ERROR;
   }
   /* USER CODE BEGIN USART1_Init 2 */
 
   /* USER CODE END USART1_Init 2 */
 
+  s_usart1_debug_wait_timed_out = 0U;
+  return HAL_OK;
 }
 /* USART2 init function */
 
-void MX_USART2_UART_Init(void)
+HAL_StatusTypeDef MX_USART2_UART_Init(void)
 {
 
   /* USER CODE BEGIN USART2_Init 0 */
@@ -102,6 +174,11 @@ void MX_USART2_UART_Init(void)
   /* USER CODE BEGIN USART2_Init 1 */
 
   /* USER CODE END USART2_Init 1 */
+  if (huart2.gState != HAL_UART_STATE_RESET)
+  {
+    (void)HAL_UART_DeInit(&huart2);
+  }
+  s_usart2_msp_failed = 0U;
   huart2.Instance = USART2;
   huart2.Init.BaudRate = 115200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
@@ -113,26 +190,32 @@ void MX_USART2_UART_Init(void)
   huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart2.Init.ClockPrescaler = UART_PRESCALER_DIV1;
   huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
+  if ((HAL_UART_Init(&huart2) != HAL_OK) ||
+      (s_usart2_msp_failed != 0U))
   {
-    Error_Handler();
+    (void)HAL_UART_DeInit(&huart2);
+    return HAL_ERROR;
   }
   if (HAL_UARTEx_SetTxFifoThreshold(&huart2, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
   {
-    Error_Handler();
+    (void)HAL_UART_DeInit(&huart2);
+    return HAL_ERROR;
   }
   if (HAL_UARTEx_SetRxFifoThreshold(&huart2, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
   {
-    Error_Handler();
+    (void)HAL_UART_DeInit(&huart2);
+    return HAL_ERROR;
   }
   if (HAL_UARTEx_DisableFifoMode(&huart2) != HAL_OK)
   {
-    Error_Handler();
+    (void)HAL_UART_DeInit(&huart2);
+    return HAL_ERROR;
   }
   /* USER CODE BEGIN USART2_Init 2 */
 
   /* USER CODE END USART2_Init 2 */
 
+  return HAL_OK;
 }
 /* USART3 init function */
 
@@ -196,7 +279,8 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     PeriphClkInitStruct.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
-      Error_Handler();
+      s_usart1_msp_failed = 1U;
+      return;
     }
 
     /* USART1 clock enable */
@@ -234,7 +318,8 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
-      Error_Handler();
+      s_usart2_msp_failed = 1U;
+      return;
     }
 
     /* USART2 clock enable */

@@ -22,7 +22,7 @@ Vivado/SDK 可以装在不同盘符和不同父目录。脚本会依次从以下
 
 ## 日常使用
 
-### 只烧录已有镜像
+### 自动重建并烧录最新工程镜像
 
 1. 断电，把 BX71 启动模式切到 JTAG。
 2. 连接 JTAG 和电源并开机。
@@ -30,6 +30,12 @@ Vivado/SDK 可以装在不同盘符和不同父目录。脚本会依次从以下
 4. 看到 `QSPI PROGRAMMING AND READBACK VERIFY PASSED` 后才能断电。
 5. 断电，把启动模式切到 QSPI。
 6. 再次上电，进行真实冷启动功能检查。
+
+`Program-Qspi.cmd` 是安全入口，会转入完整的干净重建、BOOT 打包、QSPI
+烧录和写后校验流程，不再直接使用 `output/` 中未经检查的已有 BIN。
+即使直接调用底层 `Program-Qspi.ps1`，它也会重新发现当前
+RTL/XDC/IP/BD/FSBL，核对源码指纹、位流清单和 BOOT SHA-256；任一项不匹配
+都会在接触 Flash 之前终止。
 
 如果只想检查新电脑的环境和连接，双击 `scripts/Probe-Qspi.cmd`。它会完成
 工具自动定位、`hw_server` 连接、JTAG 链和 XC7Z020 检查，但不会擦除或写入
@@ -107,7 +113,9 @@ ARM DAP 数值 ID 传给 `-target_id`，并额外扫描原始输出中的 `ERROR
 ## 修改范围与重新生成
 
 - 只改 PL RTL/XDC：运行完整构建和烧录入口。
-- 只需要把同一个镜像烧到另一块板：运行 `Program-Qspi.cmd`。
+- 需要把同一个已验证镜像烧到另一块板且不想重新布局布线：直接调用
+  `Program-Qspi.ps1`。它仍会重新核对当前源码指纹和镜像 SHA-256，源码或
+  产物一旦变化就拒绝烧录；常规使用仍建议运行 `Program-Qspi.cmd`。
 - 修改 PS7、DDR、MIO、QSPI 或 PS 时钟：必须重新生成匹配的 PS7 位流和
   FSBL，再替换工程内 FSBL。
 - 修改 HDF 或 SDK workspace：不会影响上述命令行烧录流程。

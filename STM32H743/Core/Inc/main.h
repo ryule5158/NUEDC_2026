@@ -50,7 +50,14 @@ extern "C" {
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
-void Error_Handler(void);
+void Error_HandlerContext(const char *file,
+                          uint32_t line,
+                          const char *reason);
+
+#define Error_Handler() \
+  Error_HandlerContext(__FILE__, __LINE__, "HAL/peripheral initialization")
+#define Error_HandlerReason(reason) \
+  Error_HandlerContext(__FILE__, __LINE__, (reason))
 
 /* USER CODE BEGIN EFP */
 
