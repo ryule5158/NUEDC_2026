@@ -1,13 +1,13 @@
 Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
-| Date         : Thu Jul 30 11:37:41 2026
-| Host         : LAPTOP-9SJO8I4N running 64-bit major release  (build 9200)
-| Command      : report_utilization -hierarchical -file C:/tmp/nuedc_ad9238_ciccal_20260730/FPGA_BX71_AD9708_AD9238/output/g_ad9238_qspi_verification/utilization_final.rpt
+| Date         : Sat Aug  1 11:47:39 2026
+| Host         : FYH2005 running 64-bit major release  (build 9200)
+| Command      : report_utilization -hierarchical -file X:/output/g_ad9238_qspi_verification/utilization_final.rpt
 | Design       : g_analyzer_zynq_top
 | Device       : 7z020clg400-2
 | Design State : Routed
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------
 
 Utilization Design Information
 
@@ -18,25 +18,28 @@ Table of Contents
 1. Utilization by Hierarchy
 ---------------------------
 
-+------------------------------+-----------------------------------------------------------------------+------------+------------+---------+------+-------+--------+--------+--------------+
-|           Instance           |                                 Module                                | Total LUTs | Logic LUTs | LUTRAMs | SRLs |  FFs  | RAMB36 | RAMB18 | DSP48 Blocks |
-+------------------------------+-----------------------------------------------------------------------+------------+------------+---------+------+-------+--------+--------+--------------+
-| g_analyzer_zynq_top          |                                                                 (top) |      10690 |      10690 |       0 |    0 | 14258 |      2 |      0 |          156 |
-|   (g_analyzer_zynq_top)      |                                                                 (top) |          3 |          3 |       0 |    0 |     0 |      0 |      0 |            0 |
-|   analyzer_logic             |                                                        g_analyzer_top |      10687 |      10687 |       0 |    0 | 14258 |      2 |      0 |          156 |
-|     (analyzer_logic)         |                                                        g_analyzer_top |          0 |          0 |       0 |    0 |     0 |      0 |      0 |            0 |
-|     adc_capture              |                                                   ad9238_capture_core |      10496 |      10496 |       0 |    0 | 14154 |      2 |      0 |          156 |
-|       (adc_capture)          |                                                   ad9238_capture_core |        123 |        123 |       0 |    0 |   643 |      2 |      0 |            0 |
-|       g_antialias_fir        |                                                   fir307_antialias_q4 |       9886 |       9886 |       0 |    0 | 13169 |      0 |      0 |          154 |
-|       g_cic_decimator        |                                                     cic3_decimator_25 |        487 |        487 |       0 |    0 |   342 |      0 |      0 |            2 |
-|     adc_clkgen               |                                                         ad9238_clkgen |          3 |          3 |       0 |    0 |     0 |      0 |      0 |            0 |
-|     dac_clkgen               |                                                         ad9708_clkgen |          1 |          1 |       0 |    0 |     0 |      0 |      0 |            0 |
-|     spi_if                   |                                                   stm32_spi_reg_slave |        187 |        187 |       0 |    0 |   104 |      0 |      0 |            0 |
-|   ps7_board_config           |                                                                   sys |          0 |          0 |       0 |    0 |     0 |      0 |      0 |            0 |
-|     processing_system7_0     |                                            sys_processing_system7_0_0 |          0 |          0 |       0 |    0 |     0 |      0 |      0 |            0 |
-|       (processing_system7_0) |                                            sys_processing_system7_0_0 |          0 |          0 |       0 |    0 |     0 |      0 |      0 |            0 |
-|       inst                   | sys_processing_system7_0_0_processing_system7_v5_5_processing_system7 |          0 |          0 |       0 |    0 |     0 |      0 |      0 |            0 |
-+------------------------------+-----------------------------------------------------------------------+------------+------------+---------+------+-------+--------+--------+--------------+
++--------------------------------------------------+-----------------------------------------------------------------------+------------+------------+---------+------+-------+--------+--------+--------------+
+|                     Instance                     |                                 Module                                | Total LUTs | Logic LUTs | LUTRAMs | SRLs |  FFs  | RAMB36 | RAMB18 | DSP48 Blocks |
++--------------------------------------------------+-----------------------------------------------------------------------+------------+------------+---------+------+-------+--------+--------+--------------+
+| g_analyzer_zynq_top                              |                                                                 (top) |      12619 |      12619 |       0 |    0 | 15806 |      4 |      0 |          169 |
+|   (g_analyzer_zynq_top)                          |                                                                 (top) |         14 |         14 |       0 |    0 |     0 |      0 |      0 |            0 |
+|   analyzer_logic                                 |                                                        g_analyzer_top |      12605 |      12605 |       0 |    0 | 15806 |      4 |      0 |          169 |
+|     (analyzer_logic)                             |                                                        g_analyzer_top |        222 |        222 |       0 |    0 |     1 |      0 |      0 |            0 |
+|     adc_capture                                  |                                                   ad9238_capture_core |      10495 |      10495 |       0 |    0 | 14154 |      2 |      0 |          156 |
+|       (adc_capture)                              |                                                   ad9238_capture_core |        121 |        121 |       0 |    0 |   643 |      2 |      0 |            0 |
+|       g_dsp_path.g_antialias_fir                 |                                                   fir307_antialias_q4 |       9887 |       9887 |       0 |    0 | 13169 |      0 |      0 |          154 |
+|       g_dsp_path.g_cic_decimator                 |                                                     cic3_decimator_25 |        487 |        487 |       0 |    0 |   342 |      0 |      0 |            2 |
+|     adc_capture_ch2                              |                                   ad9238_capture_core__parameterized0 |       1604 |       1604 |       0 |    0 |  1547 |      2 |      0 |           13 |
+|       (adc_capture_ch2)                          |                                   ad9238_capture_core__parameterized0 |        155 |        155 |       0 |    0 |   643 |      2 |      0 |            0 |
+|       g_reference_filter_path.g_reference_filter |                                              fir307_decimator_25_q8_8 |       1450 |       1450 |       0 |    0 |   904 |      0 |      0 |           13 |
+|     adc_clkgen                                   |                                                         ad9238_clkgen |          5 |          5 |       0 |    0 |     0 |      0 |      0 |            0 |
+|     dac_clkgen                                   |                                                         ad9708_clkgen |          1 |          1 |       0 |    0 |     0 |      0 |      0 |            0 |
+|     spi_if                                       |                                                   stm32_spi_reg_slave |        278 |        278 |       0 |    0 |   104 |      0 |      0 |            0 |
+|   ps7_board_config                               |                                                                   sys |          0 |          0 |       0 |    0 |     0 |      0 |      0 |            0 |
+|     processing_system7_0                         |                                            sys_processing_system7_0_0 |          0 |          0 |       0 |    0 |     0 |      0 |      0 |            0 |
+|       (processing_system7_0)                     |                                            sys_processing_system7_0_0 |          0 |          0 |       0 |    0 |     0 |      0 |      0 |            0 |
+|       inst                                       | sys_processing_system7_0_0_processing_system7_v5_5_processing_system7 |          0 |          0 |       0 |    0 |     0 |      0 |      0 |            0 |
++--------------------------------------------------+-----------------------------------------------------------------------+------------+------------+---------+------+-------+--------+--------+--------------+
 * Note: The sum of lower-level cells may be larger than their parent cells total, due to cross-hierarchy LUT combining
 
 

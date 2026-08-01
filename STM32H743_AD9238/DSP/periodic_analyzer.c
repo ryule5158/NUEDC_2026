@@ -1267,6 +1267,77 @@ PeriodicAnalyzer_Status PeriodicAnalyzer_Analyze(
     return PERIODIC_ANALYZER_OK;
 }
 
+PeriodicAnalyzer_Status PeriodicAnalyzer_AnalyzeSpectrumOnly(
+    const float *adc_volts,
+    uint32_t length,
+    const PeriodicAnalyzer_Config *config,
+    PeriodicAnalyzer_Result *result)
+{
+    PA_Peak peaks[PA_MAX_PEAKS];
+    uint8_t peak_count;
+    double mean = 0.0;
+
+    if ((adc_volts == NULL) || (config == NULL) || (result == NULL) ||
+        (length < 64U) || (length > PERIODIC_ANALYZER_MAX_FFT_POINTS) ||
+        ((length & (length - 1U)) != 0U) ||
+        !(config->sample_rate_hz > 0.0f) ||
+        !(config->input_volts_per_adc_volt > 0.0f) ||
+        (PA_IsCalibrationValid(config) == 0U) ||
+        (((config->fir307_antialias_compensation_enabled != 0U) ||
+          (config->cic3_r25_compensation_enabled != 0U)) &&
+         (!(config->cic_input_sample_rate_hz > 0.0f) ||
+          (PA_AbsF(config->cic_input_sample_rate_hz -
+                   config->sample_rate_hz *
+                   (float)PERIODIC_ANALYZER_CIC3_R25_DECIMATION) >
+           1.0f)))) {
+        if (result != NULL) {
+            PA_ClearResult(result, PERIODIC_ANALYZER_E_ARGUMENT);
+        }
+        return PERIODIC_ANALYZER_E_ARGUMENT;
+    }
+
+    PA_ClearResult(result, PERIODIC_ANALYZER_E_NO_SIGNAL);
+    for (uint32_t i = 0U; i < length; ++i) {
+        if (!isfinite(adc_volts[i])) {
+            result->status = PERIODIC_ANALYZER_E_ARGUMENT;
+            return result->status;
+        }
+        mean += (double)adc_volts[i];
+    }
+    mean /= (double)length;
+    for (uint32_t i = 0U; i < length; ++i) {
+        s_centered[i] = adc_volts[i] - (float)mean;
+    }
+
+    if (!FFT_StartN(s_centered, length) ||
+        !Normalize_FFT_To_Single_SideN(length)) {
+        result->status = PERIODIC_ANALYZER_E_FFT;
+        return result->status;
+    }
+
+    peak_count = PA_CollectPeaks(config, length, peaks);
+    if (peak_count == 0U) return result->status;
+
+    result->spectrum_component_count = peak_count;
+    for (uint8_t i = 0U; i < peak_count; ++i) {
+        float amp_corr;
+        const float reported_frequency_hz =
+            PA_ClampReportedFrequencyToBand(config,
+                                             peaks[i].frequency_hz);
+        PA_InterpolateCalibration(config,
+                                  reported_frequency_hz,
+                                  &amp_corr,
+                                  NULL);
+        result->spectrum[i].frequency_hz = reported_frequency_hz;
+        result->spectrum[i].peak_amplitude_v =
+            peaks[i].amplitude_adc_v *
+            config->input_volts_per_adc_volt * amp_corr;
+    }
+    result->status = PERIODIC_ANALYZER_OK;
+    result->valid = 1U;
+    return result->status;
+}
+
 float PeriodicAnalyzer_Evaluate(const PeriodicAnalyzer_Result *result,
                                 float phase_turns)
 {

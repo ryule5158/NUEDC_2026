@@ -109,14 +109,14 @@ if {![string match "*Complete*" $ip_status]} {
     error "PS7 IP synthesis failed: $ip_status"
 }
 
-launch_runs synth_1 -jobs 8
+launch_runs synth_1 -jobs 2
 wait_on_run synth_1
 set synth_status [get_property STATUS [get_runs synth_1]]
 if {![string match "*Complete*" $synth_status]} {
     error "Synthesis failed: $synth_status"
 }
 
-launch_runs impl_1 -to_step route_design -jobs 8
+launch_runs impl_1 -to_step route_design -jobs 2
 wait_on_run impl_1
 set impl_status [get_property STATUS [get_runs impl_1]]
 if {![string match "*Complete*" $impl_status]} {
@@ -137,9 +137,12 @@ if {[file exists $verification_dir]} {
 file mkdir $verification_dir
 
 # Structural release gates: persistent boot needs PS7, this image must contain
-# exactly one G capture core, and the experimental AM/FM core must be absent.
+# exactly two synchronized G capture cores, and the experimental AM/FM core
+# must be absent. Channel 2 is a raw-only instance and therefore adds no FIR
+# DSP48 bank.
 set ps7_count [llength [get_cells -hier -quiet -filter {REF_NAME == PS7}]]
-set capture_count [llength [get_cells -hier -quiet -filter {NAME =~ */adc_capture}]]
+set capture_count [llength [get_cells -hier -quiet -filter \
+    {NAME =~ */adc_capture || NAME =~ */adc_capture_ch2}]]
 set experimental_count \
     [llength [get_cells -hier -quiet -filter {REF_NAME == ad9708_wave_core}]]
 puts "PS7_COUNT=$ps7_count"
@@ -148,8 +151,8 @@ puts "EXPERIMENTAL_AD9708_WAVE_CORE_COUNT=$experimental_count"
 if {$ps7_count < 1} {
     error "PS7 was optimized out; this image cannot boot persistently from QSPI"
 }
-if {$capture_count != 1} {
-    error "Expected exactly one G capture core, found $capture_count"
+if {$capture_count != 2} {
+    error "Expected exactly two G capture cores, found $capture_count"
 }
 if {$experimental_count != 0} {
     error "Experimental AD9708 AM/FM core leaked into the G release"
@@ -158,7 +161,10 @@ if {[llength [get_clocks -quiet ad9708_dclock]] != 1} {
     error "AD9708 forwarded-clock constraint is missing"
 }
 if {[llength [get_clocks -quiet ad9238_ch1_clk]] != 1} {
-    error "AD9238 forwarded-clock constraint is missing"
+    error "AD9238 channel-1 forwarded-clock constraint is missing"
+}
+if {[llength [get_clocks -quiet ad9238_ch2_clk]] != 1} {
+    error "AD9238 channel-2 forwarded-clock constraint is missing"
 }
 
 report_timing_summary -delay_type min_max -report_unconstrained \
@@ -174,11 +180,17 @@ set adc_setup_path [get_timing_paths -delay_type max \
     -from [get_ports {ad9238_ch1_data_i[*] ad9238_ch1_otr_i}] -max_paths 1]
 set adc_hold_path [get_timing_paths -delay_type min \
     -from [get_ports {ad9238_ch1_data_i[*] ad9238_ch1_otr_i}] -max_paths 1]
+set adc_ch2_setup_path [get_timing_paths -delay_type max \
+    -from [get_ports {ad9238_ch2_data_i[*] ad9238_ch2_otr_i}] -max_paths 1]
+set adc_ch2_hold_path [get_timing_paths -delay_type min \
+    -from [get_ports {ad9238_ch2_data_i[*] ad9238_ch2_otr_i}] -max_paths 1]
 foreach {path_name path_value} [list \
     GLOBAL_SETUP $setup_path \
     GLOBAL_HOLD $hold_path \
     ADC_SETUP $adc_setup_path \
-    ADC_HOLD $adc_hold_path] {
+    ADC_HOLD $adc_hold_path \
+    ADC_CH2_SETUP $adc_ch2_setup_path \
+    ADC_CH2_HOLD $adc_ch2_hold_path] {
     if {[llength $path_value] == 0} {
         error "$path_name timing path is missing"
     }
@@ -188,13 +200,18 @@ set setup_slack [get_property SLACK $setup_path]
 set hold_slack [get_property SLACK $hold_path]
 set adc_setup_slack [get_property SLACK $adc_setup_path]
 set adc_hold_slack [get_property SLACK $adc_hold_path]
+set adc_ch2_setup_slack [get_property SLACK $adc_ch2_setup_path]
+set adc_ch2_hold_slack [get_property SLACK $adc_ch2_hold_path]
 puts "FINAL_SETUP_SLACK=$setup_slack"
 puts "FINAL_HOLD_SLACK=$hold_slack"
 puts "DAC_DATA_MODE=CONSTANT_MIDSCALE_NO_DATA_TIMING_PATH"
 puts "ADC_SETUP_SLACK=$adc_setup_slack"
 puts "ADC_HOLD_SLACK=$adc_hold_slack"
+puts "ADC_CH2_SETUP_SLACK=$adc_ch2_setup_slack"
+puts "ADC_CH2_HOLD_SLACK=$adc_ch2_hold_slack"
 if {($setup_slack < 0.0) || ($hold_slack < 0.0) ||
-    ($adc_setup_slack < 0.0) || ($adc_hold_slack < 0.0)} {
+    ($adc_setup_slack < 0.0) || ($adc_hold_slack < 0.0) ||
+    ($adc_ch2_setup_slack < 0.0) || ($adc_ch2_hold_slack < 0.0)} {
     error "Routed timing failed"
 }
 

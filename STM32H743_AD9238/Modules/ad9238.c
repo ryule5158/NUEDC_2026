@@ -16,6 +16,7 @@
 #define AD9238_REG_SUM                 0x2DU /* 样本累加和地址。 */
 #define AD9238_REG_LATEST              0x2EU /* 最近物理采样码地址。 */
 #define AD9238_REG_FILTER              0x2FU /* bit0 enables the G-mode FIR307 plus CIC3/R25 filter. */
+#define AD9238_REG_READ_CHANNEL        0x30U /* bit0 selects CH1/CH2 register and RAM readback. */
 
 #define AD9238_DEVICE_ID               0xAD923801UL /* 预期FPGA采集单元标识。 */
 #define AD9238_CONTROL_START           0x00000001UL /* 启动一次采集的控制位。 */
@@ -308,6 +309,18 @@ AD9238_StatusTypeDef AD9238_ReadCapture(AD9238_SampleTypeDef *samples,
                                         uint16_t capacity,
                                         uint16_t *sample_count)
 {
+  return AD9238_ReadCaptureChannel(AD9238_CHANNEL_1,
+                                   samples,
+                                   capacity,
+                                   sample_count);
+}
+
+AD9238_StatusTypeDef AD9238_ReadCaptureChannel(
+    AD9238_ChannelTypeDef channel,
+    AD9238_SampleTypeDef *samples,
+    uint16_t capacity,
+    uint16_t *sample_count)
+{
   AD9238_CaptureInfoTypeDef info;
   AD9238_StatusTypeDef status;
   uint32_t value;
@@ -318,14 +331,16 @@ AD9238_StatusTypeDef AD9238_ReadCapture(AD9238_SampleTypeDef *samples,
   {
     return AD9238_Return(status);
   }
-  if ((samples == NULL) || (sample_count == NULL))
+  if (((channel != AD9238_CHANNEL_1) &&
+       (channel != AD9238_CHANNEL_2)) ||
+      (samples == NULL) || (sample_count == NULL))
   {
     return AD9238_Return(AD9238_ERROR_PARAM);
   }
   *sample_count = 0U;
   s_ad9238_data.read_progress = 0U;
 
-  status = AD9238_GetCaptureInfo(&info);
+  status = AD9238_GetCaptureInfoChannel(channel, &info);
   if (status != AD9238_OK)
   {
     return AD9238_Return(status);
@@ -345,7 +360,13 @@ AD9238_StatusTypeDef AD9238_ReadCapture(AD9238_SampleTypeDef *samples,
   {
     return AD9238_Return(status);
   }
-  status = AD9238_WriteReg(AD9238_REG_READ_ADDR, 0U);
+  status = AD9238_WriteVerify(AD9238_REG_READ_CHANNEL,
+                              (uint32_t)channel,
+                              0x00000001UL);
+  if (status == AD9238_OK)
+  {
+    status = AD9238_WriteReg(AD9238_REG_READ_ADDR, 0U);
+  }
   for (index = 0U;
        (index < info.captured_count) && (status == AD9238_OK);
        index++)
@@ -391,6 +412,13 @@ AD9238_StatusTypeDef AD9238_ReadCapture(AD9238_SampleTypeDef *samples,
  ************************************************************/
 AD9238_StatusTypeDef AD9238_GetCaptureInfo(AD9238_CaptureInfoTypeDef *info)
 {
+  return AD9238_GetCaptureInfoChannel(AD9238_CHANNEL_1, info);
+}
+
+AD9238_StatusTypeDef AD9238_GetCaptureInfoChannel(
+    AD9238_ChannelTypeDef channel,
+    AD9238_CaptureInfoTypeDef *info)
+{
   AD9238_StatusTypeDef status;
   uint32_t status_reg;
   uint32_t count_reg;
@@ -404,7 +432,9 @@ AD9238_StatusTypeDef AD9238_GetCaptureInfo(AD9238_CaptureInfoTypeDef *info)
   {
     return AD9238_Return(status);
   }
-  if (info == NULL)
+  if (((channel != AD9238_CHANNEL_1) &&
+       (channel != AD9238_CHANNEL_2)) ||
+      (info == NULL))
   {
     return AD9238_Return(AD9238_ERROR_PARAM);
   }
@@ -414,7 +444,13 @@ AD9238_StatusTypeDef AD9238_GetCaptureInfo(AD9238_CaptureInfoTypeDef *info)
   {
     return AD9238_Return(status);
   }
-  status = AD9238_ReadReg(AD9238_REG_STATUS, &status_reg);
+  status = AD9238_WriteVerify(AD9238_REG_READ_CHANNEL,
+                              (uint32_t)channel,
+                              0x00000001UL);
+  if (status == AD9238_OK)
+  {
+    status = AD9238_ReadReg(AD9238_REG_STATUS, &status_reg);
+  }
   if (status == AD9238_OK)
   {
     status = AD9238_ReadReg(AD9238_REG_CAPTURED_COUNT, &count_reg);

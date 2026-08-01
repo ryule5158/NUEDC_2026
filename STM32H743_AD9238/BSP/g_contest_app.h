@@ -2,6 +2,7 @@
 #define G_CONTEST_APP_H
 
 #include "main.h"
+#include "g_calibration_store.h"
 #include "periodic_analyzer.h"
 #include <stdint.h>
 
@@ -16,5 +17,10 @@ const PeriodicAnalyzer_Result *GContest_GetLastResult(void);
 const float *GContest_GetLastSamples(void);
 uint32_t GContest_GetFrameNumber(void);
 uint32_t GContest_GetLastLatencyMs(void);
+void GContest_GetCalibration(G_CalibrationData *data);
+uint8_t GContest_IsCalibrationValid(const G_CalibrationData *data);
+HAL_StatusTypeDef GContest_SaveCalibration(const G_CalibrationData *data);
+HAL_StatusTypeDef GContest_RestoreDefaultCalibration(void);
+uint8_t GContest_IsCalibrationStorageReady(void);
 
 #endif /* G_CONTEST_APP_H */

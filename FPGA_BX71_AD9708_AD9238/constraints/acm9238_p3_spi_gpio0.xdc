@@ -27,9 +27,22 @@ set_property PACKAGE_PIN T10 [get_ports led]
 # 14 CH1_D9        R16
 # 15 CH1_OTR       W16
 # 16 CH1_D11       T16
+# 17 CH2_D1        T15
+# 18 CH2_D0        U15
+# 19 CH2_D3        T14
+# 20 CH2_D2        U14
+# 21 CH2_D5        W18
+# 22 CH2_D4        T12
+# 23 CH2_D7        R14
+# 24 CH2_D6        U13
+# 25 CH2_D9        V17
+# 26 CH2_D8        Y18
+# 27 CH2_D11       V16
+# 28 CH2_D10       Y17
+# 31 CH2_OTR       U19
 # 32 CH2_CLK       Y16
-set_property IOSTANDARD LVCMOS33 [get_ports {ad9238_ch1_data_i[*]}]
-set_property IOSTANDARD LVCMOS33 [get_ports ad9238_ch1_otr_i]
+set_property IOSTANDARD LVCMOS33 [get_ports {ad9238_ch1_data_i[*] ad9238_ch2_data_i[*]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {ad9238_ch1_otr_i ad9238_ch2_otr_i}]
 set_property IOSTANDARD LVCMOS33 [get_ports {ad9238_ch1_clk_o ad9238_ch2_clk_o}]
 set_property SLEW FAST [get_ports {ad9238_ch1_clk_o ad9238_ch2_clk_o}]
 set_property DRIVE 8 [get_ports {ad9238_ch1_clk_o ad9238_ch2_clk_o}]
@@ -48,6 +61,19 @@ set_property PACKAGE_PIN V18 [get_ports {ad9238_ch1_data_i[10]}]
 set_property PACKAGE_PIN T16 [get_ports {ad9238_ch1_data_i[11]}]
 set_property PACKAGE_PIN W16 [get_ports ad9238_ch1_otr_i]
 set_property PACKAGE_PIN P14 [get_ports ad9238_ch1_clk_o]
+set_property PACKAGE_PIN U15 [get_ports {ad9238_ch2_data_i[0]}]
+set_property PACKAGE_PIN T15 [get_ports {ad9238_ch2_data_i[1]}]
+set_property PACKAGE_PIN U14 [get_ports {ad9238_ch2_data_i[2]}]
+set_property PACKAGE_PIN T14 [get_ports {ad9238_ch2_data_i[3]}]
+set_property PACKAGE_PIN T12 [get_ports {ad9238_ch2_data_i[4]}]
+set_property PACKAGE_PIN W18 [get_ports {ad9238_ch2_data_i[5]}]
+set_property PACKAGE_PIN U13 [get_ports {ad9238_ch2_data_i[6]}]
+set_property PACKAGE_PIN R14 [get_ports {ad9238_ch2_data_i[7]}]
+set_property PACKAGE_PIN Y18 [get_ports {ad9238_ch2_data_i[8]}]
+set_property PACKAGE_PIN V17 [get_ports {ad9238_ch2_data_i[9]}]
+set_property PACKAGE_PIN Y17 [get_ports {ad9238_ch2_data_i[10]}]
+set_property PACKAGE_PIN V16 [get_ports {ad9238_ch2_data_i[11]}]
+set_property PACKAGE_PIN U19 [get_ports ad9238_ch2_otr_i]
 set_property PACKAGE_PIN Y16 [get_ports ad9238_ch2_clk_o]
 
 # AD9238 changes D0..D11 and OTR 2..6 ns after each rising clock edge.
@@ -62,6 +88,10 @@ set_input_delay -clock [get_clocks ad9238_ch1_clk] -max 6.000 \
     [get_ports {ad9238_ch1_data_i[*] ad9238_ch1_otr_i}]
 set_input_delay -clock [get_clocks ad9238_ch1_clk] -min 2.000 \
     [get_ports {ad9238_ch1_data_i[*] ad9238_ch1_otr_i}]
+set_input_delay -clock [get_clocks ad9238_ch2_clk] -max 6.000 \
+    [get_ports {ad9238_ch2_data_i[*] ad9238_ch2_otr_i}]
+set_input_delay -clock [get_clocks ad9238_ch2_clk] -min 2.000 \
+    [get_ports {ad9238_ch2_data_i[*] ad9238_ch2_otr_i}]
 
 # P3 is occupied by ACM9238.  Keep the otherwise unchanged AD9708 idle output
 # available on the unused P2 GPIO0_0..8 pins for optional flying-wire use.
@@ -95,6 +125,10 @@ set_false_path -to [get_pins -hier -regexp \
     {.*adc_capture/(sample_count_meta_reg|decimation_meta_reg|trigger_mode_meta_reg|trigger_threshold_meta_reg|filter_enable_meta_reg|start_toggle_sync_reg\[0\]|abort_toggle_sync_reg\[0\])(\[[0-9]+\])?/D}]
 set_false_path -to [get_pins -hier -regexp \
     {.*adc_capture/(busy_sync_reg\[0\]|triggered_sync_reg\[0\]|overrange_sync_reg\[0\]|completion_toggle_sync_reg\[0\]|captured_count_meta_reg|overrange_count_meta_reg|sample_sum_meta_reg|sample_min_meta_reg|sample_max_meta_reg|latest_sample_meta_reg)(\[[0-9]+\])?/D}]
+set_false_path -to [get_pins -hier -regexp \
+    {.*adc_capture_ch2/(sample_count_meta_reg|decimation_meta_reg|trigger_mode_meta_reg|trigger_threshold_meta_reg|filter_enable_meta_reg|start_toggle_sync_reg\[0\]|abort_toggle_sync_reg\[0\])(\[[0-9]+\])?/D}]
+set_false_path -to [get_pins -hier -regexp \
+    {.*adc_capture_ch2/(busy_sync_reg\[0\]|triggered_sync_reg\[0\]|overrange_sync_reg\[0\]|completion_toggle_sync_reg\[0\]|captured_count_meta_reg|overrange_count_meta_reg|sample_sum_meta_reg|sample_min_meta_reg|sample_max_meta_reg|latest_sample_meta_reg)(\[[0-9]+\])?/D}]
 
 # STM32 SPI link on BX71 P2.
 # P2 GPIO0_26/K19=SCK, GPIO0_32/L19=MOSI, GPIO0_28/K17=MISO,

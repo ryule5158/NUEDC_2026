@@ -21,6 +21,8 @@ module g_analyzer_zynq_top(
     output wire        ad9238_ch2_clk_o,
     input  wire [11:0] ad9238_ch1_data_i,
     input  wire        ad9238_ch1_otr_i,
+    input  wire [11:0] ad9238_ch2_data_i,
+    input  wire        ad9238_ch2_otr_i,
     output wire        led,
 
     inout  wire [14:0] DDR_addr,
@@ -84,6 +86,8 @@ module g_analyzer_zynq_top(
         .ad9238_ch2_clk_o(ad9238_ch2_clk_o),
         .ad9238_ch1_data_i(ad9238_ch1_data_i),
         .ad9238_ch1_otr_i(ad9238_ch1_otr_i),
+        .ad9238_ch2_data_i(ad9238_ch2_data_i),
+        .ad9238_ch2_otr_i(ad9238_ch2_otr_i),
         .led(led)
     );
 

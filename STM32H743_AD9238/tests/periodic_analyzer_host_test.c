@@ -876,6 +876,82 @@ static int run_empirical_boundary_test(void)
     puts("PERIODIC_ANALYZER_EMPIRICAL_BOUNDARY_STATUS_PASS");
     return 0;
 }
+static int run_spectrum_only_case(void)
+{
+    PeriodicAnalyzer_Config cfg;
+    PeriodicAnalyzer_Result full;
+    PeriodicAnalyzer_Result spectrum_only;
+
+    for (unsigned i = 0U; i < TEST_N; ++i) {
+        const float t = (float)i / TEST_FS;
+        samples[i] =
+            0.080f * sinf(2.0f * TEST_PI * 123456.0f * t + 0.31f) +
+            0.030f * sinf(2.0f * TEST_PI * 246912.0f * t - 0.77f);
+    }
+
+    PeriodicAnalyzer_GetDefaultConfig(&cfg);
+    cfg.sample_rate_hz = TEST_FS;
+    cfg.input_volts_per_adc_volt = 1.0f;
+    if (PeriodicAnalyzer_Analyze(samples, TEST_N, &cfg, &full) !=
+            PERIODIC_ANALYZER_OK ||
+        PeriodicAnalyzer_AnalyzeSpectrumOnly(
+            samples, TEST_N, &cfg, &spectrum_only) !=
+            PERIODIC_ANALYZER_OK) {
+        fprintf(stderr, "spectrum-only analysis status mismatch\n");
+        return 41;
+    }
+    if ((spectrum_only.valid == 0U) ||
+        (spectrum_only.component_count != 0U) ||
+        (spectrum_only.spectrum_component_count !=
+         full.spectrum_component_count)) {
+        fprintf(stderr,
+                "spectrum-only shape mismatch full=%u fast=%u model=%u\n",
+                (unsigned)full.spectrum_component_count,
+                (unsigned)spectrum_only.spectrum_component_count,
+                (unsigned)spectrum_only.component_count);
+        return 42;
+    }
+
+    for (uint8_t i = 0U; i < full.spectrum_component_count; ++i) {
+        uint8_t matched = 0U;
+        for (uint8_t j = 0U;
+             j < spectrum_only.spectrum_component_count;
+             ++j) {
+            const float frequency_error = absf_local(
+                full.spectrum[i].frequency_hz -
+                spectrum_only.spectrum[j].frequency_hz);
+            const float amplitude_error = absf_local(
+                full.spectrum[i].peak_amplitude_v -
+                spectrum_only.spectrum[j].peak_amplitude_v);
+            const float amplitude_limit =
+                0.10f * full.spectrum[i].peak_amplitude_v + 0.0001f;
+            if ((frequency_error <= 750.0f) &&
+                (amplitude_error <= amplitude_limit)) {
+                matched = 1U;
+                break;
+            }
+        }
+        if (matched == 0U) {
+            fprintf(stderr,
+                    "spectrum-only missed f=%f amp=%f\n",
+                    full.spectrum[i].frequency_hz,
+                    full.spectrum[i].peak_amplitude_v);
+            return 43;
+        }
+    }
+
+    for (unsigned i = 0U; i < TEST_N; ++i) samples[i] = 0.0f;
+    if (PeriodicAnalyzer_AnalyzeSpectrumOnly(
+            samples, TEST_N, &cfg, &spectrum_only) !=
+            PERIODIC_ANALYZER_E_NO_SIGNAL ||
+        spectrum_only.valid != 0U) {
+        fprintf(stderr, "spectrum-only zero-input rejection failed\n");
+        return 44;
+    }
+    puts("PERIODIC_ANALYZER_SPECTRUM_ONLY_PASS");
+    return 0;
+}
+
 int main(void)
 {
     static const TestCase cases[] = {
@@ -947,6 +1023,7 @@ int main(void)
         }
     }
     if (run_ad9238_500k_waveform_case() != 0) return 40;
+    if (run_spectrum_only_case() != 0) return 41;
     if (run_empirical_boundary_test() != 0) return 27;
     puts("PERIODIC_ANALYZER_MEASURED_RESPONSE_ARITHMETIC_REPLAY_PASS");
     puts("PERIODIC_ANALYZER_FIELD_MULTITONE_REGRESSION_PASS");

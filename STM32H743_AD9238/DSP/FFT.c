@@ -12,6 +12,15 @@ uint32_t mag_max_index=0; /* 当前最大频谱索引。 */
 volatile float FFT_Amplitude=0; /* 最近一次主峰幅度。 */
 volatile float FFT_Frequency=0; /* 最近一次主峰频率。 */
 
+/*
+ * G题分析每帧都会使用同一个4096点Hann窗。缓存最近一次使用的窗，
+ * 避免每个通道、每一帧都重复调用数千次cosf。窗系数仍由原公式生成，
+ * 不改变FFT幅值标定和计算结果。
+ */
+static float s_hann_window[FFT_length];
+static float s_hann_window_sum;
+static uint32_t s_hann_window_length;
+
 
 /* 复制固定长度实数输入数据。 */
 void FFT_Input(float arr[]) {
@@ -60,25 +69,35 @@ static const arm_cfft_instance_f32 *FFT_SelectCfft(uint32_t len)
 bool FFT_StartN(const float *data, uint32_t len)
 {
     const arm_cfft_instance_f32 *instance = FFT_SelectCfft(len);
-    float win_sum = 0.0f;
 
     if ((data == NULL) || (instance == NULL) || (len > FFT_length) || (len < 2U)) {
         return false;
     }
 
+    if (s_hann_window_length != len) {
+        float win_sum = 0.0f;
+        for (uint32_t i = 0U; i < len; i++) {
+            const float win = 0.5f - 0.5f *
+                cosf(2.0f * pi * (float)i / (float)(len - 1U));
+            s_hann_window[i] = win;
+            win_sum += win;
+        }
+        if (!(win_sum > 0.0f)) return false;
+        s_hann_window_sum = win_sum;
+        s_hann_window_length = len;
+    }
+
     for (uint32_t i = 0U; i < len; i++) {
-        const float win = 0.5f - 0.5f * cosf(2.0f * pi * (float)i / (float)(len - 1U));
-        win_sum += win;
-        FFT_Buffer[2U * i] = data[i] * win;
+        FFT_Buffer[2U * i] = data[i] * s_hann_window[i];
         FFT_Buffer[2U * i + 1U] = 0.0f;
     }
 
-    if (!(win_sum > 0.0f)) return false;
     arm_cfft_f32(instance, FFT_Buffer, 0, 1);
     arm_cmplx_mag_f32(FFT_Buffer, FFT_output, len);
 
     for (uint32_t i = 0U; i < len; i++) {
-        FFT_output[i] = FFT_output[i] * (float)len / win_sum;
+        FFT_output[i] = FFT_output[i] *
+                        (float)len / s_hann_window_sum;
     }
     return true;
 }

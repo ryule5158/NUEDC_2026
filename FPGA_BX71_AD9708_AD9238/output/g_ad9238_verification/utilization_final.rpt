@@ -1,0 +1,39 @@
+Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
+| Date         : Sat Aug  1 11:29:51 2026
+| Host         : FYH2005 running 64-bit major release  (build 9200)
+| Command      : report_utilization -hierarchical -file Z:/Vivado/BX71_G_ANALYZER_AD9238_PL_V24/BX71_G_ANALYZER_AD9238_PL_V24.runs/impl_1/g_analyzer_utilization_final.rpt
+| Design       : g_analyzer_top
+| Device       : 7z020clg400-2
+| Design State : Routed
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Utilization Design Information
+
+Table of Contents
+-----------------
+1. Utilization by Hierarchy
+
+1. Utilization by Hierarchy
+---------------------------
+
++------------------------------------------------+-------------------------------------+------------+------------+---------+------+-------+--------+--------+--------------+
+|                    Instance                    |                Module               | Total LUTs | Logic LUTs | LUTRAMs | SRLs |  FFs  | RAMB36 | RAMB18 | DSP48 Blocks |
++------------------------------------------------+-------------------------------------+------------+------------+---------+------+-------+--------+--------+--------------+
+| g_analyzer_top                                 |                               (top) |      12621 |      12621 |       0 |    0 | 15806 |      4 |      0 |          169 |
+|   (g_analyzer_top)                             |                               (top) |         14 |         14 |       0 |    0 |     1 |      0 |      0 |            0 |
+|   adc_capture                                  |                 ad9238_capture_core |      10495 |      10495 |       0 |    0 | 14154 |      2 |      0 |          156 |
+|     (adc_capture)                              |                 ad9238_capture_core |        121 |        121 |       0 |    0 |   643 |      2 |      0 |            0 |
+|     g_dsp_path.g_antialias_fir                 |                 fir307_antialias_q4 |       9887 |       9887 |       0 |    0 | 13169 |      0 |      0 |          154 |
+|     g_dsp_path.g_cic_decimator                 |                   cic3_decimator_25 |        487 |        487 |       0 |    0 |   342 |      0 |      0 |            2 |
+|   adc_capture_ch2                              | ad9238_capture_core__parameterized0 |       1827 |       1827 |       0 |    0 |  1547 |      2 |      0 |           13 |
+|     (adc_capture_ch2)                          | ad9238_capture_core__parameterized0 |        153 |        153 |       0 |    0 |   643 |      2 |      0 |            0 |
+|     g_reference_filter_path.g_reference_filter |            fir307_decimator_25_q8_8 |       1674 |       1674 |       0 |    0 |   904 |      0 |      0 |           13 |
+|   adc_clkgen                                   |                       ad9238_clkgen |          5 |          5 |       0 |    0 |     0 |      0 |      0 |            0 |
+|   dac_clkgen                                   |                       ad9708_clkgen |          1 |          1 |       0 |    0 |     0 |      0 |      0 |            0 |
+|   spi_if                                       |                 stm32_spi_reg_slave |        279 |        279 |       0 |    0 |   104 |      0 |      0 |            0 |
++------------------------------------------------+-------------------------------------+------------+------------+---------+------+-------+--------+--------+--------------+
+* Note: The sum of lower-level cells may be larger than their parent cells total, due to cross-hierarchy LUT combining
+
+

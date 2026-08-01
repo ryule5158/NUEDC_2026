@@ -17,6 +17,7 @@
     (G_TJC_PLOT_HEIGHT - 1U - G_TJC_PLOT_MARGIN)
 #define G_TJC_PLOT_X_MIN         1U
 #define G_TJC_PLOT_X_MAX        (G_TJC_PLOT_POINTS - 2U)
+#define G_TJC_TWO_PI_F           6.28318530717958647692f
 
 #if G_TJC_PLOT_HEIGHT > 256U
 #error "TJC waveform raw data is limited to one byte per point"
@@ -25,6 +26,37 @@
 #if (2U * G_TJC_PLOT_MARGIN + 1U) >= G_TJC_PLOT_HEIGHT
 #error "G TJC plot margin leaves no drawable vertical range"
 #endif
+
+/*
+ * 时域窗口采用半开区间 [0, cycles)，不能把 cycles 本身作为最后一点。
+ * 否则左右两端会重复同一相位，峰值恰好位于周期边界时会看起来多出
+ * 一个周期特征。cycles 只允许题目界面的 1 或 3，其余值回退到 1。
+ */
+static inline float G_TjcPlotScale_TimePhaseTurns(uint32_t point,
+                                                  uint8_t cycles)
+{
+    const uint8_t display_cycles = (cycles == 3U) ? 3U : 1U;
+    const uint32_t bounded_point =
+        (point < G_TJC_PLOT_POINTS) ? point : (G_TJC_PLOT_POINTS - 1U);
+
+    return (float)display_cycles * (float)bounded_point /
+           (float)G_TJC_PLOT_POINTS;
+}
+
+/*
+ * 把基波正弦相位锁定到屏幕左边缘的上升过零点。返回 0～1 周的偏移，
+ * 只改变显示窗口起点，不改变谐波相对相位、测量值或频谱结果。
+ */
+static inline float G_TjcPlotScale_TriggerOffsetTurns(
+    float fundamental_phase_rad)
+{
+    float turns;
+
+    if (!isfinite(fundamental_phase_rad)) return 0.0f;
+    turns = -fundamental_phase_rad / G_TJC_TWO_PI_F;
+    turns -= floorf(turns);
+    return turns;
+}
 
 /* 按10mV向上取整坐标满量程，并限制在题目硬件的显示范围内。 */
 static inline uint16_t G_TjcPlotScale_SelectAmplitudeAxis(

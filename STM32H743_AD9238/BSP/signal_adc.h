@@ -88,6 +88,18 @@ SignalAdc_Status SignalAdc_Capture(float *destination_v,
                                   uint32_t requested_count,
                                   uint32_t timeout_ms,
                                   SignalAdc_FrameInfo *frame);
+
+/*
+ * Capture CH1 and CH2 from the same FPGA start event. CH1 uses its calibrated
+ * FIR+CIC measurement path; CH2 uses the FIR-only anti-alias reference path.
+ */
+SignalAdc_Status SignalAdc_CaptureDual(float *ch1_destination_v,
+                                      float *ch2_destination_v,
+                                      uint32_t capacity,
+                                      uint32_t requested_count,
+                                      uint32_t timeout_ms,
+                                      SignalAdc_FrameInfo *ch1_frame,
+                                      SignalAdc_FrameInfo *ch2_frame);
 SignalAdc_Status SignalAdc_Abort(void);
 
 const SignalAdc_Info *SignalAdc_GetInfo(void);

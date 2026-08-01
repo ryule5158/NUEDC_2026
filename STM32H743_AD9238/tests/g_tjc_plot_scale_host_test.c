@@ -17,6 +17,11 @@ static void Check(int condition, const char *message)
     }
 }
 
+static int NearlyEqual(float actual, float expected, float tolerance)
+{
+    return fabsf(actual - expected) <= tolerance;
+}
+
 static float RandomUnit(void)
 {
     s_rng = 1664525U * s_rng + 1013904223U;
@@ -71,6 +76,8 @@ static void CheckTopicWaveformMatrix(void)
                 float centered_sum = 0.0f;
                 float maximum_abs;
                 const uint8_t cycles = cycle_options[cycle_index];
+                const float trigger_offset_turns =
+                    G_TjcPlotScale_TriggerOffsetTurns(phases[0]);
                 float gain;
                 uint16_t full_scale_mv;
 
@@ -78,8 +85,8 @@ static void CheckTopicWaveformMatrix(void)
                      i < G_TJC_PLOT_POINTS;
                      ++i) {
                     const float turns =
-                        (float)cycles * (float)i /
-                        (float)(G_TJC_PLOT_POINTS - 1U);
+                        trigger_offset_turns +
+                        G_TjcPlotScale_TimePhaseTurns(i, cycles);
                     values[i] = Evaluate(amplitudes,
                                          orders,
                                          phases,
@@ -230,6 +237,26 @@ int main(void)
 
     Check(G_TJC_PLOT_POINTS == 760U, "HMI plot width changed");
     Check(G_TJC_PLOT_HEIGHT == 232U, "HMI plot height changed");
+    Check(NearlyEqual(G_TjcPlotScale_TimePhaseTurns(0U, 1U),
+                      0.0f,
+                      1.0e-7f),
+          "one-period plot does not start at phase zero");
+    Check(G_TjcPlotScale_TimePhaseTurns(G_TJC_PLOT_POINTS - 1U, 1U) <
+              1.0f,
+          "one-period plot duplicates its closing endpoint");
+    Check(G_TjcPlotScale_TimePhaseTurns(G_TJC_PLOT_POINTS - 1U, 3U) <
+              3.0f,
+          "three-period plot duplicates its closing endpoint");
+    Check(NearlyEqual(
+              G_TjcPlotScale_TimePhaseTurns(G_TJC_PLOT_POINTS - 1U, 3U),
+              3.0f - 3.0f / (float)G_TJC_PLOT_POINTS,
+              1.0e-6f),
+          "three-period half-open phase grid is incorrect");
+    Check(NearlyEqual(
+              G_TjcPlotScale_TriggerOffsetTurns(0.5f * G_TJC_TWO_PI_F),
+              0.5f,
+              1.0e-6f),
+          "fundamental trigger does not lock to the rising zero crossing");
     Check(G_TJC_PLOT_CODE_MAX < G_TJC_PLOT_HEIGHT,
           "maximum plot code is outside component");
     Check(G_TjcPlotScale_MapBipolar(0.0f, 100.0f) ==

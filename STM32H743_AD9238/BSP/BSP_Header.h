@@ -10,5 +10,6 @@
 #include "storage_test.h"
 #include "signal_adc.h"
 #include "g_tjc_ui.h"
+#include "g_bode_calibration.h"
 
 #endif /* __BSP_HEADER_H__ */

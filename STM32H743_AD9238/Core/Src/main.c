@@ -44,6 +44,7 @@ int main(void)
   {
     G_TjcUiMode display_mode;
     G_TjcUiPage page_event;
+    G_TjcUiCalibrationRequest calibration_request;
     uint8_t waveform_cycles = 1U;
     uint8_t measurement_requested = 0U;
 
@@ -70,6 +71,58 @@ int main(void)
         {
           (void)G_TjcUi_ShowIdle();
         }
+      }
+      else if (page_event == G_TJC_PAGE_SET)
+      {
+        G_CalibrationData calibration;
+
+        GContest_GetCalibration(&calibration);
+        (void)G_TjcUi_ShowCalibration(
+            &calibration,
+            (GContest_IsCalibrationStorageReady() != 0U) ?
+                "READY" : "NO STORAGE");
+      }
+    }
+    if (G_TjcUi_TakeCalibrationRequest(&calibration_request) != 0U)
+    {
+      HAL_StatusTypeDef calibration_status = HAL_ERROR;
+      const char *status_text = "SAVE ERROR";
+
+      if (GContest_IsCalibrationStorageReady() == 0U)
+      {
+        status_text = "NO STORAGE";
+      }
+      else if (calibration_request.action ==
+               G_TJC_CALIBRATION_RESTORE_DEFAULT)
+      {
+        calibration_status = GContest_RestoreDefaultCalibration();
+        status_text = (calibration_status == HAL_OK) ?
+                      "DEFAULT OK" : "SAVE ERROR";
+      }
+      else if (GContest_IsCalibrationValid(
+                   &calibration_request.data) == 0U)
+      {
+        status_text = "RANGE ERROR";
+      }
+      else
+      {
+        calibration_status = GContest_SaveCalibration(
+            &calibration_request.data);
+        status_text = (calibration_status == HAL_OK) ?
+                      "SAVED" : "SAVE ERROR";
+      }
+
+      if (calibration_status == HAL_OK)
+      {
+        G_CalibrationData calibration;
+
+        GContest_GetCalibration(&calibration);
+        has_display_result = 0U;
+        (void)G_TjcUi_ShowCalibration(&calibration, status_text);
+      }
+      else
+      {
+        (void)G_TjcUi_ShowCalibrationStatus(status_text);
       }
     }
     if (G_TjcUi_TakeRequest(&display_mode) != 0U)

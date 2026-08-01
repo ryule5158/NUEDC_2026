@@ -1,0 +1,155 @@
+A00 [WAVE] end
+[MEAS] Vpp=98.893mV RMS=31.818mV F0=10000.00Hz residual_RMS=1.822mV clip=0
+[REJECT] expected=1000000Hz detected=0 frequency=0.00Hz post_dsp_peak=0.000mV post_dsp_rms=0.000mV
+[SPEC] begin band=10000..500000Hz count=4 columns=component,frequency_Hz,peak_mV,vpp_mV,phase_deg order=frequency_ascending
+SPEC,H1,10000.00,43.160858,86.321716,159.379150
+SPEC,H2,20000.00,12.708120,25.416241,-39.354282
+SPEC,C3,85042.84,0.959543,1.919086,-42.694576
+SPEC,H9,90000.00,0.633592,1.267184,178.577850
+[SPEC] end
+[DONE] frame=7
+ 
+A01 [WAVE] end
+[MEAS] Vpp=117.684mV RMS=36.975mV F0=10000.06Hz residual_RMS=1.900mV clip=0
+[REJECT] expected=1000000Hz detected=0 frequency=0.00Hz post_dsp_peak=0.000mV post_dsp_rms=0.000mV
+[SPEC] begin band=10000..500000Hz count=3 columns=component,frequency_Hz,peak_mV,vpp_mV,phase_deg order=frequency_ascending
+SPEC,H1,10000.06,48.662331,97.324661,-59.098896
+SPEC,H2,20000.11,19.139557,38.279114,-117.021820
+SPEC,C3,85067.81,0.816010,1.632020,-15.879743
+[SPEC] end
+[DONE] frame=8
+
+A02 [MEAS] Vpp=110.786mV RMS=41.024mV F0=10499.89Hz residual_RMS=1.927mV clip=0
+[REJECT] expected=1000000Hz detected=0 frequency=0.00Hz post_dsp_peak=0.000mV post_dsp_rms=0.000mV
+[SPEC] begin band=10000..500000Hz count=5 columns=component,frequency_Hz,peak_mV,vpp_mV,phase_deg order=frequency_ascending
+SPEC,H1,10499.89,53.979744,107.959488,39.192471
+SPEC,H3,31499.68,19.169006,38.338013,117.879997
+SPEC,H4,41999.57,9.199426,18.398851,157.367508
+SPEC,C4,85030.94,0.907192,1.814383,89.614067
+SPEC,C5,178379.53,0.508550,1.017100,-19.924099
+[SPEC] end
+[DONE] frame=9
+
+A03  [WAVE] end
+[MEAS] Vpp=192.716mV RMS=54.891mV F0=12345.06Hz residual_RMS=2.073mV clip=0
+[REJECT] expected=1000000Hz detected=0 frequency=0.00Hz post_dsp_peak=0.000mV post_dsp_rms=0.000mV
+[SPEC] begin band=10000..500000Hz count=4 columns=component,frequency_Hz,peak_mV,vpp_mV,phase_deg order=frequency_ascending
+SPEC,H1,12345.06,71.642273,143.284546,-91.618637
+SPEC,H2,24690.13,25.651299,51.302597,140.402603
+SPEC,H5,61725.31,15.346212,30.692425,11.281024
+SPEC,C4,84813.53,0.800810,1.601620,43.152008
+[SPEC] end
+[DONE] frame=10
+
+A04  [WAVE] end
+[MEAS] Vpp=198.365mV RMS=62.935mV F0=20000.26Hz residual_RMS=1.803mV clip=0
+[REJECT] expected=1000000Hz detected=0 frequency=0.00Hz post_dsp_peak=0.000mV post_dsp_rms=0.000mV
+[SPEC] begin band=10000..500000Hz count=2 columns=component,frequency_Hz,peak_mV,vpp_mV,phase_deg order=frequency_ascending
+SPEC,H1,20000.26,83.620544,167.241089,-143.363968
+SPEC,H2,40000.53,30.485170,60.970341,-106.470161
+[SPEC] end
+[DONE] frame=11
+
+A05 [WAVE] end
+[MEAS] Vpp=213.529mV RMS=66.356mV F0=25000.06Hz residual_RMS=2.200mV clip=0
+[REJECT] expected=1000000Hz detected=0 frequency=0.00Hz post_dsp_peak=0.000mV post_dsp_rms=0.000mV
+[SPEC] begin band=10000..500000Hz count=6 columns=component,frequency_Hz,peak_mV,vpp_mV,phase_deg order=frequency_ascending
+SPEC,H1,25000.06,84.626167,169.252335,124.430748
+SPEC,H3,75000.17,38.712967,77.425934,101.487572
+SPEC,C3,84884.66,0.949719,1.899438,-10.607371
+SPEC,C4,100065.82,1.116793,2.233587,108.715317
+SPEC,C5,150063.38,1.034661,2.069323,93.895706
+SPEC,H7,175000.41,12.076118,24.152235,-33.496399
+[SPEC] end
+[DONE] frame=12
+
+A06 [MEAS] Vpp=220.817mV RMS=74.514mV F0=33333.02Hz residual_RMS=2.420mV clip=0
+[REJECT] expected=1000000Hz detected=0 frequency=0.00Hz post_dsp_peak=0.000mV post_dsp_rms=0.000mV
+[SPEC] begin band=10000..500000Hz count=6 columns=component,frequency_Hz,peak_mV,vpp_mV,phase_deg order=frequency_ascending
+SPEC,H1,33333.02,98.911171,197.822342,60.290783
+SPEC,H2,66666.04,31.124203,62.248405,29.809896
+SPEC,C3,133395.78,1.160715,2.321429,95.951180
+SPEC,C4,166691.77,1.189735,2.379470,100.895500
+SPEC,H6,199998.13,18.774551,37.549103,124.504272
+SPEC,C6,366702.59,1.051206,2.102412,-123.257210
+[SPEC] end
+[DONE] frame=13
+
+A07  [MEAS] Vpp=185.960mV RMS=49.311mV F0=40000.09Hz residual_RMS=2.215mV clip=0
+[REJECT] expected=1000000Hz detected=0 frequency=0.00Hz post_dsp_peak=0.000mV post_dsp_rms=0.000mV
+[SPEC] begin band=10000..500000Hz count=8 columns=component,frequency_Hz,peak_mV,vpp_mV,phase_deg order=frequency_ascending
+SPEC,H1,40000.09,19.421753,38.843506,-153.292404
+SPEC,C2,80045.18,1.112237,2.224474,12.856848
+SPEC,C3,84824.81,0.746595,1.493190,146.844666
+SPEC,H3,120000.28,56.567898,113.135796,-61.693180
+SPEC,H5,200000.47,35.860512,71.721024,-106.465836
+SPEC,C6,239940.69,0.643862,1.287723,-152.060379
+SPEC,C7,279925.47,0.627425,1.254851,158.839157
+SPEC,C8,440008.50,1.030651,2.061301,140.760361
+[SPEC] end
+[DONE] frame=15
+
+A08   [WAVE] end
+[MEAS] Vpp=147.329mV RMS=50.229mV F0=50000.13Hz residual_RMS=1.790mV clip=0
+[REJECT] expected=1000000Hz detected=0 frequency=0.00Hz post_dsp_peak=0.000mV post_dsp_rms=0.000mV
+[SPEC] begin band=10000..500000Hz count=4 columns=component,frequency_Hz,peak_mV,vpp_mV,phase_deg order=frequency_ascending
+SPEC,H1,50000.13,67.927147,135.854294,-77.487106
+SPEC,C2,84549.69,1.050211,2.100422,129.681656
+SPEC,H2,100000.26,19.032019,38.064037,-65.228905
+SPEC,H4,200000.52,8.345749,16.691498,-134.678085
+[SPEC] end
+[DONE] frame=16
+
+A09  [WAVE] end
+[MEAS] Vpp=162.152mV RMS=52.348mV F0=66500.35Hz residual_RMS=2.086mV clip=0
+[REJECT] expected=1000000Hz detected=0 frequency=0.00Hz post_dsp_peak=0.000mV post_dsp_rms=0.000mV
+[SPEC] begin band=10000..500000Hz count=5 columns=component,frequency_Hz,peak_mV,vpp_mV,phase_deg order=frequency_ascending
+SPEC,H1,66500.35,65.971985,131.943970,53.275181
+SPEC,C2,84786.98,1.187025,2.374050,-64.123154
+SPEC,H2,133000.70,28.360962,56.721924,-144.319138
+SPEC,H3,199501.06,18.001505,36.003010,63.760834
+SPEC,C5,335021.34,0.626253,1.252507,58.811924
+[SPEC] end
+[DONE] frame=17
+
+A10  [WAVE] end
+[MEAS] Vpp=79.296mV RMS=25.537mV F0=90000.34Hz residual_RMS=1.849mV clip=0
+[REJECT] expected=1000000Hz detected=0 frequency=0.00Hz post_dsp_peak=0.000mV post_dsp_rms=0.000mV
+[SPEC] begin band=10000..500000Hz count=6 columns=component,frequency_Hz,peak_mV,vpp_mV,phase_deg order=frequency_ascending
+SPEC,C1,84887.07,1.833933,3.667866,38.212048
+SPEC,H1,90000.34,34.351463,68.702927,-64.073784
+SPEC,H2,180000.67,11.111655,22.223310,-125.212173
+SPEC,H3,270001.00,0.884153,1.768306,-99.019348
+SPEC,C5,369992.63,0.497808,0.995617,-159.171829
+SPEC,C6,459973.81,0.594440,1.188881,154.345276
+[SPEC] end
+[DONE] frame=18
+
+A11  [WAVE] end
+[MEAS] Vpp=200.326mV RMS=63.975mV F0=99750.66Hz residual_RMS=2.055mV clip=0
+[REJECT] expected=1000000Hz detected=0 frequency=0.00Hz post_dsp_peak=0.000mV post_dsp_rms=0.000mV
+[SPEC] begin band=10000..500000Hz count=3 columns=component,frequency_Hz,peak_mV,vpp_mV,phase_deg order=frequency_ascending
+SPEC,C1,84870.04,1.770213,3.540426,-66.117516
+SPEC,H1,99750.66,85.500587,171.001175,-149.497864
+SPEC,H2,199501.31,29.584013,59.168026,-119.479187
+[SPEC] end
+[DONE] frame=19
+
+A12  [WAVE] end
+[MEAS] Vpp=227.430mV RMS=82.330mV F0=100000.26Hz residual_RMS=1.809mV clip=0
+[REJECT] expected=1000000Hz detected=0 frequency=0.00Hz post_dsp_peak=0.000mV post_dsp_rms=0.000mV
+[SPEC] begin band=10000..500000Hz count=2 columns=component,frequency_Hz,peak_mV,vpp_mV,phase_deg order=frequency_ascending
+SPEC,H1,100000.26,108.996750,217.993500,134.430008
+SPEC,H2,200000.52,40.941448,81.882896,-1.532319
+[SPEC] end
+[DONE] frame=20
+
+A13  [MEAS] Vpp=147.820mV RMS=54.052mV F0=100000.34Hz residual_RMS=1.529mV clip=0
+[REJECT] expected=1000000Hz detected=0 frequency=0.00Hz post_dsp_peak=0.000mV post_dsp_rms=0.000mV
+[SPEC] begin band=10000..500000Hz count=4 columns=component,frequency_Hz,peak_mV,vpp_mV,phase_deg order=frequency_ascending
+SPEC,H1,100000.34,71.620560,143.241119,-96.817780
+SPEC,H2,200000.67,26.700722,53.401443,-103.968773
+SPEC,C3,299970.38,0.869263,1.738526,-130.494919
+SPEC,H4,400001.34,0.944244,1.888487,107.985115
+[SPEC] end
+[DONE] frame=21

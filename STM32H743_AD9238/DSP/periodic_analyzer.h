@@ -130,6 +130,17 @@ PeriodicAnalyzer_Status PeriodicAnalyzer_Analyze(
     const PeriodicAnalyzer_Config *config,
     PeriodicAnalyzer_Result *result);
 
+/*
+ * CH2抗混叠参考通道的快速频谱入口。它与完整分析使用完全相同的去直流、
+ * Hann窗、FFT、峰值插值和幅值补偿，但跳过谐波模型、频率多级细化、
+ * 最小二乘重建、RMS及Vpp计算。返回的spectrum仅用于判断分量是否存在。
+ */
+PeriodicAnalyzer_Status PeriodicAnalyzer_AnalyzeSpectrumOnly(
+    const float *adc_volts,
+    uint32_t length,
+    const PeriodicAnalyzer_Config *config,
+    PeriodicAnalyzer_Result *result);
+
 /* phase_turns=0..1 表示一个基波周期中的位置，返回输入端重建电压。 */
 float PeriodicAnalyzer_Evaluate(const PeriodicAnalyzer_Result *result,
                                 float phase_turns);

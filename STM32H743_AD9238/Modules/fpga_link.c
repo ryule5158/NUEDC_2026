@@ -5,8 +5,8 @@
 #define FPGA_LINK_ADDR_MASK        0x7FU                    /* FPGA寄存器地址有效位。 */
 #define FPGA_LINK_ACK0             0xA5U                    /* FPGA响应帧首字节。 */
 #define FPGA_LINK_ACK1             0x5AU                    /* FPGA响应帧次字节。 */
-#define FPGA_LINK_SPI_PRESCALER    SPI_BAUDRATEPRESCALER_256 /* FPGA链路SPI分频系数。 */
-#define FPGA_LINK_CS_GUARD_CYCLES  1024U                    /* 片选边沿保护延时周期数。 */
+#define FPGA_LINK_SPI_PRESCALER    SPI_BAUDRATEPRESCALER_64 /* 192MHz/64=3MHz，低于50MHz从机时钟的1/4。 */
+#define FPGA_LINK_CS_GUARD_CYCLES  256U                    /* 片选保护仍远大于从机三级同步器所需时间。 */
 #define FPGA_LINK_READ_ATTEMPTS    3U                       /* 只读事务最大尝试次数。 */
 
 static FPGA_LinkStatusTypeDef FPGA_Link_CheckConfig(FPGA_LinkHandleTypeDef *dev);

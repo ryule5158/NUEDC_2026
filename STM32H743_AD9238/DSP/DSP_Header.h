@@ -13,4 +13,6 @@
 #include "Adaptive.h"   /* LMS自适应滤波和正弦分量分离接口。 */
 #include "ModelFit.h"   /* 未知RLC网络二阶模型拟合接口。 */
 
+#include "dual_response_analyzer.h"
+
 #endif /* __DSP_HEADER_H__ */

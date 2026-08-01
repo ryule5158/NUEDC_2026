@@ -21,6 +21,8 @@ proc run_legacy_test {
             "fir307_antialias_q4.v"]
         add_files -norecurse [file join $root_dir "rtl" \
             "cic3_decimator_25.v"]
+        add_files -norecurse [file join $root_dir "rtl" \
+            "fir307_decimator_25_q8_8.v"]
         set_property include_dirs [file join $root_dir "rtl"] \
             [get_filesets sources_1]
     }

@@ -16,7 +16,8 @@ extern "C" {
 #define AD9238_MODULE_INPUT_MIN_V    (-5.0f)    /* 高速AD/DA模块标称最小输入电压。 */
 #define AD9238_MODULE_INPUT_MAX_V    5.0f       /* 高速AD/DA模块标称最大输入电压。 */
 #define AD9238_IDEAL_VOLTS_PER_CODE  (10.0f / 4096.0f) /* 模块理想每码输入电压。 */
-#define AD9238_CAPTURE_PROTOCOL_Q8_8_VERSION 0x00020002UL
+#define AD9238_CAPTURE_PROTOCOL_Q8_8_VERSION 0x00020004UL
+#define AD9238_CAPTURE_CHANNEL_COUNT  2U
 #define AD9238_NATIVE_RESOLUTION_BITS 12U
 #define AD9238_NATIVE_MAX_CODE        4095U
 #define AD9238_SAMPLE_WORD_BITS       16U
@@ -27,6 +28,12 @@ extern "C" {
  * One native 12-bit ADC code is represented by 0x0010.
  */
 typedef int16_t AD9238_SampleTypeDef;
+
+typedef enum
+{
+  AD9238_CHANNEL_1 = 0U,
+  AD9238_CHANNEL_2 = 1U
+} AD9238_ChannelTypeDef;
 
 /* AD9238底层驱动返回状态。 */
 typedef enum
@@ -113,8 +120,19 @@ AD9238_StatusTypeDef AD9238_ReadCapture(AD9238_SampleTypeDef *samples,
                                         uint16_t capacity,
                                         uint16_t *sample_count);
 
+/* Read one channel from the latest synchronized dual-channel capture. */
+AD9238_StatusTypeDef AD9238_ReadCaptureChannel(
+    AD9238_ChannelTypeDef channel,
+    AD9238_SampleTypeDef *samples,
+    uint16_t capacity,
+    uint16_t *sample_count);
+
 /* 读取FPGA采集状态和统计结果。 */
 AD9238_StatusTypeDef AD9238_GetCaptureInfo(AD9238_CaptureInfoTypeDef *info);
+
+AD9238_StatusTypeDef AD9238_GetCaptureInfoChannel(
+    AD9238_ChannelTypeDef channel,
+    AD9238_CaptureInfoTypeDef *info);
 
 /* 终止正在等待触发或正在进行的采集。 */
 AD9238_StatusTypeDef AD9238_AbortCapture(void);

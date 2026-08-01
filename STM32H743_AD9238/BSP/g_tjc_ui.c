@@ -14,7 +14,8 @@
 #define G_TJC_BULK_READY_TIMEOUT_MS 250U
 #define G_TJC_BULK_DONE_TIMEOUT_MS  250U
 #define G_TJC_BULK_TX_MARGIN_MS      20U
-#define G_TJC_COMMAND_CAPACITY     4U
+#define G_TJC_COMMAND_CAPACITY     64U
+#define G_TJC_CALIBRATION_WRITE_LENGTH 38U
 #define G_TJC_COMPONENT_ROWS       3U
 
 typedef enum {
@@ -33,12 +34,15 @@ typedef enum {
 
 static const uint8_t s_tjc_terminator[3] = {0xFFU, 0xFFU, 0xFFU};
 static uint8_t s_rx_byte;
-static char s_rx_command[G_TJC_COMMAND_CAPACITY];
+static uint8_t s_rx_command[G_TJC_COMMAND_CAPACITY];
 static uint8_t s_rx_command_length;
 static uint8_t s_rx_terminator_count;
+static uint8_t s_rx_overflow;
 static volatile uint8_t s_pending_mode;
 static volatile uint8_t s_active_page;
 static volatile uint8_t s_pending_page;
+static volatile uint8_t s_pending_calibration_action;
+static G_CalibrationData s_pending_calibration_data;
 static volatile uint8_t s_transfer_state;
 static volatile uint8_t s_reinitialize_safe;
 static uint8_t s_plot[G_TJC_PLOT_POINTS];
@@ -59,6 +63,19 @@ static uint8_t G_TjcUi_CanAccessMainObjects(void)
 {
     return ((s_active_page == (uint8_t)G_TJC_PAGE_UNKNOWN) ||
             (s_active_page == (uint8_t)G_TJC_PAGE_MAIN)) ? 1U : 0U;
+}
+
+static uint8_t G_TjcUi_CanAccessSetObjects(void)
+{
+    return (s_active_page == (uint8_t)G_TJC_PAGE_SET) ? 1U : 0U;
+}
+
+static uint32_t G_TjcUi_ReadLe32(const uint8_t *bytes)
+{
+    return (uint32_t)bytes[0] |
+           ((uint32_t)bytes[1] << 8U) |
+           ((uint32_t)bytes[2] << 16U) |
+           ((uint32_t)bytes[3] << 24U);
 }
 
 static uint8_t G_TjcUi_IsPanelError(uint8_t value)
@@ -125,6 +142,17 @@ static void G_TjcUi_ResetRxPacket(void)
 {
     s_rx_command_length = 0U;
     s_rx_terminator_count = 0U;
+    s_rx_overflow = 0U;
+}
+
+static void G_TjcUi_AppendRxByte(uint8_t value)
+{
+    if (s_rx_overflow != 0U) return;
+    if (s_rx_command_length < G_TJC_COMMAND_CAPACITY) {
+        s_rx_command[s_rx_command_length++] = value;
+    } else {
+        s_rx_overflow = 1U;
+    }
 }
 
 static void G_TjcUi_LockTransfer(void)
@@ -333,6 +361,23 @@ static uint8_t G_TjcUi_GetSortedComponents(
     return count;
 }
 
+static float G_TjcUi_GetTimeTriggerOffsetTurns(
+    const PeriodicAnalyzer_Result *result)
+{
+    if (result == NULL) return 0.0f;
+
+    for (uint8_t i = 0U; i < result->component_count; ++i) {
+        const PeriodicAnalyzer_Component *component = &result->component[i];
+
+        if ((component->harmonic_order == 1U) &&
+            isfinite(component->phase_rad) &&
+            (component->peak_amplitude_v > 0.0f)) {
+            return G_TjcPlotScale_TriggerOffsetTurns(component->phase_rad);
+        }
+    }
+    return 0.0f;
+}
+
 static HAL_StatusTypeDef G_TjcUi_SendMeasurements(
     const PeriodicAnalyzer_Result *result)
 {
@@ -386,12 +431,15 @@ static HAL_StatusTypeDef G_TjcUi_SendTimePlot(
     uint8_t cycles)
 {
     float maximum_abs_mv;
+    const float trigger_offset_turns =
+        G_TjcUi_GetTimeTriggerOffsetTurns(result);
     uint16_t full_scale_mv;
     HAL_StatusTypeDef status = HAL_OK;
 
     for (uint32_t i = 0U; i < G_TJC_PLOT_POINTS; ++i) {
         const float phase_turns =
-            (float)cycles * (float)i / (float)(G_TJC_PLOT_POINTS - 1U);
+            trigger_offset_turns +
+            G_TjcPlotScale_TimePhaseTurns(i, cycles);
         const float value_mv =
             1000.0f * PeriodicAnalyzer_Evaluate(result, phase_turns);
 
@@ -476,9 +524,8 @@ static void G_TjcUi_AcceptCommand(void)
     G_TjcUiMode mode;
     G_TjcUiPage page;
 
-    if (s_rx_command_length != 2U) return;
-
-    if (s_rx_command[0] == 'P') {
+    if ((s_rx_command_length == 2U) &&
+        (s_rx_command[0] == (uint8_t)'P')) {
         if (s_rx_command[1] == 'I') {
             page = G_TJC_PAGE_INDEX;
         } else if (s_rx_command[1] == 'M') {
@@ -493,7 +540,36 @@ static void G_TjcUi_AcceptCommand(void)
         return;
     }
 
-    if ((s_rx_command[0] != 'G') ||
+    if ((G_TjcUi_CanAccessSetObjects() != 0U) &&
+        (s_pending_calibration_action ==
+         (uint8_t)G_TJC_CALIBRATION_NONE)) {
+        if ((s_rx_command_length == 2U) &&
+            (s_rx_command[0] == (uint8_t)'C') &&
+            (s_rx_command[1] == (uint8_t)'F')) {
+            s_pending_calibration_action =
+                (uint8_t)G_TJC_CALIBRATION_RESTORE_DEFAULT;
+            return;
+        }
+        if ((s_rx_command_length ==
+             G_TJC_CALIBRATION_WRITE_LENGTH) &&
+            (s_rx_command[0] == (uint8_t)'C') &&
+            (s_rx_command[1] == (uint8_t)'W')) {
+            s_pending_calibration_data.gain_milli =
+                G_TjcUi_ReadLe32(&s_rx_command[2]);
+            for (uint32_t i = 0U;
+                 i < G_CALIBRATION_POINT_COUNT;
+                 ++i) {
+                s_pending_calibration_data.coefficient_u1e6[i] =
+                    G_TjcUi_ReadLe32(&s_rx_command[6U + 4U * i]);
+            }
+            s_pending_calibration_action =
+                (uint8_t)G_TJC_CALIBRATION_WRITE;
+            return;
+        }
+    }
+
+    if ((s_rx_command_length != 2U) ||
+        (s_rx_command[0] != (uint8_t)'G') ||
         (G_TjcUi_CanAccessMainObjects() == 0U)) {
         return;
     }
@@ -529,6 +605,11 @@ HAL_StatusTypeDef G_TjcUi_Init(void)
     s_pending_mode = 0U;
     s_active_page = (uint8_t)G_TJC_PAGE_UNKNOWN;
     s_pending_page = (uint8_t)G_TJC_PAGE_UNKNOWN;
+    s_pending_calibration_action =
+        (uint8_t)G_TJC_CALIBRATION_NONE;
+    memset(&s_pending_calibration_data,
+           0,
+           sizeof(s_pending_calibration_data));
 
     if (HAL_UART_Receive_IT(&huart2, &s_rx_byte, 1U) != HAL_OK) {
         return HAL_ERROR;
@@ -592,6 +673,31 @@ uint8_t G_TjcUi_TakePageEvent(G_TjcUiPage *page)
     return 1U;
 }
 
+uint8_t G_TjcUi_TakeCalibrationRequest(
+    G_TjcUiCalibrationRequest *request)
+{
+    uint8_t action;
+    uint32_t primask;
+
+    if (request == NULL) return 0U;
+    primask = __get_PRIMASK();
+    __disable_irq();
+    action = s_pending_calibration_action;
+    if (action == (uint8_t)G_TJC_CALIBRATION_WRITE) {
+        request->data = s_pending_calibration_data;
+    }
+    s_pending_calibration_action =
+        (uint8_t)G_TJC_CALIBRATION_NONE;
+    if (primask == 0U) __enable_irq();
+
+    if ((action != (uint8_t)G_TJC_CALIBRATION_WRITE) &&
+        (action != (uint8_t)G_TJC_CALIBRATION_RESTORE_DEFAULT)) {
+        return 0U;
+    }
+    request->action = (G_TjcUiCalibrationAction)action;
+    return 1U;
+}
+
 uint8_t G_TjcUi_IsMainPageActive(void)
 {
     return G_TjcUi_CanAccessMainObjects();
@@ -643,6 +749,58 @@ HAL_StatusTypeDef G_TjcUi_ShowError(const char *status_text)
     return status;
 }
 
+HAL_StatusTypeDef G_TjcUi_ShowCalibrationStatus(
+    const char *status_text)
+{
+    const char *text = (status_text != NULL) ? status_text : "READY";
+
+    if (G_TjcUi_CanAccessSetObjects() == 0U) return HAL_BUSY;
+    return G_TjcUi_SendText("t_state", text);
+}
+
+HAL_StatusTypeDef G_TjcUi_ShowCalibration(
+    const G_CalibrationData *data,
+    const char *status_text)
+{
+    HAL_StatusTypeDef status = HAL_OK;
+
+    if (data == NULL) return HAL_ERROR;
+    if (G_TjcUi_CanAccessSetObjects() == 0U) return HAL_BUSY;
+    if (G_TjcUi_SendCommand("x_gain.val=%lu",
+                            (unsigned long)data->gain_milli) != HAL_OK) {
+        status = HAL_ERROR;
+    }
+    for (uint32_t i = 0U; i < G_CALIBRATION_POINT_COUNT; ++i) {
+        if (G_TjcUi_SendCommand(
+                "x_c%lu.val=%lu",
+                (unsigned long)i,
+                (unsigned long)data->coefficient_u1e6[i]) != HAL_OK) {
+            status = HAL_ERROR;
+        }
+    }
+    if (G_TjcUi_SendCommand("va_sel.val=0") != HAL_OK) {
+        status = HAL_ERROR;
+    }
+    if (G_TjcUi_SendCommand("x_sel.val=%lu",
+                            (unsigned long)data->coefficient_u1e6[0]) !=
+        HAL_OK) {
+        status = HAL_ERROR;
+    }
+    if (G_TjcUi_SendCommand("va_dirty.val=0") != HAL_OK) {
+        status = HAL_ERROR;
+    }
+    if (G_TjcUi_SendCommand("va_confirm.val=0") != HAL_OK) {
+        status = HAL_ERROR;
+    }
+    if (G_TjcUi_SendCommand("tm_confirm.en=0") != HAL_OK) {
+        status = HAL_ERROR;
+    }
+    if (G_TjcUi_ShowCalibrationStatus(status_text) != HAL_OK) {
+        status = HAL_ERROR;
+    }
+    return status;
+}
+
 HAL_StatusTypeDef G_TjcUi_Publish(
     const PeriodicAnalyzer_Result *result,
     G_TjcUiMode mode)
@@ -685,17 +843,20 @@ void G_TjcUi_UartRxComplete(UART_HandleTypeDef *huart)
     if (s_rx_byte == 0xFFU) {
         if (s_rx_terminator_count < 3U) s_rx_terminator_count++;
         if (s_rx_terminator_count == 3U) {
-            if ((s_rx_command_length == 1U) &&
+            if ((s_rx_overflow == 0U) &&
+                (s_rx_command_length == 1U) &&
                 ((uint8_t)s_rx_command[0] == 0xFEU) &&
                 (s_transfer_state ==
                  (uint8_t)G_TJC_TRANSFER_WAIT_READY)) {
                 s_transfer_state = (uint8_t)G_TJC_TRANSFER_READY;
-            } else if ((s_rx_command_length == 1U) &&
+            } else if ((s_rx_overflow == 0U) &&
+                       (s_rx_command_length == 1U) &&
                        ((uint8_t)s_rx_command[0] == 0xFDU) &&
                        (s_transfer_state ==
                         (uint8_t)G_TJC_TRANSFER_WAIT_DONE)) {
                 s_transfer_state = (uint8_t)G_TJC_TRANSFER_DONE;
-            } else if ((s_rx_command_length == 1U) &&
+            } else if ((s_rx_overflow == 0U) &&
+                       (s_rx_command_length == 1U) &&
                        (G_TjcUi_IsPanelError(
                             (uint8_t)s_rx_command[0]) != 0U)) {
                 /*
@@ -704,23 +865,18 @@ void G_TjcUi_UartRxComplete(UART_HandleTypeDef *huart)
                  * because the panel may still be consuming waveform bytes.
                  */
                 G_TjcUi_LockTransfer();
-            } else {
+            } else if (s_rx_overflow == 0U) {
                 /* G1/G3/GS touch commands remain live outside handshakes. */
                 G_TjcUi_AcceptCommand();
             }
-            s_rx_command_length = 0U;
-            s_rx_terminator_count = 0U;
+            G_TjcUi_ResetRxPacket();
         }
     } else {
-        if (s_rx_terminator_count != 0U) {
-            s_rx_command_length = 0U;
-            s_rx_terminator_count = 0U;
+        while (s_rx_terminator_count != 0U) {
+            G_TjcUi_AppendRxByte(0xFFU);
+            s_rx_terminator_count--;
         }
-        if (s_rx_command_length < G_TJC_COMMAND_CAPACITY) {
-            s_rx_command[s_rx_command_length++] = (char)s_rx_byte;
-        } else {
-            s_rx_command_length = 0U;
-        }
+        G_TjcUi_AppendRxByte(s_rx_byte);
     }
     if (HAL_UART_Receive_IT(&huart2, &s_rx_byte, 1U) != HAL_OK) {
         G_TjcUi_LockTransfer();

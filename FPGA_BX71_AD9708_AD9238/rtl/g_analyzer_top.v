@@ -2,8 +2,9 @@
 
 /*
  * Timing-clean top level for the 2026 G signal analyzer.
- * ACM9238 channel 1 is the measurement input.  Both converter clock inputs
- * are driven at 50 MHz; channel 2 data is intentionally unused.
+ * AD9238 channel 1 is the calibrated measurement input. Channel 2 receives
+ * the unamplified signal through the external 15 MHz low-pass filter and is
+ * used only as an anti-alias reference. Both ADCs use the same 50 MHz clock.
  */
 module g_analyzer_top(
     input  wire        clk_50m,
@@ -19,8 +20,12 @@ module g_analyzer_top(
     output wire        ad9238_ch2_clk_o,
     input  wire [11:0] ad9238_ch1_data_i,
     input  wire        ad9238_ch1_otr_i,
+    input  wire [11:0] ad9238_ch2_data_i,
+    input  wire        ad9238_ch2_otr_i,
     output wire        led
 );
+
+    localparam [6:0] REG_READ_CHANNEL = 7'h30;
 
     wire [6:0] spi_addr;
     wire [31:0] spi_wdata;
@@ -28,13 +33,18 @@ module g_analyzer_top(
     wire spi_read_commit;
     reg [31:0] spi_rdata;
 
-    wire adc_bus_select;
-    wire [31:0] adc_bus_rdata;
+    wire adc_ch1_bus_select;
+    wire adc_ch2_bus_select;
+    wire [31:0] adc_ch1_bus_rdata;
+    wire [31:0] adc_ch2_bus_rdata;
+    reg read_channel_cfg;
     wire clk_adc;
     wire adc_pll_locked;
     wire adc_reset_n = reset_n & adc_pll_locked;
     (* IOB = "TRUE" *) reg [11:0] ad9238_ch1_data_iob;
     (* IOB = "TRUE" *) reg ad9238_ch1_otr_iob;
+    (* IOB = "TRUE" *) reg [11:0] ad9238_ch2_data_iob;
+    (* IOB = "TRUE" *) reg ad9238_ch2_otr_iob;
 
     wire clk_dac;
     wire dac_pll_locked;
@@ -70,9 +80,13 @@ module g_analyzer_top(
         if (!adc_reset_n) begin
             ad9238_ch1_data_iob <= 12'd2048;
             ad9238_ch1_otr_iob <= 1'b0;
+            ad9238_ch2_data_iob <= 12'd2048;
+            ad9238_ch2_otr_iob <= 1'b0;
         end else begin
             ad9238_ch1_data_iob <= ad9238_ch1_data_i;
             ad9238_ch1_otr_iob <= ad9238_ch1_otr_i;
+            ad9238_ch2_data_iob <= ad9238_ch2_data_i;
+            ad9238_ch2_otr_iob <= ad9238_ch2_otr_i;
         end
     end
 
@@ -103,7 +117,16 @@ module g_analyzer_top(
         .R(~adc_reset_n),
         .S(1'b0)
     );
-    ad9238_capture_core adc_capture (
+    /*
+     * Configuration and start/abort writes are broadcast to both capture
+     * cores in the same cfg_clk cycle. Channel 1 keeps its existing full-rate
+     * FIR+CIC path. Channel 2 uses a small multiplier-shared FIR/R25 path, so
+     * out-of-band energy is removed before either stream is down-sampled.
+     */
+    ad9238_capture_core #(
+        .DSP_ENABLED(1),
+        .REFERENCE_FILTER_ENABLED(0)
+    ) adc_capture (
         .cfg_clk(clk_50m),
         .adc_clk(clk_adc),
         .reset_n(reset_n),
@@ -113,13 +136,46 @@ module g_analyzer_top(
         .bus_addr(spi_addr),
         .bus_wdata(spi_wdata),
         .bus_write(spi_write),
-        .bus_read_commit(spi_read_commit),
-        .bus_select(adc_bus_select),
-        .bus_rdata(adc_bus_rdata)
+        .bus_read_commit(spi_read_commit && !read_channel_cfg),
+        .bus_select(adc_ch1_bus_select),
+        .bus_rdata(adc_ch1_bus_rdata)
     );
 
+    ad9238_capture_core #(
+        .DSP_ENABLED(0),
+        .REFERENCE_FILTER_ENABLED(1)
+    ) adc_capture_ch2 (
+        .cfg_clk(clk_50m),
+        .adc_clk(clk_adc),
+        .reset_n(reset_n),
+        .adc_ready(adc_pll_locked),
+        .adc_data(ad9238_ch2_data_iob),
+        .adc_otr(ad9238_ch2_otr_iob),
+        .bus_addr(spi_addr),
+        .bus_wdata(spi_wdata),
+        .bus_write(spi_write),
+        .bus_read_commit(spi_read_commit && read_channel_cfg),
+        .bus_select(adc_ch2_bus_select),
+        .bus_rdata(adc_ch2_bus_rdata)
+    );
+
+    always @(posedge clk_50m or negedge reset_n) begin
+        if (!reset_n) begin
+            read_channel_cfg <= 1'b0;
+        end else if (spi_write && (spi_addr == REG_READ_CHANNEL)) begin
+            read_channel_cfg <= spi_wdata[0];
+        end
+    end
+
     always @(*) begin
-        spi_rdata = adc_bus_select ? adc_bus_rdata : 32'd0;
+        if (spi_addr == REG_READ_CHANNEL)
+            spi_rdata = {31'd0, read_channel_cfg};
+        else if (read_channel_cfg && adc_ch2_bus_select)
+            spi_rdata = adc_ch2_bus_rdata;
+        else if (adc_ch1_bus_select)
+            spi_rdata = adc_ch1_bus_rdata;
+        else
+            spi_rdata = 32'd0;
     end
 
     /* Keep the unused DAC at a quiet midscale code with a legal clock. */

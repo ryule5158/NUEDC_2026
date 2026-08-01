@@ -173,7 +173,7 @@ module tb_ad9238_capture_core;
 
         bus_addr = REG_FIRMWARE_VERSION;
         #1;
-        if (bus_rdata != 32'h00020002)
+        if (bus_rdata != 32'h00020004)
             $fatal(1, "G capture protocol version mismatch");
         bus_addr = REG_DEVICE_ID;
         #1;

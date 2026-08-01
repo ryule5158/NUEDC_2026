@@ -10,6 +10,8 @@
 
 static AD9238_SampleTypeDef
     s_ad9238_samples[AD9238_BUFFER_MAX_SAMPLES]; /* FPGA signed Q8.8 samples. */
+static AD9238_SampleTypeDef
+    s_ad9238_samples_ch2[AD9238_BUFFER_MAX_SAMPLES]; /* Synchronous CH2 frame. */
 static AD9238_AppDataTypeDef s_ad9238_app_data; /* 应用层最近一次运行数据。 */
 static AD9238_VoltageCalibrationTypeDef
     s_ad9238_calibration; /* 模块输入电压两点校准数据。 */
@@ -73,6 +75,106 @@ AD9238_StatusTypeDef AD9238_AppCapture(uint16_t sample_count,
   config.trigger_mode = AD9238_TRIGGER_IMMEDIATE;
   config.trigger_threshold = 2048U;
   return AD9238_AppCaptureInternal(&config, timeout_ms);
+}
+
+/************************************************************
+ * Function :       AD9238_AppCaptureDual
+ * Comment  :       同一次启动事件采集并读回 CH1、CH2 完整数据块
+ * Parameter:       点数、抽取倍数和超时时间
+ * Return   :       AD9238状态
+ ************************************************************/
+AD9238_StatusTypeDef AD9238_AppCaptureDual(uint16_t sample_count,
+                                           uint16_t decimation,
+                                           uint32_t timeout_ms)
+{
+  AD9238_CaptureConfigTypeDef config;
+  AD9238_StatusTypeDef status;
+  AD9238_StatusTypeDef info_status;
+  uint16_t read_count_ch1 = 0U;
+  uint16_t read_count_ch2 = 0U;
+
+  if (s_ad9238_app_data.initialized == 0U)
+  {
+    return AD9238_ERROR_NOT_INIT;
+  }
+  if ((sample_count == 0U) ||
+      (sample_count > AD9238_BUFFER_MAX_SAMPLES) ||
+      (decimation == 0U) || (timeout_ms == 0U))
+  {
+    return AD9238_ERROR_PARAM;
+  }
+
+  config.sample_count = sample_count;
+  config.decimation = decimation;
+  config.trigger_mode = AD9238_TRIGGER_IMMEDIATE;
+  config.trigger_threshold = 2048U;
+  s_ad9238_app_data.sample_count = 0U;
+  s_ad9238_app_data.sample_count_ch2 = 0U;
+  s_ad9238_app_data.capture_stage = AD9238_APP_CAPTURE_START;
+
+  status = AD9238_StartCapture(&config);
+  if (status == AD9238_OK)
+  {
+    s_ad9238_app_data.capture_stage = AD9238_APP_CAPTURE_WAIT;
+    status = AD9238_WaitCapture(timeout_ms);
+  }
+  if (status == AD9238_OK)
+  {
+    s_ad9238_app_data.capture_stage = AD9238_APP_CAPTURE_READ;
+    status = AD9238_ReadCaptureChannel(AD9238_CHANNEL_1,
+                                       s_ad9238_samples,
+                                       AD9238_BUFFER_MAX_SAMPLES,
+                                       &read_count_ch1);
+  }
+  if (status == AD9238_OK)
+  {
+    status = AD9238_ReadCaptureChannel(AD9238_CHANNEL_2,
+                                       s_ad9238_samples_ch2,
+                                       AD9238_BUFFER_MAX_SAMPLES,
+                                       &read_count_ch2);
+  }
+  else if (status == AD9238_ERROR_TIMEOUT)
+  {
+    (void)AD9238_AbortCapture();
+  }
+
+  if (status == AD9238_OK)
+  {
+    s_ad9238_app_data.sample_count = read_count_ch1;
+    s_ad9238_app_data.sample_count_ch2 = read_count_ch2;
+    if ((read_count_ch1 != sample_count) ||
+        (read_count_ch2 != sample_count))
+    {
+      status = AD9238_ERROR_NO_DATA;
+    }
+  }
+
+  info_status = AD9238_GetCaptureInfoChannel(
+      AD9238_CHANNEL_2, &s_ad9238_app_data.capture_ch2);
+  if ((status == AD9238_OK) && (info_status != AD9238_OK))
+  {
+    status = info_status;
+  }
+  /* Leave the FPGA readback selector on CH1 for legacy diagnostics. */
+  info_status = AD9238_GetCaptureInfoChannel(
+      AD9238_CHANNEL_1, &s_ad9238_app_data.capture);
+  if ((status == AD9238_OK) && (info_status != AD9238_OK))
+  {
+    status = info_status;
+  }
+
+  if (status == AD9238_OK)
+  {
+    s_ad9238_app_data.capture_stage = AD9238_APP_CAPTURE_COMPLETE;
+  }
+  else
+  {
+    s_ad9238_app_data.capture_stage = AD9238_APP_CAPTURE_STATUS;
+    s_ad9238_app_data.sample_count = 0U;
+    s_ad9238_app_data.sample_count_ch2 = 0U;
+  }
+  s_ad9238_app_data.status = status;
+  return status;
 }
 
 /************************************************************
@@ -175,6 +277,20 @@ const AD9238_SampleTypeDef *AD9238_AppGetSamples(void)
   return s_ad9238_samples;
 }
 
+const AD9238_SampleTypeDef *AD9238_AppGetSamplesChannel(
+    AD9238_ChannelTypeDef channel)
+{
+  if (channel == AD9238_CHANNEL_1)
+  {
+    return s_ad9238_samples;
+  }
+  if (channel == AD9238_CHANNEL_2)
+  {
+    return s_ad9238_samples_ch2;
+  }
+  return NULL;
+}
+
 /************************************************************
  * Function :       AD9238_AppGetSampleCount
  * Comment  :       返回应用层缓存中的有效点数
@@ -184,6 +300,19 @@ const AD9238_SampleTypeDef *AD9238_AppGetSamples(void)
 uint16_t AD9238_AppGetSampleCount(void)
 {
   return s_ad9238_app_data.sample_count;
+}
+
+uint16_t AD9238_AppGetSampleCountChannel(AD9238_ChannelTypeDef channel)
+{
+  if (channel == AD9238_CHANNEL_1)
+  {
+    return s_ad9238_app_data.sample_count;
+  }
+  if (channel == AD9238_CHANNEL_2)
+  {
+    return s_ad9238_app_data.sample_count_ch2;
+  }
+  return 0U;
 }
 
 /************************************************************
@@ -233,6 +362,7 @@ static AD9238_StatusTypeDef AD9238_AppCaptureInternal(
   }
 
   s_ad9238_app_data.sample_count = 0U;
+  s_ad9238_app_data.sample_count_ch2 = 0U;
   s_ad9238_app_data.capture_stage = AD9238_APP_CAPTURE_START;
   status = AD9238_StartCapture(config);
   if (status == AD9238_OK)

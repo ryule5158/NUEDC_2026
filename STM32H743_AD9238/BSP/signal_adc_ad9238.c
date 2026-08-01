@@ -121,6 +121,23 @@ static void SignalAdc_UpdateDiagnostic(AD9238_StatusTypeDef native_status)
     }
 }
 
+static void SignalAdc_FillFrame(SignalAdc_FrameInfo *frame,
+                                uint32_t sample_count,
+                                const AD9238_CaptureInfoTypeDef *capture)
+{
+    frame->sample_count = sample_count;
+    frame->sample_rate_hz = s_info.output_sample_rate_hz;
+    frame->min_v = SignalAdc_Q8_8ToNominalVoltage(
+        capture->min_sample_q8_8);
+    frame->max_v = SignalAdc_Q8_8ToNominalVoltage(
+        capture->max_sample_q8_8);
+    frame->clipped =
+        ((capture->overrange != 0U) ||
+         (capture->min_sample_q8_8 <= SIGNAL_ADC_AD9238_CLIP_LOW_Q8_8) ||
+         (capture->max_sample_q8_8 >= SIGNAL_ADC_AD9238_CLIP_HIGH_Q8_8))
+            ? 1U : 0U;
+}
+
 SignalAdc_Status SignalAdc_Init(void)
 {
     const AD9238_DataTypeDef *driver;
@@ -219,21 +236,69 @@ SignalAdc_Status SignalAdc_Capture(float *destination_v,
             SignalAdc_Q8_8ToNominalVoltage(samples[i]);
     }
 
-    frame->sample_count = sample_count;
-    frame->sample_rate_hz = s_info.output_sample_rate_hz;
-    frame->min_v =
-        SignalAdc_Q8_8ToNominalVoltage(
-            app->capture.min_sample_q8_8);
-    frame->max_v =
-        SignalAdc_Q8_8ToNominalVoltage(
-            app->capture.max_sample_q8_8);
-    frame->clipped =
-        ((app->capture.overrange != 0U) ||
-         (app->capture.min_sample_q8_8 <=
-          SIGNAL_ADC_AD9238_CLIP_LOW_Q8_8) ||
-         (app->capture.max_sample_q8_8 >=
-          SIGNAL_ADC_AD9238_CLIP_HIGH_Q8_8))
-            ? 1U : 0U;
+    SignalAdc_FillFrame(frame, sample_count, &app->capture);
+    return SIGNAL_ADC_OK;
+}
+
+SignalAdc_Status SignalAdc_CaptureDual(float *ch1_destination_v,
+                                      float *ch2_destination_v,
+                                      uint32_t capacity,
+                                      uint32_t requested_count,
+                                      uint32_t timeout_ms,
+                                      SignalAdc_FrameInfo *ch1_frame,
+                                      SignalAdc_FrameInfo *ch2_frame)
+{
+    const AD9238_AppDataTypeDef *app;
+    const AD9238_SampleTypeDef *ch1_samples;
+    const AD9238_SampleTypeDef *ch2_samples;
+    AD9238_StatusTypeDef status;
+    uint32_t ch1_count;
+    uint32_t ch2_count;
+
+    if (ch1_frame != NULL) {
+        *ch1_frame = (SignalAdc_FrameInfo){0};
+    }
+    if (ch2_frame != NULL) {
+        *ch2_frame = (SignalAdc_FrameInfo){0};
+    }
+    if (s_initialized == 0U) {
+        return SIGNAL_ADC_E_NOT_INITIALIZED;
+    }
+    if ((ch1_destination_v == NULL) || (ch2_destination_v == NULL) ||
+        (ch1_frame == NULL) || (ch2_frame == NULL) ||
+        (requested_count == 0U) || (requested_count > capacity) ||
+        (requested_count > AD9238_BUFFER_MAX_SAMPLES) ||
+        (requested_count > 65535U) || (timeout_ms == 0U)) {
+        return SIGNAL_ADC_E_ARGUMENT;
+    }
+
+    /* CH1 keeps FIR+CIC; CH2 simultaneously uses its FIR-only R25 path. */
+    status = AD9238_AppCaptureDual((uint16_t)requested_count,
+                                   SIGNAL_ADC_AD9238_DECIMATION,
+                                   timeout_ms);
+    SignalAdc_UpdateDiagnostic(status);
+    if (status != AD9238_OK) {
+        return SignalAdc_MapStatus(status);
+    }
+
+    ch1_samples = AD9238_AppGetSamplesChannel(AD9238_CHANNEL_1);
+    ch2_samples = AD9238_AppGetSamplesChannel(AD9238_CHANNEL_2);
+    ch1_count = (uint32_t)AD9238_AppGetSampleCountChannel(AD9238_CHANNEL_1);
+    ch2_count = (uint32_t)AD9238_AppGetSampleCountChannel(AD9238_CHANNEL_2);
+    app = AD9238_AppGetData();
+    if ((ch1_samples == NULL) || (ch2_samples == NULL) || (app == NULL) ||
+        (ch1_count != requested_count) || (ch2_count != requested_count)) {
+        return SIGNAL_ADC_E_NO_DATA;
+    }
+
+    for (uint32_t i = 0U; i < requested_count; ++i) {
+        ch1_destination_v[i] =
+            SignalAdc_Q8_8ToNominalVoltage(ch1_samples[i]);
+        ch2_destination_v[i] =
+            SignalAdc_Q8_8ToNominalVoltage(ch2_samples[i]);
+    }
+    SignalAdc_FillFrame(ch1_frame, ch1_count, &app->capture);
+    SignalAdc_FillFrame(ch2_frame, ch2_count, &app->capture_ch2);
     return SIGNAL_ADC_OK;
 }
 

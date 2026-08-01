@@ -43,6 +43,8 @@ typedef struct
   uint16_t sample_count;             /* 应用层缓存中的有效点数。 */
   uint8_t initialized;               /* 应用层初始化标志。 */
   AD9238_AppCaptureStageTypeDef capture_stage;
+  AD9238_CaptureInfoTypeDef capture_ch2; /* Latest CH2 FPGA capture status. */
+  uint16_t sample_count_ch2;             /* Valid samples in the CH2 buffer. */
 } AD9238_AppDataTypeDef;
 
 /* 初始化高速ADC应用层并核验STM32-FPGA-AD9238链路。 */
@@ -52,6 +54,11 @@ AD9238_StatusTypeDef AD9238_AppInit(void);
 AD9238_StatusTypeDef AD9238_AppCapture(uint16_t sample_count,
                                        uint16_t decimation,
                                        uint32_t timeout_ms);
+
+/* Trigger both FPGA channels once and read their synchronized frames. */
+AD9238_StatusTypeDef AD9238_AppCaptureDual(uint16_t sample_count,
+                                           uint16_t decimation,
+                                           uint32_t timeout_ms);
 
 /* 按输入电压阈值触发并阻塞采集，不提供触发前数据。 */
 AD9238_StatusTypeDef AD9238_AppCaptureTriggered(
@@ -74,8 +81,13 @@ float AD9238_AppCodeToVoltage(uint16_t code);
 /* 获取应用层4096点 signed Q8.8 采样缓存，只读使用。 */
 const AD9238_SampleTypeDef *AD9238_AppGetSamples(void);
 
+const AD9238_SampleTypeDef *AD9238_AppGetSamplesChannel(
+    AD9238_ChannelTypeDef channel);
+
 /* 获取应用层缓存中的有效采样点数。 */
 uint16_t AD9238_AppGetSampleCount(void);
+
+uint16_t AD9238_AppGetSampleCountChannel(AD9238_ChannelTypeDef channel);
 
 /* 获取最近一次采集结果，只读使用。 */
 const AD9238_AppDataTypeDef *AD9238_AppGetData(void);

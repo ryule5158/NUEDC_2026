@@ -825,6 +825,16 @@
               <FilePath>..\BSP\g_contest_app.h</FilePath>
             </File>
             <File>
+              <FileName>g_calibration_store.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\g_calibration_store.c</FilePath>
+            </File>
+            <File>
+              <FileName>g_calibration_store.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\BSP\g_calibration_store.h</FilePath>
+            </File>
+            <File>
               <FileName>g_contest_cli.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\BSP\g_contest_cli.c</FilePath>
@@ -1048,6 +1058,16 @@
               <FileName>periodic_analyzer.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\DSP\periodic_analyzer.h</FilePath>
+            </File>
+            <File>
+              <FileName>component_alias_guard.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\DSP\component_alias_guard.c</FilePath>
+            </File>
+            <File>
+              <FileName>component_alias_guard.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\DSP\component_alias_guard.h</FilePath>
             </File>
           </Files>
         </Group>
